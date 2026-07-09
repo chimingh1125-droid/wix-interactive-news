@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>互動新聞與遊戲模型設計</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172026;
+        --muted: #5d6872;
+        --paper: #f7f5ef;
+        --surface: #ffffff;
+        --line: #d8d2c5;
+        --red: #c6412d;
+        --teal: #0c7f83;
+        --blue: #275a9f;
+        --green: #5f7f32;
+        --gold: #c6902f;
+        --shadow: 0 18px 50px rgba(23, 32, 38, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+        line-height: 1.6;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 16px clamp(18px, 4vw, 56px);
+        background: rgba(247, 245, 239, 0.94);
+        border-bottom: 1px solid rgba(216, 210, 197, 0.78);
+        backdrop-filter: blur(16px);
+      }
+
+      .brand,
+      .site-nav,
+      .hero-actions,
+      .chart-head,
+      .site-footer {
+        display: flex;
+        align-items: center;
+      }
+
+      .brand {
+        gap: 10px;
+        font-weight: 800;
+      }
+
+      .brand-mark {
+        width: 24px;
+        height: 24px;
+        background:
+          linear-gradient(135deg, var(--red) 0 45%, transparent 45%),
+          linear-gradient(225deg, var(--teal) 0 48%, transparent 48%),
+          linear-gradient(45deg, var(--blue) 0 50%, var(--gold) 50%);
+        border: 1px solid rgba(23, 32, 38, 0.24);
+      }
+
+      .site-nav {
+        gap: clamp(10px, 2.5vw, 28px);
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .site-nav a {
+        padding: 6px 0;
+        border-bottom: 2px solid transparent;
+      }
+
+      .site-nav a:hover {
+        color: var(--ink);
+        border-color: var(--red);
+      }
+
+      .hero {
+        position: relative;
+        min-height: 82vh;
+        overflow: hidden;
+        display: grid;
+        align-items: end;
+        padding: 92px clamp(20px, 6vw, 88px) 84px;
+        background: #e8e3d8;
+      }
+
+      .hero::after {
+        position: absolute;
+        inset: auto 0 0;
+        height: 38%;
+        content: "";
+        background: linear-gradient(0deg, rgba(247, 245, 239, 0.97), rgba(247, 245, 239, 0));
+        pointer-events: none;
+      }
+
+      .hero-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        mix-blend-mode: multiply;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 820px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--red);
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        overflow-wrap: anywhere;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 780px;
+        font-size: clamp(42px, 7vw, 94px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(30px, 4vw, 56px);
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.25;
+      }
+
+      .hero-copy {
+        max-width: 650px;
+        margin: 22px 0 0;
+        color: #263039;
+        font-size: clamp(18px, 2vw, 23px);
+      }
+
+      .hero-actions {
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 34px;
+      }
+
+      .primary-action,
+      .secondary-action {
+        min-height: 46px;
+        padding: 10px 18px;
+        border: 1px solid var(--ink);
+        font-weight: 900;
+      }
+
+      .primary-action {
+        color: #fff;
+        background: var(--ink);
+      }
+
+      .secondary-action {
+        background: rgba(255, 255, 255, 0.64);
+      }
+
+      .section {
+        padding: 88px clamp(20px, 6vw, 88px);
+      }
+
+      .section-head {
+        max-width: 860px;
+        margin-bottom: 34px;
+      }
+
+      .section-head.compact {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        max-width: none;
+      }
+
+      .section-head p:not(.eyebrow) {
+        max-width: 720px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .feature-card,
+      .chart-panel,
+      .notes-panel,
+      .typhoon-controls,
+      .typhoon-results {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .feature-card {
+        min-height: 250px;
+        padding: 24px;
+        border-radius: 8px;
+      }
+
+      .card-index {
+        display: inline-block;
+        margin-bottom: 38px;
+        color: var(--teal);
+        font-weight: 900;
+      }
+
+      .feature-card p,
+      .notes-panel {
+        color: var(--muted);
+      }
+
+      .model-section {
+        color: #f9f5ea;
+        background: #172026;
+      }
+
+      .model-section .eyebrow {
+        color: #f1b04b;
+      }
+
+      .model-section .section-head p:not(.eyebrow) {
+        color: rgba(249, 245, 234, 0.72);
+      }
+
+      .workbench,
+      .typhoon-model {
+        display: grid;
+        grid-template-columns: minmax(230px, 340px) minmax(0, 1fr);
+        gap: 22px;
+        align-items: stretch;
+      }
+
+      .control-panel,
+      .typhoon-controls {
+        display: grid;
+        align-content: start;
+        gap: 18px;
+        padding: 22px;
+      }
+
+      .control-panel {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .control-panel label,
+      .typhoon-controls label,
+      .control-group {
+        display: grid;
+        gap: 8px;
+        font-weight: 800;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--teal);
+      }
+
+      .control-panel input[type="range"] {
+        accent-color: #f1b04b;
+      }
+
+      .model-stage {
+        position: relative;
+        min-height: 420px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: #10181d;
+      }
+
+      #modelCanvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .model-readout {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        display: grid;
+        gap: 4px;
+        min-width: 150px;
+        padding: 14px;
+        color: var(--ink);
+        background: #f9f5ea;
+      }
+
+      .model-readout span,
+      .impact-card span {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .model-readout strong {
+        font-size: 44px;
+        line-height: 1;
+      }
+
+      .typhoon-section {
+        background: #eef3f1;
+      }
+
+      .segmented-control {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border: 1px solid var(--line);
+      }
+
+      .segmented-control button {
+        min-height: 44px;
+        padding: 8px 10px;
+        color: var(--muted);
+        background: #f8f6ef;
+        border: 0;
+        border-right: 1px solid var(--line);
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .segmented-control button:last-child {
+        border-right: 0;
+      }
+
+      .segmented-control button.is-active {
+        color: #fff;
+        background: var(--red);
+      }
+
+      .typhoon-results {
+        display: grid;
+        gap: 22px;
+        padding: 24px;
+      }
+
+      .impact-cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .impact-card {
+        min-height: 172px;
+        padding: 18px;
+        background: #f7f5ef;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .impact-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.05;
+      }
+
+      .impact-card p {
+        margin: 12px 0 0;
+        color: var(--muted);
+      }
+
+      .loss-chart,
+      .bar-chart {
+        display: grid;
+        gap: 16px;
+      }
+
+      .loss-row,
+      .bar-row {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr) 42px;
+        gap: 12px;
+        align-items: center;
+        font-weight: 900;
+      }
+
+      .loss-row {
+        grid-template-columns: 72px minmax(0, 1fr);
+      }
+
+      .loss-track,
+      .bar-track {
+        height: 24px;
+        overflow: hidden;
+        background: #dfe6e2;
+        border: 1px solid #c9d4cf;
+      }
+
+      .bar-track {
+        height: 18px;
+        background: #ece7dd;
+        border-color: var(--line);
+      }
+
+      .loss-track i,
+      .bar-fill {
+        display: block;
+        height: 100%;
+      }
+
+      .loss-track i {
+        width: 0%;
+        background: linear-gradient(90deg, var(--teal), var(--red));
+      }
+
+      .bar-fill {
+        width: var(--bar);
+        background: var(--bar-color);
+      }
+
+      .scenario-note {
+        padding: 16px;
+        color: #263039;
+        background: #fff;
+        border-left: 4px solid var(--teal);
+      }
+
+      .signals-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+        gap: 20px;
+      }
+
+      .chart-panel,
+      .notes-panel {
+        padding: 24px;
+        border-radius: 8px;
+      }
+
+      .chart-head {
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .chart-head span {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .source-list {
+        display: grid;
+        gap: 14px;
+        margin: 18px 0 0;
+      }
+
+      .source-list dt {
+        color: var(--ink);
+        font-weight: 900;
+      }
+
+      .source-list dd {
+        margin: 2px 0 0;
+      }
+
+      .exports-section {
+        background: #fbfaf6;
+      }
+
+      .export-builder {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .link-editor,
+      .video-preview-panel {
+        padding: 24px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .link-editor {
+        display: grid;
+        gap: 16px;
+      }
+
+      .link-row {
+        display: grid;
+        grid-template-columns: minmax(130px, 0.7fr) minmax(180px, 1.2fr) auto;
+        gap: 10px;
+        align-items: end;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .link-row:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      .link-row label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .link-row input {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 10px;
+        color: var(--ink);
+        background: #f8f6ef;
+        border: 1px solid var(--line);
+        font: inherit;
+      }
+
+      .export-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        min-width: 118px;
+        padding: 9px 14px;
+        color: #fff;
+        background: var(--ink);
+        border: 1px solid var(--ink);
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .export-button.is-empty {
+        color: var(--muted);
+        background: #ece7dd;
+        border-color: var(--line);
+        pointer-events: none;
+      }
+
+      .video-frame {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: #172026;
+        border: 1px solid var(--line);
+      }
+
+      .video-frame iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      .video-placeholder {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        color: #f9f5ea;
+        text-align: center;
+      }
+
+      .preview-caption {
+        margin: 14px 0 0;
+        color: var(--muted);
+      }
+
+      .site-footer {
+        justify-content: space-between;
+        gap: 18px;
+        padding: 28px clamp(20px, 6vw, 88px);
+        color: #f9f5ea;
+        background: var(--ink);
+        font-weight: 800;
+      }
+
+      @media (max-width: 860px) {
+        .site-header,
+        .section-head.compact,
+        .site-footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .site-nav {
+          width: 100%;
+          justify-content: space-between;
+          flex-wrap: wrap;
+        }
+
+        .feature-grid,
+        .workbench,
+        .typhoon-model,
+        .impact-cards,
+        .signals-layout,
+        .export-builder,
+        .link-row {
+          grid-template-columns: 1fr;
+        }
+
+        .model-stage {
+          min-height: 360px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .hero-actions {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .primary-action,
+        .secondary-action {
+          text-align: center;
+        }
+
+        .section {
+          padding-top: 64px;
+          padding-bottom: 64px;
+        }
+
+        .bar-row,
+        .loss-row {
+          grid-template-columns: 1fr;
+        }
+
+        .export-button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="回到首頁">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>互動新聞模型誌</span>
+      </a>
+      <nav class="site-nav" aria-label="主選單">
+        <a href="#weekly">週更</a>
+        <a href="#model">模型</a>
+        <a href="#typhoon">颱風模型</a>
+        <a href="#signals">資料</a>
+        <a href="#exports">外部連結</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
+        <div class="hero-content">
+          <p class="eyebrow">Weekly build / interactive journalism</p>
+          <h1 id="hero-title">互動新聞與遊戲模型設計</h1>
+          <p class="hero-copy">
+            用新聞敘事、資料圖表和遊戲規則來設計可探索的公共議題頁面。這份 Wix 版本已整合巴威颱風強度、農損與產業損失的情境估算工具。
+          </p>
+          <div class="hero-actions" aria-label="主要操作">
+            <a class="primary-action" href="#typhoon">試算颱風損失</a>
+            <a class="secondary-action" href="#model">調整互動模型</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="weekly" class="section" aria-labelledby="weekly-title">
+        <div class="section-head">
+          <p class="eyebrow">2026-07-09</p>
+          <h2 id="weekly-title">本週設計觀察</h2>
+          <p>
+            本週聚焦於互動新聞如何把讀者選擇、資料探索和遊戲化回饋整合成一個清楚的閱讀流程，並加入颱風災損情境模型，讓讀者可以調整變因、比較結果。
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="card-index">01</span>
+            <h3>互動新聞設計觀察</h3>
+            <p>讀者不只需要點擊選項，也需要理解每個選擇如何改變敘事視角。頁面應保留清楚路徑提示、可回看節點，以及不打斷閱讀節奏的資料註解。</p>
+          </article>
+          <article class="feature-card">
+            <span class="card-index">02</span>
+            <h3>遊戲模型與互動機制</h3>
+            <p>本週採用任務節點加回饋條的概念：讀者先探索資料，再根據線索解鎖下一段敘事，最後看到自己的判斷與資料趨勢之間的差距。</p>
+          </article>
+          <article class="feature-card">
+            <span class="card-index">03</span>
+            <h3>颱風災損情境</h3>
+            <p>以巴威颱風強度作為互動案例，讓讀者切換超級強烈、強烈與中度颱風，並用雨量、暴露程度和防災準備度估算損失。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="model" class="section model-section" aria-labelledby="model-title">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Model workbench</p>
+            <h2 id="model-title">互動機制設計台</h2>
+          </div>
+          <p>拖曳四個參數，快速感受不同互動新聞模型的重心。</p>
+        </div>
+        <div class="workbench">
+          <div class="control-panel" aria-label="互動模型參數">
+            <label><span>讀者能動性</span><input id="agencyInput" type="range" min="1" max="10" value="7"></label>
+            <label><span>回饋速度</span><input id="feedbackInput" type="range" min="1" max="10" value="6"></label>
+            <label><span>資料密度</span><input id="dataInput" type="range" min="1" max="10" value="8"></label>
+            <label><span>社群共作</span><input id="socialInput" type="range" min="1" max="10" value="4"></label>
+          </div>
+          <div class="model-stage">
+            <canvas id="modelCanvas" width="920" height="520" aria-label="互動模型雷達圖"></canvas>
+            <div class="model-readout" aria-live="polite">
+              <span id="modelType">資料探索型</span>
+              <strong id="modelScore">76</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="typhoon" class="section typhoon-section" aria-labelledby="typhoon-title">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Scenario model</p>
+            <h2 id="typhoon-title">巴威颱風損失預估模型</h2>
+          </div>
+          <p>這是互動新聞用的情境估算模型，不是正式災損預報。數值以可替換示例資料建立，用來比較不同強度下台灣農損與產業損失的可能變化。</p>
+        </div>
+
+        <div class="typhoon-model">
+          <div class="typhoon-controls" aria-label="巴威颱風情境參數">
+            <div class="control-group">
+              <span>颱風強度</span>
+              <div class="segmented-control" id="typhoonIntensity" role="radiogroup" aria-label="選擇颱風強度">
+                <button type="button" class="is-active" data-intensity="super" role="radio" aria-checked="true">超級強烈</button>
+                <button type="button" data-intensity="severe" role="radio" aria-checked="false">強烈</button>
+                <button type="button" data-intensity="moderate" role="radio" aria-checked="false">中度</button>
+              </div>
+            </div>
+            <label><span>累積雨量情境 <strong id="rainfallValue">520 mm</strong></span><input id="rainfallInput" type="range" min="150" max="900" step="10" value="520"></label>
+            <label><span>農業暴露程度 <strong id="cropValue">65%</strong></span><input id="cropInput" type="range" min="10" max="100" step="5" value="65"></label>
+            <label><span>產業停工暴露 <strong id="industryValue">45%</strong></span><input id="industryInput" type="range" min="10" max="100" step="5" value="45"></label>
+            <label><span>防災準備度 <strong id="preparednessValue">25%</strong></span><input id="preparednessInput" type="range" min="0" max="60" step="5" value="25"></label>
+          </div>
+
+          <div class="typhoon-results" aria-live="polite">
+            <div class="impact-cards">
+              <article class="impact-card">
+                <span>預估農損</span>
+                <strong id="agriLoss">0 億元</strong>
+                <p>作物、畜牧、漁業及農業設施的情境損失。</p>
+              </article>
+              <article class="impact-card">
+                <span>預估產業損失</span>
+                <strong id="industryLoss">0 億元</strong>
+                <p>製造、物流、零售與服務業停工或供應鏈延誤。</p>
+              </article>
+              <article class="impact-card">
+                <span>綜合風險指數</span>
+                <strong id="riskIndex">0</strong>
+                <p>用於比較情境高低，不代表官方警戒等級。</p>
+              </article>
+            </div>
+            <div class="loss-chart" aria-label="農損與產業損失比較圖">
+              <div class="loss-row"><span>農損</span><div class="loss-track"><i id="agriBar"></i></div></div>
+              <div class="loss-row"><span>產業</span><div class="loss-track"><i id="industryBar"></i></div></div>
+            </div>
+            <div class="scenario-note" id="scenarioNote">請調整參數查看不同巴威颱風強度情境。</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="signals" class="section" aria-labelledby="signals-title">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Design signals</p>
+            <h2 id="signals-title">資料與視覺化區塊</h2>
+          </div>
+          <p>目前使用可替換示例資料。若未來接入外部資料，只要更新 JavaScript 中的資料欄位即可。</p>
+        </div>
+        <div class="signals-layout">
+          <div class="chart-panel">
+            <div class="chart-head">
+              <h3>設計優先度</h3>
+              <span>示例資料，可替換</span>
+            </div>
+            <div class="bar-chart" id="priorityChart" aria-label="設計優先度長條圖"></div>
+          </div>
+          <div class="notes-panel">
+            <h3>資料來源欄位</h3>
+            <dl class="source-list">
+              <div><dt>資料來源狀態</dt><dd>目前未連網抓取外部資料，使用可替換示例資料。</dd></div>
+              <div><dt>颱風模型資料</dt><dd>建議替換為中央氣象署、農業部、經濟部、地方災害應變與保險理賠資料。</dd></div>
+              <div><dt>Wix 部署方式</dt><dd>此版本為單檔 HTML，可貼入 Wix 的 Embed HTML 元件。</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section id="exports" class="section exports-section" aria-labelledby="exports-title">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Outbound links</p>
+            <h2 id="exports-title">外部網站與 YouTube 按鈕</h2>
+          </div>
+          <p>
+            可手動改按鈕名稱並貼入網址。一般網站會以新分頁開啟；YouTube 連結會同步產生影片預覽，方便把互動新聞導向報導、資料來源或影片素材。
+          </p>
+        </div>
+
+        <div class="export-builder">
+          <div class="link-editor" aria-label="外部連結按鈕設定">
+            <div class="link-row">
+              <label>按鈕名稱<input class="link-label-input" value="中央氣象署資料"></label>
+              <label>網址或 YouTube<input class="link-url-input" value="https://www.cwa.gov.tw/"></label>
+              <a class="export-button" href="https://www.cwa.gov.tw/" target="_blank" rel="noopener">中央氣象署資料</a>
+            </div>
+            <div class="link-row">
+              <label>按鈕名稱<input class="link-label-input" value="農業部災損資訊"></label>
+              <label>網址或 YouTube<input class="link-url-input" value="https://www.moa.gov.tw/"></label>
+              <a class="export-button" href="https://www.moa.gov.tw/" target="_blank" rel="noopener">農業部災損資訊</a>
+            </div>
+            <div class="link-row">
+              <label>按鈕名稱<input class="link-label-input" value="產業與供應鏈資料"></label>
+              <label>網址或 YouTube<input class="link-url-input" value="https://www.moea.gov.tw/"></label>
+              <a class="export-button" href="https://www.moea.gov.tw/" target="_blank" rel="noopener">產業與供應鏈資料</a>
+            </div>
+            <div class="link-row">
+              <label>按鈕名稱<input class="link-label-input" value="YouTube 影片"></label>
+              <label>網址或 YouTube<input class="link-url-input" value="https://www.youtube.com/watch?v=dQw4w9WgXcQ"></label>
+              <a class="export-button" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener">YouTube 影片</a>
+            </div>
+          </div>
+
+          <div class="video-preview-panel">
+            <h3>YouTube 預覽</h3>
+            <div class="video-frame" id="youtubePreview">
+              <div class="video-placeholder">貼入 YouTube 連結後，這裡會顯示影片預覽。</div>
+            </div>
+            <p class="preview-caption" id="previewCaption">目前預覽：YouTube 影片</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>互動新聞模型誌</span>
+      <span>Wix embed version / data replaceable</span>
+    </footer>
+
+    <script>
+      const weeklySignals = [
+        { label: "路徑清楚度", value: 86, color: "#0c7f83" },
+        { label: "回饋即時性", value: 74, color: "#c6412d" },
+        { label: "資料可讀性", value: 82, color: "#275a9f" },
+        { label: "共作延展性", value: 58, color: "#5f7f32" }
+      ];
+
+      const typhoonScenarios = {
+        super: {
+          label: "超級強烈颱風",
+          baseAgri: 52,
+          baseIndustry: 108,
+          note: "超級強烈情境假設近海通過且外圍環流長時間影響台灣，農業設施、沿海養殖與供應鏈延誤會同步放大。"
+        },
+        severe: {
+          label: "強烈颱風",
+          baseAgri: 28,
+          baseIndustry: 58,
+          note: "強烈情境假設風雨集中在迎風面與都會通勤帶，農損以作物倒伏和設施受損為主，產業損失以停工與物流延誤為主。"
+        },
+        moderate: {
+          label: "中度颱風",
+          baseAgri: 12,
+          baseIndustry: 24,
+          note: "中度情境假設災損較局部，主要受累積雨量、易淹水農區和臨時停班停工範圍影響。"
+        }
+      };
+
+      let activeTyphoonIntensity = "super";
+
+      const controls = {
+        agency: document.querySelector("#agencyInput"),
+        feedback: document.querySelector("#feedbackInput"),
+        data: document.querySelector("#dataInput"),
+        social: document.querySelector("#socialInput")
+      };
+
+      const modelCanvas = document.querySelector("#modelCanvas");
+      const heroCanvas = document.querySelector("#heroCanvas");
+      const modelCtx = modelCanvas ? modelCanvas.getContext("2d") : null;
+      const heroCtx = heroCanvas ? heroCanvas.getContext("2d") : null;
+
+      function resizeCanvasToDisplaySize(canvas, context) {
+        const ratio = window.devicePixelRatio || 1;
+        const width = Math.floor(canvas.clientWidth * ratio);
+        const height = Math.floor(canvas.clientHeight * ratio);
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+          context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+      }
+
+      function renderPriorityChart() {
+        const chart = document.querySelector("#priorityChart");
+        if (!chart) return;
+        chart.innerHTML = weeklySignals.map((item) => `
+          <div class="bar-row">
+            <span>${item.label}</span>
+            <span class="bar-track" aria-hidden="true">
+              <span class="bar-fill" style="--bar:${item.value}%;--bar-color:${item.color};"></span>
+            </span>
+            <span>${item.value}</span>
+          </div>
+        `).join("");
+      }
+
+      function getControlValues() {
+        return {
+          agency: Number(controls.agency.value),
+          feedback: Number(controls.feedback.value),
+          data: Number(controls.data.value),
+          social: Number(controls.social.value)
+        };
+      }
+
+      function classifyModel(values) {
+        if (values.data >= 7 && values.agency >= 6) return "資料探索型";
+        if (values.feedback >= 8) return "即時回饋型";
+        if (values.social >= 7) return "共作任務型";
+        return "線性導覽型";
+      }
+
+      function drawModel() {
+        if (!modelCanvas || !modelCtx) return;
+        resizeCanvasToDisplaySize(modelCanvas, modelCtx);
+        const width = modelCanvas.clientWidth;
+        const height = modelCanvas.clientHeight;
+        const values = getControlValues();
+        const score = Math.round(values.agency * 8.5 + values.feedback * 6.5 + values.data * 7.5 + values.social * 4.5);
+        const points = [
+          { label: "能動性", value: values.agency, angle: -Math.PI / 2, color: "#f1b04b" },
+          { label: "回饋", value: values.feedback, angle: 0, color: "#c6412d" },
+          { label: "資料", value: values.data, angle: Math.PI / 2, color: "#0c7f83" },
+          { label: "共作", value: values.social, angle: Math.PI, color: "#5f7f32" }
+        ];
+        const centerX = width * 0.5;
+        const centerY = height * 0.5;
+        const radius = Math.min(width, height) * 0.31;
+
+        modelCtx.clearRect(0, 0, width, height);
+        modelCtx.fillStyle = "#10181d";
+        modelCtx.fillRect(0, 0, width, height);
+
+        for (let ring = 1; ring <= 4; ring += 1) {
+          modelCtx.beginPath();
+          modelCtx.arc(centerX, centerY, (radius / 4) * ring, 0, Math.PI * 2);
+          modelCtx.strokeStyle = `rgba(255,255,255,${0.05 + ring * 0.035})`;
+          modelCtx.stroke();
+        }
+
+        points.forEach((point) => {
+          const endX = centerX + Math.cos(point.angle) * radius;
+          const endY = centerY + Math.sin(point.angle) * radius;
+          modelCtx.beginPath();
+          modelCtx.moveTo(centerX, centerY);
+          modelCtx.lineTo(endX, endY);
+          modelCtx.strokeStyle = "rgba(255,255,255,0.16)";
+          modelCtx.stroke();
+        });
+
+        modelCtx.beginPath();
+        points.forEach((point, index) => {
+          const pointRadius = radius * (point.value / 10);
+          const x = centerX + Math.cos(point.angle) * pointRadius;
+          const y = centerY + Math.sin(point.angle) * pointRadius;
+          if (index === 0) modelCtx.moveTo(x, y);
+          else modelCtx.lineTo(x, y);
+        });
+        modelCtx.closePath();
+        modelCtx.fillStyle = "rgba(12,127,131,0.28)";
+        modelCtx.strokeStyle = "#f1b04b";
+        modelCtx.lineWidth = 3;
+        modelCtx.fill();
+        modelCtx.stroke();
+
+        points.forEach((point) => {
+          const pointRadius = radius * (point.value / 10);
+          const x = centerX + Math.cos(point.angle) * pointRadius;
+          const y = centerY + Math.sin(point.angle) * pointRadius;
+          const labelX = centerX + Math.cos(point.angle) * (radius + 34);
+          const labelY = centerY + Math.sin(point.angle) * (radius + 34);
+          modelCtx.beginPath();
+          modelCtx.arc(x, y, 7, 0, Math.PI * 2);
+          modelCtx.fillStyle = point.color;
+          modelCtx.fill();
+          modelCtx.fillStyle = "#f9f5ea";
+          modelCtx.font = "700 14px Microsoft JhengHei, sans-serif";
+          modelCtx.textAlign = "center";
+          modelCtx.textBaseline = "middle";
+          modelCtx.fillText(point.label, labelX, labelY);
+        });
+
+        document.querySelector("#modelType").textContent = classifyModel(values);
+        document.querySelector("#modelScore").textContent = String(score);
+      }
+
+      function formatMoney(value) {
+        return `${value.toFixed(1)} 億元`;
+      }
+
+      function renderTyphoonModel() {
+        const scenario = typhoonScenarios[activeTyphoonIntensity];
+        const rainfall = Number(document.querySelector("#rainfallInput").value);
+        const cropExposure = Number(document.querySelector("#cropInput").value);
+        const industryExposure = Number(document.querySelector("#industryInput").value);
+        const preparedness = Number(document.querySelector("#preparednessInput").value);
+        const rainfallFactor = rainfall / 520;
+        const cropFactor = cropExposure / 65;
+        const industryFactor = industryExposure / 45;
+        const preparationFactor = 1 - preparedness / 100;
+        const agri = scenario.baseAgri * (0.58 * rainfallFactor + 0.42 * cropFactor) * (0.7 + 0.3 * preparationFactor);
+        const industry = scenario.baseIndustry * (0.36 * rainfallFactor + 0.64 * industryFactor) * (0.78 + 0.22 * preparationFactor);
+        const risk = Math.min(100, Math.round((agri / 70) * 34 + (industry / 140) * 46 + (rainfall / 900) * 20));
+        const maxLoss = Math.max(agri, industry, 1);
+
+        document.querySelector("#rainfallValue").textContent = `${rainfall} mm`;
+        document.querySelector("#cropValue").textContent = `${cropExposure}%`;
+        document.querySelector("#industryValue").textContent = `${industryExposure}%`;
+        document.querySelector("#preparednessValue").textContent = `${preparedness}%`;
+        document.querySelector("#agriLoss").textContent = formatMoney(agri);
+        document.querySelector("#industryLoss").textContent = formatMoney(industry);
+        document.querySelector("#riskIndex").textContent = String(risk);
+        document.querySelector("#scenarioNote").textContent =
+          `${scenario.label}：${scenario.note} 目前採示例基準值，實務上應替換為農業部、經濟部、地方災害應變與保險理賠資料。`;
+        document.querySelector("#agriBar").style.width = `${Math.max(6, (agri / maxLoss) * 100)}%`;
+        document.querySelector("#industryBar").style.width = `${Math.max(6, (industry / maxLoss) * 100)}%`;
+      }
+
+      function setupTyphoonModel() {
+        const buttons = Array.from(document.querySelectorAll("#typhoonIntensity button"));
+        const inputs = ["#rainfallInput", "#cropInput", "#industryInput", "#preparednessInput"]
+          .map((selector) => document.querySelector(selector));
+
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            activeTyphoonIntensity = button.dataset.intensity || "super";
+            buttons.forEach((item) => {
+              const isActive = item === button;
+              item.classList.toggle("is-active", isActive);
+              item.setAttribute("aria-checked", String(isActive));
+            });
+            renderTyphoonModel();
+          });
+        });
+        inputs.forEach((input) => input.addEventListener("input", renderTyphoonModel));
+        renderTyphoonModel();
+      }
+
+      function normalizeUrl(value) {
+        const trimmed = value.trim();
+        if (!trimmed) return "";
+        if (/^(https?:)?\/\//i.test(trimmed)) {
+          return trimmed.startsWith("//") ? `https:${trimmed}` : trimmed;
+        }
+        return `https://${trimmed}`;
+      }
+
+      function getYouTubeId(value) {
+        const url = normalizeUrl(value);
+        const patterns = [
+          /youtube\.com\/watch\?[^#]*v=([^&#]+)/i,
+          /youtu\.be\/([^?&#/]+)/i,
+          /youtube\.com\/embed\/([^?&#/]+)/i,
+          /youtube\.com\/shorts\/([^?&#/]+)/i
+        ];
+        for (const pattern of patterns) {
+          const match = url.match(pattern);
+          if (match) return match[1];
+        }
+        return "";
+      }
+
+      function updateYouTubePreview(rows) {
+        const preview = document.querySelector("#youtubePreview");
+        const caption = document.querySelector("#previewCaption");
+        if (!preview) return;
+
+        const youtubeRow = rows.find((row) => getYouTubeId(row.querySelector(".link-url-input").value));
+        if (!youtubeRow) {
+          preview.innerHTML = '<div class="video-placeholder">貼入 YouTube 連結後，這裡會顯示影片預覽。</div>';
+          if (caption) caption.textContent = "目前沒有 YouTube 預覽。";
+          return;
+        }
+
+        const label = youtubeRow.querySelector(".link-label-input").value.trim() || "YouTube 影片";
+        const videoId = getYouTubeId(youtubeRow.querySelector(".link-url-input").value);
+        preview.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" title="${label}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+        if (caption) caption.textContent = `目前預覽：${label}`;
+      }
+
+      function setupExportButtons() {
+        const rows = Array.from(document.querySelectorAll(".link-row"));
+        if (rows.length === 0) return;
+
+        rows.forEach((row) => {
+          const labelInput = row.querySelector(".link-label-input");
+          const urlInput = row.querySelector(".link-url-input");
+          const button = row.querySelector(".export-button");
+
+          const sync = () => {
+            const label = labelInput.value.trim() || "前往連結";
+            const url = normalizeUrl(urlInput.value);
+            button.textContent = label;
+            button.href = url || "#";
+            button.classList.toggle("is-empty", !url);
+            updateYouTubePreview(rows);
+          };
+
+          labelInput.addEventListener("input", sync);
+          urlInput.addEventListener("input", sync);
+          sync();
+        });
+      }
+
+      function drawHero(time = 0) {
+        if (!heroCanvas || !heroCtx) return;
+        resizeCanvasToDisplaySize(heroCanvas, heroCtx);
+        const width = heroCanvas.clientWidth;
+        const height = heroCanvas.clientHeight;
+        const nodes = [
+          [0.13, 0.28, "#c6412d"],
+          [0.32, 0.18, "#0c7f83"],
+          [0.55, 0.26, "#275a9f"],
+          [0.78, 0.16, "#c6902f"],
+          [0.2, 0.58, "#275a9f"],
+          [0.46, 0.55, "#5f7f32"],
+          [0.71, 0.63, "#c6412d"],
+          [0.86, 0.47, "#0c7f83"]
+        ];
+        heroCtx.clearRect(0, 0, width, height);
+        heroCtx.fillStyle = "#e8e3d8";
+        heroCtx.fillRect(0, 0, width, height);
+        heroCtx.strokeStyle = "rgba(23,32,38,0.12)";
+        for (let x = -80; x < width + 120; x += 70) {
+          heroCtx.beginPath();
+          heroCtx.moveTo(x + Math.sin(time / 900) * 12, 0);
+          heroCtx.lineTo(x + width * 0.18, height);
+          heroCtx.stroke();
+        }
+        nodes.forEach((node, index) => {
+          const x = node[0] * width + Math.sin(time / 1100 + index) * 9;
+          const y = node[1] * height + Math.cos(time / 1200 + index) * 8;
+          nodes.slice(index + 1).forEach((target, targetIndex) => {
+            if ((index + targetIndex) % 2 !== 0) return;
+            heroCtx.beginPath();
+            heroCtx.moveTo(x, y);
+            heroCtx.lineTo(target[0] * width, target[1] * height);
+            heroCtx.strokeStyle = "rgba(23,32,38,0.13)";
+            heroCtx.stroke();
+          });
+          heroCtx.beginPath();
+          heroCtx.arc(x, y, 16 + (index % 3) * 5, 0, Math.PI * 2);
+          heroCtx.fillStyle = node[2];
+          heroCtx.globalAlpha = 0.78;
+          heroCtx.fill();
+          heroCtx.globalAlpha = 1;
+        });
+        requestAnimationFrame(drawHero);
+      }
+
+      Object.values(controls).forEach((input) => input.addEventListener("input", drawModel));
+      window.addEventListener("resize", drawModel);
+      renderPriorityChart();
+      setupTyphoonModel();
+      setupExportButtons();
+      drawModel();
+      requestAnimationFrame(drawHero);
+    </script>
+  </body>
+</html>
