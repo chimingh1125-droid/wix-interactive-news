@@ -1,5 +1,5 @@
 // 逐格渲染 index.html 並透過 ffmpeg 合成 MP4（1080x1920, 30fps + beat.wav）
-// 用法：node render.mjs [ffmpeg 路徑]
+// 用法：node render.mjs [ffmpeg 路徑] [--land]（--land 輸出 16:9 1920x1080）
 // 以本機 HTTP 伺服器載入頁面，照片才不會讓 canvas 被標記為跨來源而無法匯出。
 import { chromium } from "playwright";
 import { spawn } from "node:child_process";
@@ -9,7 +9,10 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
-const ffmpeg = process.argv[2] || "ffmpeg";
+const args = process.argv.slice(2);
+const LAND = args.includes("--land");
+const ffmpeg = args.find((a) => !a.startsWith("--")) || "ffmpeg";
+const out = LAND ? "hsu-chih-ming-16x9.mp4" : "hsu-chih-ming.mp4";
 const FPS = 30;
 const TYPES = { ".html": "text/html; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".wav": "audio/wav" };
 
@@ -26,9 +29,9 @@ const server = createServer(async (req, res) => {
 await new Promise((r) => server.once("listening", r));
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+const page = await browser.newPage({ viewport: LAND ? { width: 1920, height: 1080 } : { width: 1080, height: 1920 } });
 page.on("pageerror", (e) => console.error("page error:", e.message));
-await page.goto(`http://127.0.0.1:${server.address().port}/index.html?render`);
+await page.goto(`http://127.0.0.1:${server.address().port}/index.html?render${LAND ? "&land" : ""}`);
 await page.evaluate(() => Promise.all([document.fonts.ready, window.ready]));
 const duration = await page.evaluate(() => window.DURATION);
 const total = Math.round(duration * FPS);
@@ -38,7 +41,7 @@ const ff = spawn(ffmpeg, [
   "-i", path.join(dir, "beat.wav"),
   "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-preset", "medium",
   "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart",
-  path.join(dir, "hsu-chih-ming.mp4"),
+  path.join(dir, out),
 ], { stdio: ["pipe", "inherit", "inherit"] });
 
 for (let f = 0; f < total; f++) {
@@ -53,4 +56,4 @@ ff.stdin.end();
 await new Promise((r) => ff.on("close", r));
 await browser.close();
 server.close();
-console.log("done: hsu-chih-ming.mp4");
+console.log(`done: ${out}`);
