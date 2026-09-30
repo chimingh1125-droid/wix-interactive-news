@@ -74,9 +74,12 @@
         ],
         schools: ["國立體育大學", "臺北市立大學", "世新大學"],
         cert: ["資策會", "生成式AI美術設計能力認證", "中級"],
+        talkCount: 100,
         talks: [
-          "農業部", "中華郵政", "新北市公用頻道協會", "東森電視", "客家電視台", "原住民族電視台",
-          "TVBS華文永續報導獎", "八大電視台", "飛特立航空公司", "順益汽車公司", "漢聲廣播電台",
+          "農業部", "中華郵政", "華視行銷部", "中視新聞部", "東森電視", "台電北南區",
+          "台中市政府環保局", "新北市・台東縣政府社會局", "客家電視台", "原住民族電視台",
+          "TVBS華文永續報導獎", "八大電視台", "新北市公用頻道協會", "新北各地方電視台",
+          "花蓮偏鄉小學", "飛特立航空公司", "順益汽車公司", "漢聲廣播電台",
         ],
         closing: ["從新聞現場", "到 AI 課堂"],
         blog: "chinimgh1.wixsite.com/website",
@@ -494,27 +497,35 @@
         }
       }
 
-      // 8. 38–43s：AI 演講足跡（8 分音符節奏快速彈出）
+      // 8. 38–43s：AI 教育訓練場次（快速節奏彈出合作單位）
       function sceneTalks(t) {
         const lt = t - 38;
         photoBackground(t, IMG.event, lt, 5, 0.2);
-        heading("AI 演講足跡", lt, C.gold, 300);
-        const cp = easeOut(prog(lt, 0.4, 11 * BEAT / 2 + 0.3));
-        text(`${Math.round(DATA.talks.length * cp)}`, W / 2, 560, 220, C.ink, { shadow: 30 });
-        text("個機構・媒體・企業", W / 2, 700, 44, C.gold, { weight: 700, shadow: 20 });
-        // 流式排版
-        const size = 42, padX = 30, h = 88, gap = 18, maxW = W - 140;
-        let x = 70, y = 800;
+        heading("AI 教育訓練場次", lt, C.gold, 300);
+        const n = DATA.talks.length, iv = BEAT / 2.5;
+        const cp = easeOut(prog(lt, 0.4, n * iv + 0.3));
+        const landed = lt - (0.4 + n * iv + 0.3);
+        const bump = landed > 0 ? 1 + 0.12 * Math.exp(-landed * 10) : 1;
+        ctx.save();
+        ctx.translate(W / 2, 540);
+        ctx.scale(bump, bump);
+        const num = `${Math.round(DATA.talkCount * cp)}`;
+        text(num, -40, 0, 220, C.ink, { shadow: 30 });
+        text("場", -40 + measure(num, 220) / 2 + 60, 50, 70, C.gold, { shadow: 20 });
+        ctx.restore();
+        text("政府機關・媒體・企業・校園", W / 2, 690, 42, C.gold, { weight: 700, shadow: 20 });
+        const size = 38, padX = 26, h = 80, gap = 16, maxW = W - 120;
+        let x = 60, y = 780;
         const cols = [C.gold, C.teal, C.red, C.blue];
         DATA.talks.forEach((s, k) => {
           const w = measure(s, size) + padX * 2;
-          if (x + w > 70 + maxW) { x = 70; y += h + gap; }
-          const p = backOut(prog(lt, 0.4 + k * BEAT / 2, 0.3));
+          if (x + w > 60 + maxW) { x = 60; y += h + gap; }
+          const p = backOut(prog(lt, 0.4 + k * iv, 0.3));
           if (p > 0) {
             ctx.save();
             ctx.translate(x + w / 2, y + h / 2);
             ctx.scale(p, p);
-            ctx.fillStyle = "rgba(11,15,20,0.8)";
+            ctx.fillStyle = "rgba(11,15,20,0.82)";
             ctx.strokeStyle = cols[k % 4];
             ctx.lineWidth = 4;
             roundRect(-w / 2, -h / 2, w, h, h / 2); ctx.fill(); ctx.stroke();
