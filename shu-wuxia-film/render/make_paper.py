@@ -4,13 +4,17 @@
 It is laid over every frame with mix-blend-mode: overlay, so grey 128 leaves
 the colour untouched while lighter/darker texels lift or deepen it. That keeps
 the texture identical on red (day) and navy (night) paper.
+
+    python make_paper.py                      -> paper.png (1920x1080)
+    python make_paper.py <w> <h> <out.png>    -> another size (9:16 page)
 """
 import os
+import sys
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
-W, H = 1920, 1080
+W, H = (int(sys.argv[1]), int(sys.argv[2])) if len(sys.argv) > 3 else (1920, 1080)
 rng = np.random.default_rng(1956)
 
 
@@ -57,7 +61,7 @@ def main():
     spk_img = Image.fromarray((spk * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.1))
     base += np.asarray(spk_img, np.float32) * 0.18
     img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8), "L")
-    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "paper.png")
+    out = sys.argv[3] if len(sys.argv) > 3 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "paper.png")
     img.save(out, optimize=True)
     print("paper texture", out, "mean", float(base.mean()))
 

@@ -11,6 +11,7 @@
 | `shu_journalism_wuxia_clean_no_narration.mp4` | 正片 乾淨版（無字幕、無旁白，只有配樂＋音效） |
 | `shu_journalism_wuxia_zh_en.srt` | 正片 雙語字幕檔 |
 | `shu_journalism_wuxia_short90s_*.mp4` / `.srt` | 1 分半短版（1:32），同樣三種版本＋字幕檔 |
+| `*_subtitled_zh_en_9x16.mp4` | 正片與短版的 9:16 直式雙語字幕版（1080×1920，手機、Reels、Shorts 用）：完整 16:9 畫面不裁切，橫置在中段；上方為系徽與片名，下方為放大的雙語字幕 |
 | `screenshots/` | 各場景截圖（每場 2 張）與總覽 contact sheet |
 | `QA_REPORT.md` | 品質檢查報告（逐格檢查、響度、字幕、同步） |
 
@@ -44,6 +45,7 @@
 5. **音效**（`audio/sfx.py`）：劍光、刀劍撞擊、掌風、龍吟、碎石、浪濤、鵰鳴、翻頁、印報機等全部合成，觸發時間直接由場景程式匯出（`render/export_cues.mjs`）。
 6. **混音**（`audio/mix.py`）：旁白出現時配樂自動壓低 14 dB、音效壓低 8 dB；整體正規化到 −15 LUFS，True-peak limiter 設在 −1.5 dBTP。
 7. **字幕**（`subs/make_subs.mjs`、`finalize.py`）：產生雙語 SRT，並把字幕卡逐格合成進畫面（淡入淡出）。
+   直式版（`render/vertical_assets.mjs`、`vertical.py`）：以同一套繪圖程式畫出 9:16 版面（紅紙、系徽、片名、框住畫面的筆刷線）與加大的字幕卡；中文長句在自然停頓（全形空格或冒號後）斷行，再逐格合成、編碼。
 8. **品管**（`qa/`）：自動逐格檢查空白、破圖黑洞、紙紋缺失、配色異常、突兀跳變與凍結格，另做旁白清晰度、響度與頻譜檢查，並抽幀人工複檢。
 
 重建全部：`./make_all.sh`（需要 ffmpeg、Node 22＋Playwright/Chromium、`requirements.txt`，以及 Kokoro 模型：npm 套件 `kokoro-fp16-shards`、`kokoro-js` 的 voices；fp16 權重需先轉為 fp32，才能避免部分句子出現 NaN）。

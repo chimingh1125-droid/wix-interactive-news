@@ -73,6 +73,19 @@ def main():
             for ln in s["lines"]:
                 out.append(f"| {ln['id']} | {s['id']} | {fmt_t(ln['abs0'])} – {fmt_t(ln['abs1'])} |")
         out.append("")
+    vert = [(v, os.path.join(B, f"final_vertical_{v}.json")) for v in ("full", "short")]
+    if all(os.path.exists(p) for _, p in vert):
+        out += ["## 9:16 直式雙語字幕版", "",
+                "- 1080×1920、30 fps。完整 16:9 畫面不裁切，縮放為 1080×608 橫置在中段；上方為系徽與片名，下方為放大的雙語字幕（中文 58 px，長句在自然停頓處斷行）",
+                "- 畫面、旁白、配樂、音效與橫式版相同；字幕時間碼與淡入淡出也相同", "",
+                "| 檔案 | 大小 | 影格 | 響度 (EBU R128) | True Peak |", "|------|------|------|------------------|-----------|"]
+        for v, p in vert:
+            info = json.load(open(p))
+            fpath = os.path.join(ROOT, info["path"])
+            s = [x for x in info["probe"]["streams"] if x.get("codec_name") == "h264"][0]
+            ld = info["loudness"]
+            out.append(f"| `{os.path.basename(fpath)}` | {os.path.getsize(fpath) / 1e6:.1f} MB | {s['nb_read_frames']} / {info['timeline_frames']} | {ld['integrated_lufs']} LUFS | {ld['true_peak_dbtp']} dBTP |")
+        out.append("")
     out += ["## 人工目視抽檢", "",
             "- 正片、短版各以每秒 1 格抽樣（共 235 格），並在每個場景的關鍵動作處另外抽幀檢查：前景遮擋正確，沒有線條穿透人物或建築；字幕沒有蓋住關鍵畫面（片名卡秘笈、收尾寫字處都已調整到字幕區之上）；轉場筆刷完整覆蓋。",
             "- 各場景截圖：`output/screenshots/`（每場 2 張與 contact sheet）。",
