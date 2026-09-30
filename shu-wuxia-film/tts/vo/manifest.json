@@ -1,0 +1,168 @@
+{
+ "voice": "zm_yunyang",
+ "speed": 0.8,
+ "sr": 24000,
+ "lines": [
+  {
+   "id": "L01",
+   "scene": "opening",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L01.wav",
+   "dur": 3.83,
+   "pinyin": "tai2bei3 mu4zha4 , jing3mei3xi1 pan4 , yi1tiao2 shan1dong4 tong1wang3 shan1gu3 ."
+  },
+  {
+   "id": "L02",
+   "scene": "opening",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L02.wav",
+   "dur": 3.46,
+   "pinyin": "shan1gu3 li3 , cang2zhe5 yi1zuo4 zhuan1lian4 xin1wen2 wu3gong1 de5 men2pai4 ."
+  },
+  {
+   "id": "L03",
+   "scene": "title",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L03.wav",
+   "dur": 2.55,
+   "pinyin": "shi4xin1 da4xue2 xin1wen2xi4 de5 wu3gong1 mi4ji2 ."
+  },
+  {
+   "id": "L04",
+   "scene": "founding",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L04.wav",
+   "dur": 4.42,
+   "pinyin": "yi1jiu3wu3liu4nian2 , bao4ren2 cheng2she3wo3 , zai4 mu4zha4 gou1zi5kou3 kai1shan1li4pai4 ."
+  },
+  {
+   "id": "L05",
+   "scene": "founding",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L05.wav",
+   "dur": 4.5,
+   "pinyin": "shi4jie4 xin1wen2 zhi2ye4 xue2xiao4 kai1xue2 , shou3pi1 di4zi3 zhi3you3 liu4shi2san1 ren2 ."
+  },
+  {
+   "id": "L06",
+   "scene": "motto",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L06.wav",
+   "dur": 3.21,
+   "pinyin": "ta1 chuan2xia4 zong3jue2 : de2zhi4jian1xiu1 , shou3nao3bing4yong4 ."
+  },
+  {
+   "id": "L07",
+   "scene": "motto",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L07.wav",
+   "dur": 3.77,
+   "pinyin": "xiang4 zhou1bo2tong1 zuo3you4hu4bo2 : nao3hui4 xiang3 , shou3 ye3 yao4 hui4 zuo4 ."
+  },
+  {
+   "id": "L08",
+   "scene": "littleworld",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L08.wav",
+   "dur": 3.53,
+   "pinyin": "yi1jiu3wu3qi1nian2 san1yue4 , shi2xi2kan1wu4 xiao3shi4jie4 chuang4kan1 ."
+  },
+  {
+   "id": "L09",
+   "scene": "littleworld",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L09.wav",
+   "dur": 4.21,
+   "pinyin": "di4zi3 men5 xia4shan1 cai3fang3 , bian1ji2 , yin4bao4 , zai4 jiang1hu2 shi2zhan4 ."
+  },
+  {
+   "id": "L10",
+   "scene": "interview",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L10.wav",
+   "dur": 4.1,
+   "pinyin": "di4yi1 shi4 , cai3fang3 : ling4hu2chong1 de5 du2gu1jiu3jian4 , zhuan1zhao3 po4zhan4 ."
+  },
+  {
+   "id": "L11",
+   "scene": "interview",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L11.wav",
+   "dur": 2.98,
+   "pinyin": "yi1ge4 hao3 wen4ti2 , jiu4 neng2 ci4chuan1 qian1yan2wan4yu3 ."
+  },
+  {
+   "id": "L12",
+   "scene": "writing",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L12.wav",
+   "dur": 3.97,
+   "pinyin": "di4er4 shi4 , xie3zuo4 : qiao2feng1 de5 xiang2long2shi2ba1zhang3 , zhao1zhao1dao4wei4 ."
+  },
+  {
+   "id": "L13",
+   "scene": "writing",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L13.wav",
+   "dur": 2.99,
+   "pinyin": "dao3yan2 kai1men2jian4shan1 , yi1zhang3 zhi2da2 zhong4dian3 ."
+  },
+  {
+   "id": "L14",
+   "scene": "verify",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L14.wav",
+   "dur": 4.01,
+   "pinyin": "di4san1 shi4 , cha2zheng4 : yang2guo4 de5 xuan2tie3zhong4jian4 , zhong4jian4wu2feng1 ."
+  },
+  {
+   "id": "L15",
+   "scene": "verify",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L15.wav",
+   "dur": 3.7,
+   "pinyin": "zai4 zi1xun4 de5 kuang2chao2 li3lian4 jian4 , yi1zi4yi1ju4 dou1 zhan4de5wen3 ."
+  },
+  {
+   "id": "L16",
+   "scene": "editing",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L16.wav",
+   "dur": 3.31,
+   "pinyin": "di4si4 shi4 , bian1ji2 : zhang1wu2ji4 de5 qian2kun1da4nuo2yi2 ."
+  },
+  {
+   "id": "L17",
+   "scene": "editing",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L17.wav",
+   "dur": 3.91,
+   "pinyin": "cong2 qian1zi4 pai2ban3 dao4 shu4wei4 xin1wen2 , xiao3shi4jie4 nuo2yi2qian2kun1 ."
+  },
+  {
+   "id": "L18",
+   "scene": "mission",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L18.wav",
+   "dur": 2.68,
+   "pinyin": "guo1jing4 shuo1 : xia2zhi1da4zhe3 , wei4guo2wei4min2 ."
+  },
+  {
+   "id": "L19",
+   "scene": "mission",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L19.wav",
+   "dur": 3.85,
+   "pinyin": "cheng2she3wo3 shen1xin4 , jian4quan2 de5 min2zhu3 , xu1yao4 jian4quan2 de5 xin1wen2 ."
+  },
+  {
+   "id": "L20",
+   "scene": "mission",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L20.wav",
+   "dur": 3.03,
+   "pinyin": "jiu3shi2 sui4 na4nian2 , ta1 reng2 chuang4ban4 tai2wan1li4bao4 ."
+  },
+  {
+   "id": "L21",
+   "scene": "legacy",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L21.wav",
+   "dur": 3.24,
+   "pinyin": "qi1shi2nian2 lai2 , zhe4ben3 mi4ji2 , yi2dai4 chuan2guo4 yi2dai4 ."
+  },
+  {
+   "id": "L22",
+   "scene": "legacy",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L22.wav",
+   "dur": 3.68,
+   "pinyin": "zui4hou4yi1ye4 yong3yuan3 kong4bai2 , liu2gei3 xia4 yi1wei4 zhi2bi3 de5 ren2 ."
+  },
+  {
+   "id": "L23",
+   "scene": "endcard",
+   "file": "/home/user/wix-interactive-news/shu-wuxia-film/tts/vo/L23.wav",
+   "dur": 2.23,
+   "pinyin": "feng1hua2 qi1shi2 , chuan2shi4xin1zhang1 ."
+  }
+ ]
+}

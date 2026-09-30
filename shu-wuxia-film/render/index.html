@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>SHU Wuxia Renderer</title>
+<link rel="stylesheet" href="../assets/fonts.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  #stage { display: block; }
+</style>
+</head>
+<body>
+<svg id="stage" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="halo-gold"><stop offset="0" stop-color="#ffe3a0" stop-opacity="0.95"/><stop offset="0.35" stop-color="#ffd07a" stop-opacity="0.45"/><stop offset="1" stop-color="#ffc060" stop-opacity="0"/></radialGradient>
+    <radialGradient id="halo-warm"><stop offset="0" stop-color="#ffd27a" stop-opacity="0.95"/><stop offset="0.3" stop-color="#ffaa45" stop-opacity="0.5"/><stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="halo-line"><stop offset="0" stop-color="#fff6e8" stop-opacity="0.9"/><stop offset="0.4" stop-color="#fff0dc" stop-opacity="0.35"/><stop offset="1" stop-color="#fff0dc" stop-opacity="0"/></radialGradient>
+    <radialGradient id="halo-red"><stop offset="0" stop-color="#ff7a5a" stop-opacity="0.9"/><stop offset="0.4" stop-color="#e5493f" stop-opacity="0.35"/><stop offset="1" stop-color="#e5493f" stop-opacity="0"/></radialGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.42"/></radialGradient>
+    <filter id="blur3" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="blur8" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="blur16" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g id="content"></g>
+  <image id="paper" href="paper.png" x="0" y="0" width="1920" height="1080" style="mix-blend-mode: overlay" opacity="0.85"/>
+  <rect id="vig" x="0" y="0" width="1920" height="1080" fill="url(#vignette)"/>
+  <g id="overlay"></g>
+</svg>
+<script src="lib/core.js"></script>
+<script src="lib/nature.js"></script>
+<script src="lib/arch.js"></script>
+<script src="lib/props.js"></script>
+<script src="lib/fx.js"></script>
+<script src="lib/figure.js"></script>
+<script src="scenes/common.js"></script>
+<script src="scenes/s01_opening.js"></script>
+<script src="scenes/s02_title.js"></script>
+<script src="scenes/s03_founding.js"></script>
+<script src="scenes/s04_motto.js"></script>
+<script src="scenes/s05_littleworld.js"></script>
+<script src="scenes/s06_interview.js"></script>
+<script src="scenes/s07_writing.js"></script>
+<script src="scenes/s08_verify.js"></script>
+<script src="scenes/s09_editing.js"></script>
+<script src="scenes/s10_mission.js"></script>
+<script src="scenes/s11_legacy.js"></script>
+<script src="scenes/s12_endcard.js"></script>
+<script src="tests.js"></script>
+<script>
+(function () {
+  const K = window.K, R = K.R;
+  const content = document.getElementById('content');
+  const overlay = document.getElementById('overlay');
+  window.TL = null;
+
+  window.setupTimeline = function (tl) { window.TL = tl; return tl.scenes.length; };
+
+  function sceneGroup(d, sc, t, isIncoming, tin) {
+    const ts = t - sc.start;
+    R.pal = K.PALETTES[sc.palette || 'day'];
+    const def = window.SCENES[sc.id];
+    let open = '';
+    if (isIncoming && ts < tin) {
+      const wp = ts / tin;
+      if (sc.transition === 'fade') {
+        open = 'opacity="' + K.smooth(wp).toFixed(4) + '"';
+      } else {
+        const id = window.FX.brushWipeMask(d, wp, sc.id.length * 17 + 3);
+        open = 'mask="url(#' + id + ')"';
+      }
+    }
+    d.open(open);
+    d.add('<rect x="-10" y="-10" width="1940" height="1100" fill="' + R.pal.bg + '"/>');
+    def.draw(d, ts, sc);
+    d.close();
+  }
+
+  window.renderAt = function (t, f) {
+    const tl = window.TL;
+    R.frame = f === undefined ? Math.round(t * tl.fps) : f;
+    R.t = t;
+    R.boil = Math.floor(R.frame / R.BOIL);
+    const d = new K.Builder();
+    const act = tl.scenes.filter((s) => t >= s.start && t < s.start + s.dur);
+    if (!act.length) act.push(tl.scenes[t < tl.scenes[0].start ? 0 : tl.scenes.length - 1]);
+    act.sort((a, b) => a.start - b.start);
+    act.forEach((sc, i) => sceneGroup(d, sc, t, i > 0, sc.tin || 0.8));
+    content.innerHTML = d.str();
+    // corner emblem ("bug") in every scene except the title / end cards
+    const top = act[act.length - 1];
+    const o = new K.Builder();
+    R.pal = K.PALETTES[top.palette || 'day'];
+    window.PROPS.cornerBug(o, t, act);
+    overlay.innerHTML = o.str();
+    // global fade in/out at the very ends of the film
+    const fin = K.smooth(t / 0.6), fout = K.smooth((tl.duration - t) / 1.2);
+    document.getElementById('stage').style.opacity = Math.min(fin, fout).toFixed(4);
+    return act.map((s) => s.id).join(',');
+  };
+  window.renderFrame = function (f) { return window.renderAt(f / window.TL.fps, f); };
+  // Sound-effect cues on the film clock (scene start + scene-relative time).
+  window.exportCues = function () {
+    const out = [];
+    for (const sc of window.TL.scenes) {
+      const def = window.SCENES[sc.id];
+      if (!def || !def.cues) continue;
+      for (const c of def.cues(sc)) out.push(Object.assign({}, c, { t: +(sc.start + c.t).toFixed(4), scene: sc.id }));
+    }
+    return out.sort((a, b) => a.t - b.t);
+  };
+
+  // preview a single component test: window.TESTS[name](d, t)
+  window.renderTest = function (name, t, pal) {
+    R.frame = Math.round(t * 30); R.t = t; R.boil = Math.floor(R.frame / R.BOIL);
+    R.pal = K.PALETTES[pal || 'day'];
+    const d = new K.Builder();
+    d.add('<rect x="-10" y="-10" width="1940" height="1100" fill="' + R.pal.bg + '"/>');
+    window.TESTS[name](d, t);
+    content.innerHTML = d.str();
+    overlay.innerHTML = '';
+    document.getElementById('stage').style.opacity = 1;
+    return name;
+  };
+
+  window.fontsReady = async function () {
+    const fams = [
+      ['400 60px "LXGW WenKai TC"', '世新大學新聞系的武功秘笈一二三四五六七八九十'],
+      ['700 60px "LXGW WenKai TC"', '世新大學新聞系的武功秘笈德智兼修手腦並用'],
+      ['italic 500 40px "Cormorant Garamond"', 'The Secret Manual'],
+      ['italic 600 40px "Cormorant Garamond"', 'The Secret Manual'],
+      ['600 40px "Cormorant Garamond"', 'SHIH HSIN UNIVERSITY'],
+    ];
+    for (const [f, s] of fams) { try { await document.fonts.load(f, s); } catch (e) {} }
+    await document.fonts.ready;
+    const img = document.getElementById('paper');
+    return fams.map(([f, s]) => document.fonts.check(f, s));
+  };
+  // Load every glyph slice used by the texts of the film so no frame is
+  // rendered with a fallback font.
+  window.preloadText = async function (texts) {
+    const all = Array.from(new Set(texts.join(''))).join('');
+    for (const f of ['400 60px "LXGW WenKai TC"', '700 60px "LXGW WenKai TC"']) await document.fonts.load(f, all);
+    await document.fonts.ready;
+    return document.fonts.check('700 60px "LXGW WenKai TC"', all);
+  };
+})();
+</script>
+</body>
+</html>

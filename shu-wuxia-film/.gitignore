@@ -1,0 +1,7 @@
+# intermediates (lossless masters, stems, timelines are rebuilt by the pipeline)
+build/
+__pycache__/
+*.pyc
+# downloaded web fonts (run assets/fetch_fonts.py)
+assets/fonts/
+assets/fonts.css

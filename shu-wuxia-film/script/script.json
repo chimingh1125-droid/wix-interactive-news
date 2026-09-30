@@ -1,0 +1,148 @@
+{
+  "title_zh": "世新大學新聞系的武功秘笈",
+  "title_en": "The Secret Manual of Shih Hsin Journalism",
+  "voice": "zm_yunyang",
+  "scenes": [
+    {
+      "id": "opening", "kind": "opening", "palette": "day",
+      "wuxia": "少俠沿景美溪而行，穿過山洞口，縱身躍上山路（輕功）",
+      "lines": [
+        {"id": "L01", "zh": "台北木柵，景美溪畔，一條山洞通往山谷。",
+         "en": "Muzha, Taipei. By the Jingmei River, a tunnel leads into a valley.",
+         "tts": "台北木柵，景美溪畔，一條山洞通往山谷。"},
+        {"id": "L02", "zh": "山谷裡，藏著一座專練「新聞武功」的門派。",
+         "en": "Hidden in the valley is a sect that trains in the martial art of news.",
+         "tts": "山谷裡，藏著一座專練新聞武功的門派。"}
+      ]
+    },
+    {
+      "id": "title", "kind": "title", "palette": "day",
+      "wuxia": "一道劍光劈開紙面，秘笈迎風翻頁，片名與系徽浮現",
+      "lines": [
+        {"id": "L03", "zh": "世新大學新聞系的武功秘笈。",
+         "en": "The Secret Manual of Shih Hsin University's Department of Journalism.",
+         "tts": "世新大學新聞系的武功秘笈。"}
+      ]
+    },
+    {
+      "id": "founding", "kind": "plot", "palette": "day",
+      "wuxia": "老掌門一掌劈開巨石「開山」，門派大旗迎風展開",
+      "lines": [
+        {"id": "L04", "zh": "1956年，報人成舍我在木柵溝子口開山立派。",
+         "en": "In 1956, newspaperman Cheng She-wo founded the sect at Gouzikou, Muzha.",
+         "tts": "一九五六年，報人成舍我，在木柵溝子口開山立派。"},
+        {"id": "L05", "zh": "世界新聞職業學校開學，首批弟子只有63人。",
+         "en": "The World Vocational School of Journalism opened with just 63 disciples.",
+         "tts": "世界新聞職業學校開學，首批弟子只有六十三人。"}
+      ]
+    },
+    {
+      "id": "motto", "kind": "plot", "palette": "day",
+      "wuxia": "周伯通左右互搏：左手畫方、右手畫圓，同時落筆",
+      "lines": [
+        {"id": "L06", "zh": "他傳下總訣：德智兼修，手腦並用。",
+         "en": "His creed: cultivate virtue and wisdom; use both hands and mind.",
+         "tts": "他傳下總訣：德智兼修，手腦並用。"},
+        {"id": "L07", "zh": "像周伯通左右互搏：腦會想，手也要會做。",
+         "en": "Like Zhou Botong's two-handed combat: the mind thinks, the hands deliver.",
+         "tts": "像周伯通左右互搏：腦會想，手也要會做。"}
+      ]
+    },
+    {
+      "id": "littleworld", "kind": "plot", "palette": "day",
+      "wuxia": "弟子施展輕功飛簷走壁，報紙如飛鳥滿天飛",
+      "lines": [
+        {"id": "L08", "zh": "1957年3月，實習刊物《小世界》創刊。",
+         "en": "In March 1957, the student practicum paper Little World was launched.",
+         "tts": "一九五七年三月，實習刊物小世界創刊。"},
+        {"id": "L09", "zh": "弟子們下山採訪、編輯、印報，在江湖實戰。",
+         "en": "Disciples went down the mountain to report, edit and print: real combat.",
+         "tts": "弟子們下山採訪、編輯、印報，在江湖實戰。"}
+      ]
+    },
+    {
+      "id": "interview", "kind": "plot", "palette": "day",
+      "wuxia": "令狐沖獨孤九劍：群刀來襲，一劍直刺破綻，刀陣崩散",
+      "lines": [
+        {"id": "L10", "zh": "第一式，採訪：令狐沖的獨孤九劍，專找破綻。",
+         "en": "Form One, Interviewing: Linghu Chong's Nine Swords of Dugu seek the flaw.",
+         "tts": "第一式，採訪：令狐沖的獨孤九劍，專找破綻。"},
+        {"id": "L11", "zh": "一個好問題，就能刺穿千言萬語。",
+         "en": "One good question can pierce a thousand words.",
+         "tts": "一個好問題，就能刺穿千言萬語。"}
+      ]
+    },
+    {
+      "id": "writing", "kind": "plot", "palette": "day",
+      "wuxia": "喬峰降龍十八掌：推掌而出，金龍破空盤旋",
+      "lines": [
+        {"id": "L12", "zh": "第二式，寫作：喬峰的降龍十八掌，招招到位。",
+         "en": "Form Two, Writing: Qiao Feng's Dragon-Subduing Palms. Every blow lands.",
+         "tts": "第二式，寫作：喬峰的降龍十八掌，招招到位。"},
+        {"id": "L13", "zh": "導言開門見山，一掌直達重點。",
+         "en": "The lead goes straight to the point, one palm to the heart of it.",
+         "tts": "導言開門見山，一掌直達重點。"}
+      ]
+    },
+    {
+      "id": "verify", "kind": "plot", "palette": "day",
+      "wuxia": "楊過海潮練劍：獨臂揮玄鐵重劍劈開巨浪，神鵰盤旋",
+      "lines": [
+        {"id": "L14", "zh": "第三式，查證：楊過的玄鐵重劍，重劍無鋒。",
+         "en": "Form Three, Verification: Yang Guo's heavy iron sword. No edge, all weight.",
+         "tts": "第三式，查證：楊過的玄鐵重劍，重劍無鋒。"},
+        {"id": "L15", "zh": "在資訊的狂潮裡練劍，一字一句都站得穩。",
+         "en": "Trained against a tide of information, every word stands firm.",
+         "tts": "在資訊的狂潮裡練劍，一字一句都站得穩。"}
+      ]
+    },
+    {
+      "id": "editing", "kind": "plot", "palette": "day",
+      "wuxia": "張無忌乾坤大挪移：鉛字、照片、標題繞身飛旋，被挪移成新版面",
+      "lines": [
+        {"id": "L16", "zh": "第四式，編輯：張無忌的乾坤大挪移。",
+         "en": "Form Four, Editing: Zhang Wuji's Great Shift of Heaven and Earth.",
+         "tts": "第四式，編輯：張無忌的乾坤大挪移。"},
+        {"id": "L17", "zh": "從鉛字排版到數位新聞，《小世界》挪移乾坤。",
+         "en": "From lead type to digital news, Little World keeps reshaping itself.",
+         "tts": "從鉛字排版到數位新聞，小世界挪移乾坤。"}
+      ]
+    },
+    {
+      "id": "mission", "kind": "plot", "palette": "night",
+      "wuxia": "夜守襄陽：郭靖立於城頭挽弓射箭，火把與燈火明滅",
+      "lines": [
+        {"id": "L18", "zh": "郭靖說：俠之大者，為國為民。",
+         "en": "Guo Jing said: the greatest heroes serve the nation and its people.",
+         "tts": "郭靖說：俠之大者，為國為民。"},
+        {"id": "L19", "zh": "成舍我深信，健全的民主需要健全的新聞。",
+         "en": "Cheng She-wo believed a sound democracy needs sound journalism.",
+         "tts": "成舍我深信，健全的民主，需要健全的新聞。"},
+        {"id": "L20", "zh": "九十歲那年，他仍創辦《台灣立報》。",
+         "en": "In the year he turned ninety, he still founded the Taiwan Lihpao.",
+         "tts": "九十歲那年，他仍創辦台灣立報。"}
+      ]
+    },
+    {
+      "id": "legacy", "kind": "ending", "palette": "dawn",
+      "wuxia": "少俠將劍插入劍塚、提起毛筆；筆鋒化作劍光，眾弟子步出山洞口",
+      "lines": [
+        {"id": "L21", "zh": "七十年來，這本秘笈一代傳過一代。",
+         "en": "For seventy years, this manual has passed from generation to generation.",
+         "tts": "七十年來，這本秘笈，一代傳過一代。"},
+        {"id": "L22", "zh": "最後一頁永遠空白，留給下一位執筆的人。",
+         "en": "Its last page is always blank, left for the next one to take up the pen.",
+         "tts": "最後一頁永遠空白，留給下一位執筆的人。"}
+      ]
+    },
+    {
+      "id": "endcard", "kind": "endcard", "palette": "day",
+      "wuxia": "白鶴掠過，系徽一筆一畫繪出，落款蓋印",
+      "lines": [
+        {"id": "L23", "zh": "風華七十，傳世新章。",
+         "en": "Seventy radiant years; a new chapter to pass on.",
+         "tts": "風華七十，傳世新章。"}
+      ]
+    }
+  ]
+}

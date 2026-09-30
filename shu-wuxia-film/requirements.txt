@@ -1,0 +1,12 @@
+numpy
+scipy
+pillow
+soundfile
+onnxruntime
+onnx
+misaki[zh]
+kokoro-onnx
+pyloudnorm
+librosa
+matplotlib
+fonttools
