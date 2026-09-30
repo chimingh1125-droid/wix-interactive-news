@@ -1,5 +1,17 @@
 # 品質檢查報告（QA Report）
 
+## 第二版修正紀錄
+
+| 問題 | 位置 | 修正 | 驗證 |
+|------|------|------|------|
+| 「德智兼修」的「兼」字形錯誤 | 正片 0:44／短版 0:27；另含片名卡秘笈內頁、L06 字幕 | 原字型霞鶩文楷 TC 採傳承字形（「兼」上方寫成兩撇，另有 爲、眞、兩點辶 等舊字形）。全片中文改用依教育部標準字體的芫荽 Iansui，並把全片 249 個用字逐字與標準字形比對 | 放大截圖比對；字幕卡全部重新產生 |
+| 捲軸直書每字底部被裁掉（手的勾、腦、並、用） | 正片 0:40–0:46／短版 0:25–0:29 | 逐字刷出的遮罩改由文字基線定位，涵蓋完整字身 | 放大截圖比對 |
+| 龍頭不像龍 | 正片 1:16／短版 0:49 | 重畫龍頭：長吻、上翹鼻頭與鼻孔渦紋、濃眉怒目、鹿角、張口獠牙與舌、長鬚、頷下鬚、鬃毛。原本頭部上下顛倒的方向錯誤一併修正；龍腳改為線稿肢體加利爪 | 整段飛行逐格檢查：姿態連續、不翻轉 |
+| 「小世界」鉛字左右鏡像 | 正片 1:40／短版 1:03 | 鉛字改為正向顯示（「新聞」同步修正） | 截圖確認 |
+| 世新新聞系 LOGO 不正確 | 片名卡、片尾、每個敘事場景左上角 | 依官方 LOGO 描成向量（`assets/logo/trace_logo.py`），再以程式繪出：先描外框、再填白、題字逐字刷上 | 與參考圖並排比對 |
+
+- 場景時間軸、旁白、配樂與音效均未改動；重新匯出的音效觸發點與上一版逐位元組相同，所以混音沿用上一版，影音同步不受影響。
+
 ## 旁白
 
 - 引擎：Kokoro-82M（離線 ONNX，fp32），男聲 `zm_yunyang`，語速 0.8
@@ -16,9 +28,9 @@
 
 | 檔案 | 大小 | 影格 | 響度 (EBU R128) | True Peak | LRA |
 |------|------|------|------------------|-----------|-----|
-| `shu_journalism_wuxia_clean.mp4` | 76.5 MB | 4265 | -15.0 LUFS | -1.2 dBTP | 4.2 LU |
-| `shu_journalism_wuxia_clean_no_narration.mp4` | 76.4 MB | 4265 | -15.0 LUFS | -1.4 dBTP | 4.9 LU |
-| `shu_journalism_wuxia_subtitled_zh_en.mp4` | 78.5 MB | 4265 | -15.0 LUFS | -1.2 dBTP | 4.2 LU |
+| `shu_journalism_wuxia_clean.mp4` | 75.6 MB | 4265 | -15.0 LUFS | -1.2 dBTP | 4.2 LU |
+| `shu_journalism_wuxia_clean_no_narration.mp4` | 75.4 MB | 4265 | -15.0 LUFS | -1.4 dBTP | 4.9 LU |
+| `shu_journalism_wuxia_subtitled_zh_en.mp4` | 77.5 MB | 4265 | -15.0 LUFS | -1.2 dBTP | 4.2 LU |
 
 - 旁白對背景（配樂＋音效）的平均能量比 11.2 dB、最低 8.8 dB（旁白出現時配樂自動壓低 14 dB、音效壓低 8 dB）
 - 字幕：23 則雙語字幕，時間碼直接取自旁白實際位置（開始比語音早 0.05 s，結束晚 0.35 s，不與下一句重疊）；燒錄版逐格合成 4265 格
@@ -59,9 +71,9 @@
 
 | 檔案 | 大小 | 影格 | 響度 (EBU R128) | True Peak | LRA |
 |------|------|------|------------------|-----------|-----|
-| `shu_journalism_wuxia_short90s_clean.mp4` | 49.7 MB | 2750 | -15.1 LUFS | -1.3 dBTP | 5.1 LU |
-| `shu_journalism_wuxia_short90s_clean_no_narration.mp4` | 49.6 MB | 2750 | -15.0 LUFS | -1.3 dBTP | 4.6 LU |
-| `shu_journalism_wuxia_short90s_subtitled_zh_en.mp4` | 50.7 MB | 2750 | -15.1 LUFS | -1.3 dBTP | 5.1 LU |
+| `shu_journalism_wuxia_short90s_clean.mp4` | 49.0 MB | 2750 | -15.1 LUFS | -1.3 dBTP | 5.1 LU |
+| `shu_journalism_wuxia_short90s_clean_no_narration.mp4` | 48.9 MB | 2750 | -15.0 LUFS | -1.3 dBTP | 4.6 LU |
+| `shu_journalism_wuxia_short90s_subtitled_zh_en.mp4` | 50.2 MB | 2750 | -15.1 LUFS | -1.3 dBTP | 5.1 LU |
 
 - 旁白對背景（配樂＋音效）的平均能量比 11.7 dB、最低 10.2 dB（旁白出現時配樂自動壓低 14 dB、音效壓低 8 dB）
 - 字幕：14 則雙語字幕，時間碼直接取自旁白實際位置（開始比語音早 0.05 s，結束晚 0.35 s，不與下一句重疊）；燒錄版逐格合成 2750 格
