@@ -33,6 +33,7 @@
 <script src="lib/core.js"></script>
 <script src="lib/nature.js"></script>
 <script src="lib/arch.js"></script>
+<script src="lib/logo_data.js"></script>
 <script src="lib/props.js"></script>
 <script src="lib/fx.js"></script>
 <script src="lib/figure.js"></script>
@@ -128,8 +129,7 @@
 
   window.fontsReady = async function () {
     const fams = [
-      ['400 60px "LXGW WenKai TC"', '世新大學新聞系的武功秘笈一二三四五六七八九十'],
-      ['700 60px "LXGW WenKai TC"', '世新大學新聞系的武功秘笈德智兼修手腦並用'],
+      ['400 60px "Iansui"', '世新大學新聞系的武功秘笈德智兼修手腦並用一二三四五六七八九十'],
       ['italic 500 40px "Cormorant Garamond"', 'The Secret Manual'],
       ['italic 600 40px "Cormorant Garamond"', 'The Secret Manual'],
       ['600 40px "Cormorant Garamond"', 'SHIH HSIN UNIVERSITY'],
@@ -143,9 +143,9 @@
   // rendered with a fallback font.
   window.preloadText = async function (texts) {
     const all = Array.from(new Set(texts.join(''))).join('');
-    for (const f of ['400 60px "LXGW WenKai TC"', '700 60px "LXGW WenKai TC"']) await document.fonts.load(f, all);
+    await document.fonts.load('400 60px "Iansui"', all);
     await document.fonts.ready;
-    return document.fonts.check('700 60px "LXGW WenKai TC"', all);
+    return document.fonts.check('400 60px "Iansui"', all);
   };
 })();
 </script>

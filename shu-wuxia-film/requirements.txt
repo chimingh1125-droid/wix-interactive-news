@@ -10,3 +10,4 @@ pyloudnorm
 librosa
 matplotlib
 fonttools
+potracer

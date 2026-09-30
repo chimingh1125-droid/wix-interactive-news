@@ -1,6 +1,7 @@
 // Bilingual subtitles: .srt + transparent PNG cards for burning in.
 //   node make_subs.mjs <timeline.json> <out_dir>
-// Card: Chinese on top (LXGW WenKai TC), English italic below (Cormorant
+// Card: Chinese on top (Iansui, Taiwan standard glyph forms; bold emulated
+// with a thin outline), English italic below (Cormorant
 // Garamond), centred at the bottom on a soft translucent rounded box.
 import { createRequire } from 'module';
 import fs from 'fs';
@@ -45,7 +46,7 @@ html,body{margin:0;background:transparent}
 #card{margin-bottom:54px;max-width:1560px;padding:16px 46px 18px;border-radius:22px;text-align:center;
   background:radial-gradient(120% 140% at 50% 50%, rgba(22,6,6,0.50) 55%, rgba(22,6,6,0.30) 100%);
   box-shadow:0 0 34px 16px rgba(22,6,6,0.28)}
-#zh{font-family:'LXGW WenKai TC','Noto Sans CJK TC',serif;font-weight:700;font-size:50px;line-height:1.25;color:#fff6ea;letter-spacing:2px;
+#zh{font-family:'Iansui','Noto Sans CJK TC',serif;font-weight:400;-webkit-text-stroke:0.6px #fff6ea;font-size:50px;line-height:1.25;color:#fff6ea;letter-spacing:2px;
   text-shadow:0 2px 6px rgba(0,0,0,0.55)}
 #en{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:37px;line-height:1.2;color:#f6e6cc;margin-top:4px;letter-spacing:0.3px;
   text-shadow:0 2px 5px rgba(0,0,0,0.55)}
@@ -58,7 +59,7 @@ const page = await browser.newPage({ viewport: { width: 1920, height: 300 }, dev
 await page.goto('file://' + htmlPath);
 const allZh = cues.map((c) => c.zh).join('');
 await page.evaluate(async (txt) => {
-  await document.fonts.load('700 50px "LXGW WenKai TC"', txt);
+  await document.fonts.load('400 50px "Iansui"', txt);
   await document.fonts.load('italic 600 37px "Cormorant Garamond"', 'The');
   await document.fonts.ready;
 }, allZh);
@@ -67,6 +68,6 @@ for (const c of cues) {
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await page.screenshot({ path: path.join(outDir, `${c.id}.png`), omitBackground: true, clip: { x: 0, y: 0, width: 1920, height: 300 } });
 }
-const ok = await page.evaluate((txt) => document.fonts.check('700 50px "LXGW WenKai TC"', txt), allZh);
+const ok = await page.evaluate((txt) => document.fonts.check('400 50px "Iansui"', txt), allZh);
 await browser.close();
 console.log(`${cues.length} subtitle cards, fonts ok=${ok} -> ${outDir}`);

@@ -7,50 +7,70 @@
     rectPts, TAU, DEG, f1, halo, text, noise1, easeOut, inv, transformPts, spline, pointAt } = K;
 
   // ------------------------------------------------------------- emblem
-  // Line-art rendition of the SHU Journalism emblem built from the published
-  // meaning of the university insignia: outer circle = the world, pen = the
-  // journalist's tool. o: {p, color, gold, ring, fill, sub}
+  // The SHU Journalism department logo, traced from the official artwork
+  // (assets/logo/trace_logo.py -> lib/logo_data.js): a journalist whose head
+  // is a disc and whose body is a writing brush curling round the globe, an
+  // orbit band carrying "SHU", and the 世新 / 新聞 calligraphy.
+  // It draws itself: the outlines are traced first, then the white shapes
+  // flood in and the calligraphy is brushed on character by character.
+  // c: centre of the logo, r: px per logo unit (1 unit = half the mark width;
+  // the whole logo is about 2r x 2r). o: {p, color, text, glow, seed}
+  const logoLoop = (lp, o0, r) => lp.map((q) => [o0[0] + q[0] * r, o0[1] + q[1] * r]);
+  function logoD(loops, o0, r) {
+    // keep roughly one point per screen pixel
+    const k = Math.max(1, Math.floor(0.9 / (0.0032 * r)));
+    let s = '';
+    for (const lp of loops) {
+      s += 'M' + f1(o0[0] + lp[0][0] * r) + ' ' + f1(o0[1] + lp[0][1] * r);
+      for (let i = k; i < lp.length; i += k) s += 'L' + f1(o0[0] + lp[i][0] * r) + ' ' + f1(o0[1] + lp[i][1] * r);
+      s += 'Z';
+    }
+    return s;
+  }
+  function logoBox(loops, o0, r) {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const lp of loops) for (const q of lp) {
+      x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]);
+    }
+    return [o0[0] + x0 * r, o0[1] + y0 * r, o0[0] + x1 * r, o0[1] + y1 * r];
+  }
+
   function emblem(d, c, r, o = {}) {
     const p = o.p === undefined ? 1 : o.p;
     if (p <= 0) return;
-    const col = o.color || R.pal.line, gold = o.gold || R.pal.gold, fill = o.fill || R.pal.fill;
+    const L = G.LOGO;
+    const col = o.color || R.pal.line;
     const seed = o.seed || 500;
-    const ring = o.ring !== false;
-    const w = Math.max(1.4, r * 0.03);
-    shape(d, ellipse(c, r, r, 0, 72, -Math.PI / 2), { p: K.seqP(p, 0, 5), w: w * 1.2, color: col, fill, seed, amp: r * 0.012 });
-    if (ring) {
-      shape(d, ellipse(c, r * 0.8, r * 0.8, 0, 64, -Math.PI / 2), { p: K.seqP(p, 1, 5), w: w * 0.7, color: col, fill: 'none', seed: seed + 1, amp: r * 0.01 });
-      const tp = smooth(inv(0.35, 0.75, p));
-      if (tp > 0) {
-        const id1 = d.id('rt'), id2 = d.id('rb');
-        const rt = r * 0.87, rb = r * 0.935;
-        d.add('<defs><path id="' + id1 + '" d="M' + f1(c[0] - rt) + ' ' + f1(c[1]) + ' A' + f1(rt) + ' ' + f1(rt) + ' 0 0 1 ' + f1(c[0] + rt) + ' ' + f1(c[1]) + '"/>' +
-          '<path id="' + id2 + '" d="M' + f1(c[0] - rb) + ' ' + f1(c[1]) + ' A' + f1(rb) + ' ' + f1(rb) + ' 0 0 0 ' + f1(c[0] + rb) + ' ' + f1(c[1]) + '"/></defs>');
-        const fs = f1(r * 0.13);
-        d.add('<text font-family="Cormorant Garamond, serif" font-weight="600" font-size="' + fs + '" letter-spacing="' + f1(r * 0.035) + '" fill="' + col + '" opacity="' + tp.toFixed(3) + '" text-anchor="middle"><textPath href="#' + id1 + '" startOffset="50%">SHIH HSIN UNIVERSITY</textPath></text>');
-        d.add('<text font-family="Cormorant Garamond, serif" font-weight="600" font-size="' + fs + '" letter-spacing="' + f1(r * 0.03) + '" fill="' + col + '" opacity="' + tp.toFixed(3) + '" text-anchor="middle"><textPath href="#' + id2 + '" startOffset="50%">JOURNALISM · 1956</textPath></text>');
-        for (const sx of [-1, 1]) d.add('<circle cx="' + f1(c[0] + sx * r * 0.9) + '" cy="' + f1(c[1]) + '" r="' + f1(r * 0.03) + '" fill="' + gold + '" opacity="' + tp.toFixed(3) + '"/>');
-      }
+    const b = L.bounds;
+    const o0 = [c[0] - (b[0] + b[2]) / 2 * r, c[1] - (b[1] + b[3]) / 2 * r];
+    const body = L.mark.concat(L.head);
+    if (o.glow) halo(d, [c[0] + 0.1 * r, c[1] + 0.1 * r], r * 1.25, 'gold', o.glow);
+    // 1. outlines trace themselves, then give way to the solid shapes
+    const lineP = clamp(p / 0.55), fillP = smooth(inv(0.35, 0.75, p));
+    if (fillP < 1) {
+      const lw = Math.max(1.1, r * 0.01);
+      body.forEach((lp, i) => {
+        const pts = logoLoop(lp, o0, r);
+        pts.push(pts[0]);
+        stroke(d, pts, { p: lineP, w: lw, color: col, brush: false, amp: Math.min(1.2, r * 0.006), step: 2.5, seed: seed + i, opacity: 1 - fillP });
+      });
     }
-    // globe: meridians and parallels
-    const gr = ring ? r * 0.66 : r * 0.82;
-    const gp = K.seqP(p, 2, 5);
-    stroke(d, ellipse(c, gr * 0.42, gr, 0, 40).concat([ellipse(c, gr * 0.42, gr, 0, 40)[0]]), { p: gp, w: w * 0.55, color: o.soft || R.pal.soft, seed: seed + 2, brush: false, amp: 0.6 });
-    stroke(d, [add(c, [-gr * 0.97, -gr * 0.3]), add(c, [gr * 0.97, -gr * 0.3])], { p: gp, w: w * 0.5, color: o.soft || R.pal.soft, seed: seed + 3, brush: false, amp: 0.6 });
-    stroke(d, [add(c, [-gr * 0.97, gr * 0.3]), add(c, [gr * 0.97, gr * 0.3])], { p: gp, w: w * 0.5, color: o.soft || R.pal.soft, seed: seed + 4, brush: false, amp: 0.6 });
-    stroke(d, ellipse(c, gr, gr, 0, 48, -Math.PI / 2).concat([add(c, [0, -gr])]), { p: gp, w: w * 0.6, color: col, seed: seed + 5, brush: false, amp: 0.6 });
-    // pen nib
-    const np = K.seqP(p, 3, 5, 0.1);
-    const s = gr * 0.9;
-    const nib = [[0, -0.95], [0.16, -0.62], [0.3, -0.18], [0.33, 0.12], [0.22, 0.38], [0.2, 0.62], [-0.2, 0.62], [-0.22, 0.38], [-0.33, 0.12], [-0.3, -0.18], [-0.16, -0.62]]
-      .map((q) => [c[0] + q[0] * s, c[1] + q[1] * s]);
-    shape(d, nib, { p: np, w: w * 0.95, color: gold, fill, seed: seed + 6, amp: r * 0.006, start: 0 });
-    stroke(d, [add(c, [0, -0.93 * s]), add(c, [0, -0.1 * s])], { p: np, w: w * 0.7, color: gold, seed: seed + 7, brush: false, amp: 0.5 });
-    shape(d, ellipse(add(c, [0, -0.02 * s]), 0.075 * s, 0.075 * s, 0, 16), { p: np, w: w * 0.7, color: gold, fill, seed: seed + 8, amp: 0.4 });
-    stroke(d, [add(c, [-0.22 * s, 0.38 * s]), add(c, [0.22 * s, 0.38 * s])], { p: np, w: w * 0.7, color: gold, seed: seed + 9, brush: false, amp: 0.4 });
-    stroke(d, [add(c, [-0.3, -0.18].map((v) => v * s)), add(c, [-0.05 * s, 0.25 * s])], { p: np, w: w * 0.5, color: gold, seed: seed + 10, brush: false, amp: 0.4, opacity: 0.8 });
-    stroke(d, [add(c, [0.3 * s, -0.18 * s]), add(c, [0.05 * s, 0.25 * s])], { p: np, w: w * 0.5, color: gold, seed: seed + 11, brush: false, amp: 0.4, opacity: 0.8 });
-    if (o.glow) halo(d, add(c, [0, -0.5 * s]), r * 0.9, 'gold', o.glow);
+    if (fillP > 0) d.add('<path d="' + logoD(body, o0, r) + '" fill="' + col + '" fill-rule="evenodd"' + (fillP < 1 ? ' fill-opacity="' + fillP.toFixed(3) + '"' : '') + '/>');
+    // 2. calligraphy: 世 新 (right column), then 新 聞, each wiped in top-down
+    if (o.text !== false) {
+      L.text.forEach((ch, i) => {
+        const cp = clamp((p - 0.5 - i * 0.1) / 0.22);
+        if (cp <= 0) return;
+        const bx = logoBox(ch.loops, o0, r);
+        const dD = logoD(ch.loops, o0, r);
+        if (cp >= 1) { d.add('<path d="' + dD + '" fill="' + col + '" fill-rule="evenodd"/>'); return; }
+        const id = d.id('lg');
+        const wipe = easeOut(cp), h = (bx[3] - bx[1] + 4) * wipe;
+        d.add('<defs><clipPath id="' + id + '"><rect x="' + f1(bx[0] - 2) + '" y="' + f1(bx[1] - 2) + '" width="' + f1(bx[2] - bx[0] + 4) + '" height="' + f1(h) + '"/></clipPath></defs>');
+        d.add('<path d="' + dD + '" fill="' + col + '" fill-rule="evenodd" clip-path="url(#' + id + ')"/>');
+        halo(d, [(bx[0] + bx[2]) / 2, bx[1] - 2 + h], (bx[2] - bx[0]) * 0.45, 'gold', 0.5 * (1 - cp));
+      });
+    }
   }
 
   // department wordmark under/beside the emblem
@@ -76,9 +96,7 @@
     if (vis <= 0.001) return;
     const col = R.pal.name === 'night' ? R.pal.gold : R.pal.line;
     d.open('opacity="' + (0.92 * vis).toFixed(3) + '"');
-    emblem(d, [86, 84], 46, { color: col, gold: R.pal.gold, ring: false, seed: 540, fill: 'none' });
-    text(d, '世新新聞', 150, 84, { size: 34, weight: 700, color: col, anchor: 'start', spacing: 3 });
-    text(d, 'SHU JOURNALISM', 151, 113, { font: "'Cormorant Garamond', serif", weight: 600, size: 17, color: col, anchor: 'start', spacing: 3.2, opacity: 0.85 });
+    emblem(d, [88, 84], 68, { color: col, seed: 540 });
     d.close();
   }
 
@@ -215,8 +233,9 @@
     shape(d, top.map(T), { w: 2.4, seed: (o.seed || 750), fill: R.pal.fill, p: o.p });
     if (ch) {
       const tc = T([0, 0.02]);
-      // lead type faces are mirror images
-      text(d, ch, 0, 0, { size: s * 0.72, weight: 700, color: o.color || R.pal.line, opacity: o.p === undefined ? 1 : clamp(o.p * 2 - 1), transform: 'translate(' + f1(tc[0]) + ' ' + f1(tc[1] + s * 0.25) + ') rotate(' + f1(o.ang || 0) + ') scale(' + (o.mirror === false ? 1 : -1) + ' 1)' });
+      // real type faces are mirror images, but on screen the characters must
+      // read correctly (they spell the masthead 小世界), so mirroring is opt-in
+      text(d, ch, 0, 0, { size: s * 0.72, weight: 700, color: o.color || R.pal.line, opacity: o.p === undefined ? 1 : clamp(o.p * 2 - 1), transform: 'translate(' + f1(tc[0]) + ' ' + f1(tc[1] + s * 0.25) + ') rotate(' + f1(o.ang || 0) + ')' + (o.mirror ? ' scale(-1 1)' : '') });
     }
   }
 

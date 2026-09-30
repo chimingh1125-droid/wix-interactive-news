@@ -50,6 +50,6 @@
 
 ## 注意
 
-- **系徽**：製作環境連不上世新官網，無法下載官方系徽檔案。片中系徽是依校徽的公開意涵（外圈代表世界、筆代表記者的工具）以程式繪製的線稿版（`render/lib/props.js` 的 `emblem()`）。若提供官方 SVG/PNG，可替換這個元件後重新輸出。
+- **系徽**：採用世新新聞系官方 LOGO（系上臉書專頁公布的版本：地球、軌道環上的「SHU」、頭部圓點與繞過地球的毛筆身軀、「!」，以及「世新／新聞」題字）。以 `assets/logo/trace_logo.py` 把參考圖（`assets/logo/reference.png`）描成向量外框，產生 `render/lib/logo_data.js`，再由 `render/lib/props.js` 的 `emblem()` 以程式繪出：先描外框、再填白、題字逐字刷上。系徽出現在片名卡、片尾，以及每個敘事場景的左上角。
 - **「乾淨版不上口白」**：已同時提供「無字幕、有旁白」與「無字幕、無旁白」兩種乾淨版，可依用途選擇。
-- **字型**：霞鶩文楷 TC、Cormorant Garamond（皆 SIL OFL，由 `assets/fetch_fonts.py` 下載）、Noto Sans/Serif CJK。
+- **字型**：中文用芫荽 Iansui（依教育部國字標準字體，例如「兼」上方為「丷」；原先的霞鶩文楷 TC 採傳承字形，會把「兼、為、真、這」等字寫成舊字形，因此更換），英文用 Cormorant Garamond（皆 SIL OFL，由 `assets/fetch_fonts.py` 下載），缺字備援為 Noto Sans/Serif CJK。Iansui 只有一種字重，粗體以同色細描邊模擬。

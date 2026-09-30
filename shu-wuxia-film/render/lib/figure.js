@@ -386,24 +386,38 @@
     const wAt = (i) => { const u = i / (N - 1); return width * (u < 0.1 ? lerp(0.7, 1, u / 0.1) : lerp(1, 0.06, Math.pow((u - 0.1) / 0.9, 1.25))); };
     const ns = K.normalsOf(spine);
     // orient normals so "top" is the dorsal side (screen-up on average)
-    const flip = ns.reduce((a, n) => a + n[1], 0) > 0 ? -1 : 1;
+    // (callers can pin it with o.flip so a looping flight never flips over)
+    const flip = o.flip || (ns.reduce((a, n) => a + n[1], 0) > 0 ? -1 : 1);
     const top = spine.map((q, i) => add(q, mul(ns[i], flip * wAt(i) / 2)));
     const bot = spine.map((q, i) => add(q, mul(ns[i], -flip * wAt(i) / 2)));
     const col = o.color || R.pal.gold, lw = o.lw || 3.6;
     const vis = Math.max(3, Math.floor(N * p));
-    // legs (behind the body)
+    // legs (behind the body): outlined limbs with a flame tuft at the elbow
+    // and four hooked talons
     for (const [idx, side] of [[8, 1], [10, -1], [24, 1], [26, -1]]) {
       if (idx >= vis) continue;
       const base = mix(spine[idx], bot[idx], 0.4), n = mul(ns[idx], -flip);
       const tg = norm(sub(spine[Math.max(0, idx - 1)], spine[idx + 1]));
       const kick = Math.sin(t * 5 + idx * 0.7);
-      const knee = add(base, add(mul(n, width * 0.7), mul(tg, width * (side * 0.35 - 0.25 + kick * 0.25))));
-      const foot = add(knee, add(mul(n, width * 0.25), mul(tg, width * 0.55)));
-      stroke(d, [base, knee, foot], { w: width * 0.22, seed: 1500 + idx, color: col, taperIn: 2, taperOut: 14 });
-      for (let c = -1; c <= 1; c++) {
-        const cl = add(foot, add(mul(tg, width * 0.22), mul(n, c * width * 0.14)));
-        stroke(d, [foot, cl, add(cl, mul(n, width * 0.08))], { w: 3, seed: 1510 + idx * 3 + c, color: col, taperOut: 6 });
+      const knee = add(base, add(mul(n, width * 0.66), mul(tg, width * (side * 0.35 - 0.25 + kick * 0.25))));
+      const foot = add(knee, add(mul(n, width * 0.22), mul(tg, width * 0.52)));
+      const bone = spline([base, knee, foot], 5);
+      const bn = K.normalsOf(bone);
+      const hwAt = (i) => width * lerp(0.17, 0.07, i / (bone.length - 1));
+      const limb = bone.map((q, i) => add(q, mul(bn[i], hwAt(i)))).concat(bone.map((q, i) => add(q, mul(bn[i], -hwAt(i)))).reverse());
+      shape(d, limb, { w: lw * 0.75, color: col, seed: 1500 + idx, fill: o.fill || R.pal.fill, amp: 0.6 });
+      for (let k = 0; k < 3; k++) {
+        const sw = Math.sin(t * 7 + idx + k) * width * 0.04;
+        const tip = add(knee, add(mul(tg, -width * (0.34 + 0.1 * k)), mul(n, width * (0.06 * k - 0.1) + sw)));
+        stroke(d, [add(knee, mul(tg, -width * 0.04)), add(mix(knee, tip, 0.5), mul(n, -width * 0.05)), tip], { w: 2.4, seed: 1505 + idx * 3 + k, color: col, taperOut: 10 });
       }
+      [-0.55, -0.15, 0.25, 0.65].forEach((a, c) => {
+        const dir = norm(add(mul(tg, Math.cos(a)), mul(n, Math.sin(a))));
+        const L = width * 0.26;
+        const c1 = add(foot, mul(dir, L * 0.6));
+        const c2 = add(add(foot, mul(dir, L)), mul(n, L * 0.3));
+        stroke(d, [foot, c1, c2], { w: 3, seed: 1510 + idx * 4 + c, color: col, taperIn: 2, taperOut: 8 });
+      });
     }
     halo(d, spine[Math.floor(vis * 0.35)], width * 3.4, 'gold', 0.4 * p);
     const outline = top.slice(0, vis).concat(bot.slice(0, vis).reverse());
@@ -433,56 +447,128 @@
       const tt = spine[N - 1], tg = norm(sub(spine[N - 1], spine[N - 3]));
       for (let k = -2; k <= 2; k++) stroke(d, [tt, add(tt, add(mul(tg, width * 0.9), mul(perp(tg), k * width * 0.18 + Math.sin(t * 6 + k) * 6)))], { w: 3, seed: 1640 + k, color: col, taperOut: 20 });
     }
-    // head
+    // head, facing along the spine with its crown on the dorsal side
     const hd = norm(sub(spine[0], spine[2]));
-    const hn = mul(perp(hd), flip);
-    const hc = spine[0];
-    const hw = width * 0.78;
-    const at = (f, s) => add(add(hc, mul(hd, f * hw)), mul(hn, s * hw));
-    const jaw = 0.3 + 0.3 * Math.max(0, Math.sin(t * 4.2));
-    // mane flames behind the head
-    for (let k = 0; k < 6; k++) {
-      const b0 = at(-0.3 - k * 0.12, 0.75 - k * 0.3);
-      const tip = add(b0, add(mul(hd, -hw * (1.3 + 0.35 * Math.sin(t * 7 + k))), mul(hn, hw * (0.55 - k * 0.22))));
-      stroke(d, [b0, add(mix(b0, tip, 0.5), mul(hn, hw * 0.12)), tip], { w: 3.4, seed: 1690 + k, color: col, taperOut: 22 });
-    }
-    // antler horns
-    for (const [s0, sc] of [[0.72, 1], [0.5, 0.8]]) {
-      const b0 = at(0.05, s0), tip = add(b0, add(mul(hd, -hw * 1.7 * sc), mul(hn, hw * 0.95 * sc)));
-      const mid = add(mix(b0, tip, 0.45), mul(hn, hw * 0.12));
-      stroke(d, [b0, mid, tip], { w: 5, seed: 1660 + s0 * 10, color: col, taperOut: 22 });
-      const br = mix(b0, tip, 0.55);
-      stroke(d, [br, add(br, add(mul(hd, hw * 0.1), mul(hn, hw * 0.5 * sc)))], { w: 3, seed: 1670 + s0 * 10, color: col, taperOut: 10 });
-    }
-    const headPts = [at(-0.55, 0.72), at(0.1, 0.92), at(0.75, 0.85), at(1.05, 0.58), at(1.8, 0.46), at(2.15, 0.58), at(2.28, 0.34), at(2.05, 0.12),
-      at(1.25, 0.02 - jaw * 0.15), at(1.95, -0.22 - jaw), at(1.9, -0.44 - jaw), at(1.05, -0.62), at(0.25, -0.78), at(-0.5, -0.66)];
-    shape(d, spline(headPts, 3, true), { w: lw, color: col, seed: 1650, fill: o.fill || R.pal.fill });
-    // brow ridge, eye, nostril
-    stroke(d, [at(0.45, 0.62), at(0.85, 0.74), at(1.15, 0.6)], { w: 3.4, seed: 1652, color: col, taperOut: 8 });
-    shape(d, ellipse(at(0.82, 0.46), hw * 0.14, hw * 0.1, 0, 12), { w: 2.2, color: col, seed: 1651, fill: R.pal.glow });
-    halo(d, at(0.82, 0.46), hw * 0.55, 'gold', 0.75);
-    shape(d, ellipse(at(2.02, 0.44), hw * 0.06, hw * 0.05, 0, 8), { w: 1.8, color: col, seed: 1653, fill: 'none' });
-    // teeth along both jaws
-    for (let k = 0; k < 4; k++) {
-      const u = 1.35 + k * 0.17;
-      stroke(d, [at(u, 0.06 - k * 0.01), at(u + 0.05, -0.08)], { w: 2, seed: 1654 + k, color: col, brush: false });
-      stroke(d, [at(u + 0.1, -0.2 - jaw * (u - 1.2) / 0.8), at(u + 0.12, -0.08 - jaw * (u - 1.2) / 0.8)], { w: 2, seed: 1658 + k, color: col, brush: false });
-    }
-    // whiskers
-    for (const [s0, sgn] of [[0.36, 1], [-0.1, -1]]) {
-      const b0 = at(2.05, s0);
-      const pts = [];
-      for (let i = 0; i <= 14; i++) {
-        const u = i / 14;
-        pts.push(add(add(b0, mul(hd, -u * hw * 3.4 + hw * 0.4 * Math.sin(u * 3))), mul(hn, sgn * (u * hw * 0.6) + Math.sin(u * 5 - t * 6 + sgn) * hw * 0.35 * u)));
-      }
-      stroke(d, pts, { w: 3.2, seed: 1680 + sgn, color: col, taperOut: 50 });
-    }
-    // beard under the jaw
+    let up = perp(hd);
+    const toTop = sub(top[0], spine[0]);
+    if (up[0] * toTop[0] + up[1] * toTop[1] < 0) up = mul(up, -1);
+    dragonHead(d, spine[0], hd, up, width * 0.86, t, { col, lw, fill: o.fill || R.pal.fill });
+  }
+
+  // Chinese dragon head in profile. Local frame: u runs forward along the
+  // snout, v runs down toward the jaw; one unit = S px, the neck joins at the
+  // origin. Drawn back to front: far antler, mane, lower jaw, tongue, skull
+  // with upper jaw, then ear, brow, eye, nostril, teeth, whiskers and beard.
+  function dragonHead(d, hc, fwd, up, S, t, o) {
+    const col = o.col, lw = o.lw, fill = o.fill;
+    const P = (u, v) => [hc[0] + (fwd[0] * u - up[0] * v) * S, hc[1] + (fwd[1] * u - up[1] * v) * S];
+    const PL = (pts) => pts.map((q) => P(q[0], q[1]));
+    const W = (x) => x * S / 40;               // stroke widths scale with the head
+    const jawA = 0.2 + 0.2 * Math.max(0, Math.sin(t * 4.2));   // mouth opening (rad)
+    const hinge = [0.78, 0.04];
+    const J = (u, v) => {                     // lower-jaw frame, rotated open about the hinge
+      const ca = Math.cos(jawA), sa = Math.sin(jawA);
+      return P(hinge[0] + u * ca - v * sa, hinge[1] + u * sa + v * ca);
+    };
+    const antler = (base, sc, lean, seed, op) => {
+      const q = (du, dv) => [base[0] + (du * Math.cos(lean) - dv * Math.sin(lean)) * sc, base[1] + (du * Math.sin(lean) + dv * Math.cos(lean)) * sc];
+      const beam = spline(PL([q(0, 0), q(-0.1, -0.36), q(-0.36, -0.66), q(-0.74, -0.82), q(-1.1, -0.8), q(-1.3, -0.94)]), 6);
+      stroke(d, beam, { w: W(4.6) * sc, color: col, seed, taperIn: 2, taperOut: W(12), opacity: op });
+      // tines rising from the beam, and a fork at the tip, like a stag's antler
+      [[0.34, q(0.08, -0.62), q(0.2, -0.86)], [0.64, q(-0.5, -1.0), q(-0.4, -1.22)], [0.93, q(-1.1, -1.02), q(-1.02, -1.18)]].forEach(([f, m, e], i) => {
+        const b0 = K.pointAt(beam, f);
+        stroke(d, spline([b0, P(m[0], m[1]), P(e[0], e[1])], 5), { w: W(3) * sc, color: col, seed: seed + 1 + i, taperOut: W(9), opacity: op });
+      });
+    };
+    // far-side antler first (behind everything)
+    antler([0.06, -0.54], 0.82, -0.22, 1700, 0.7);
+    // mane: flame tufts streaming back from the crown and nape
+    const mane = [[0.2, -0.58], [-0.02, -0.52], [-0.2, -0.4], [-0.3, -0.2], [-0.32, 0.02], [-0.26, 0.24]];
+    mane.forEach(([u, v], k) => {
+      const sw = Math.sin(t * 6.5 + k * 0.9);
+      const len = 0.95 + 0.25 * ((k * 7) % 3) / 2;
+      const tip = [u - len, v - 0.28 + k * 0.06 + 0.12 * sw];
+      const mid = [u - len * 0.5, v - 0.02 + 0.1 * Math.sin(t * 6.5 + k * 0.9 - 1)];
+      stroke(d, spline(PL([[u, v], mid, tip]), 5), { w: W(5), color: col, seed: 1710 + k, taperIn: 2, taperOut: W(26) });
+      stroke(d, spline(PL([[u - 0.1, v + 0.08], [mid[0] + 0.1, mid[1] + 0.14], [tip[0] + 0.35, tip[1] + 0.2]]), 5), { w: W(2.4), color: col, seed: 1720 + k, taperOut: W(14), opacity: 0.8 });
+    });
+    // lower jaw with its fangs, hinged at the mouth corner
+    const jaw = [[0, -0.02], [0.45, 0.04], [0.9, 0.07], [1.12, 0.03], [1.24, 0.08], [1.2, 0.2], [0.9, 0.28], [0.5, 0.3], [0.12, 0.25], [-0.08, 0.14]];
+    shape(d, spline(jaw.map((q) => J(q[0], q[1])), 4, true), { w: lw, color: col, seed: 1730, fill });
+    [[1.1, 0.05, 0.18], [0.84, 0.07, 0.08], [0.6, 0.06, 0.06]].forEach(([u, v, h], k) => {
+      shape(d, [J(u - 0.05, v), J(u + 0.03, v - h), J(u + 0.06, v)], { w: W(1.6), color: col, seed: 1732 + k, fill: col, amp: 0.3 });
+    });
+    // curled tongue between the jaws
+    const tong = [J(0.2, 0.05), J(0.62, 0.02), mix(J(1.05, -0.02), P(1.35, -0.02), 0.5), mix(J(1.4, -0.12), P(1.7, -0.06), 0.5)];
+    stroke(d, spline(tong, 6), { w: W(2.6), color: col, seed: 1738, taperIn: 2, taperOut: W(4) });
+    const tt = tong[3], td = norm(sub(tong[3], tong[2]));
+    for (const sg of [-1, 1]) stroke(d, [tt, add(tt, add(mul(td, W(7)), mul(up, sg * W(4))))], { w: W(1.8), color: col, seed: 1739 + sg, taperOut: W(4) });
+    // skull and upper jaw: domed crown, heavy brow, concave bridge, upturned
+    // bulbous nose, curled upper lip, mouth line back to the corner
+    const skull = [[-0.26, -0.44], [0.1, -0.62], [0.42, -0.76], [0.7, -0.72], [0.92, -0.56], [1.2, -0.46], [1.48, -0.49], [1.7, -0.62],
+      [1.86, -0.8], [2.06, -0.82], [2.22, -0.68], [2.25, -0.46], [2.14, -0.32], [2.2, -0.2], [2.1, -0.08], [1.9, -0.06], [1.5, -0.03],
+      [1.1, 0.0], [0.8, 0.02], [0.6, 0.2], [0.32, 0.34], [0.0, 0.4], [-0.28, 0.36], [-0.34, -0.04]];
+    shape(d, spline(PL(skull), 4, true), { w: lw, color: col, seed: 1740, fill });
+    // near-side antler rooted on the crown
+    antler([0.3, -0.62], 1, 0.05, 1750, 1);
+    // cheek frill: flame curls sweeping back from the mouth corner
+    [[0.66, 0.1, -0.55, 0.22], [0.5, 0.2, -0.62, 0.42], [0.4, -0.06, -0.5, -0.02]].forEach(([u, v, du, dv], k) => {
+      const sw = 0.05 * Math.sin(t * 6 + k);
+      stroke(d, spline(PL([[u, v], [u + du * 0.5, v + dv * 0.3 - 0.06], [u + du, v + dv + sw]]), 5), { w: W(3), color: col, seed: 1760 + k, taperOut: W(12) });
+    });
+    // pointed ear behind the eye
+    shape(d, spline(PL([[0.3, -0.36], [0.08, -0.52], [-0.28, -0.64], [-0.08, -0.4], [0.12, -0.3]]), 4, true), { w: W(2.4), color: col, seed: 1765, fill });
+    stroke(d, PL([[0.2, -0.38], [-0.12, -0.52]]), { w: W(1.4), color: col, seed: 1766, brush: false });
+    // heavy brow ridge with flame eyebrows
+    stroke(d, spline(PL([[0.36, -0.5], [0.58, -0.66], [0.84, -0.58], [0.94, -0.48]]), 5), { w: W(4.5), color: col, seed: 1768, taperIn: W(6), taperOut: W(6) });
+    [[0.5, -0.62, -0.5, -0.5], [0.66, -0.66, -0.3, -0.62], [0.8, -0.62, -0.08, -0.66]].forEach(([u, v, du, dv], k) => {
+      const sw = 0.04 * Math.sin(t * 7 + k);
+      stroke(d, spline(PL([[u, v], [u + du * 0.45, v + dv * 0.7], [u + du, v + dv + sw]]), 5), { w: W(2.8), color: col, seed: 1770 + k, taperOut: W(10) });
+    });
+    // fierce eye: almond lid, glowing iris, dark pupil
+    const eye = PL([[0.46, -0.42], [0.62, -0.53], [0.8, -0.46], [0.66, -0.36]]);
+    shape(d, spline(eye, 4, true), { w: W(2.4), color: col, seed: 1775, fill: R.pal.glow, amp: 0.4 });
+    const ec = P(0.65, -0.45);
+    K.shape(d, ellipse(ec, S * 0.045, S * 0.055, 0, 10), { w: 1, color: R.pal.dark, seed: 1776, fill: R.pal.dark, amp: 0.2 });
+    halo(d, ec, S * 0.55, 'gold', 0.7);
+    // nose: bridge ridges, the curled nostril and whisker roots
     for (let k = 0; k < 3; k++) {
-      const b0 = at(1.1 - k * 0.25, -0.62 - jaw * 0.2);
-      stroke(d, [b0, add(b0, add(mul(hn, -hw * (0.6 + k * 0.1)), mul(hd, -hw * (0.3 + Math.sin(t * 5 + k) * 0.1))))], { w: 2.6, seed: 1685 + k, color: col, taperOut: 14 });
+      const u = 1.0 + k * 0.18;
+      stroke(d, spline(PL([[u, -0.47], [u + 0.08, -0.53], [u + 0.16, -0.47]]), 4), { w: W(1.8), color: col, seed: 1780 + k, brush: false });
     }
+    const nc = [2.1, -0.58];
+    shape(d, spline(PL([[nc[0] - 0.05, nc[1] + 0.03], [nc[0], nc[1] - 0.04], [nc[0] + 0.06, nc[1]], [nc[0] + 0.01, nc[1] + 0.05]]), 3, true), { w: W(1.4), color: col, seed: 1784, fill: R.pal.dark, amp: 0.2 });
+    const curl = [];
+    for (let i = 0; i <= 16; i++) {
+      const a = 2.2 - i / 16 * 4.2, rr = 0.13 - 0.03 * i / 16;
+      curl.push([nc[0] + Math.cos(a) * rr, nc[1] + Math.sin(a) * rr]);
+    }
+    stroke(d, PL(curl), { w: W(2.2), color: col, seed: 1785, taperIn: W(3), taperOut: W(5) });
+    stroke(d, spline(PL([[1.82, -0.3], [1.98, -0.36], [2.12, -0.3]]), 4), { w: W(2), color: col, seed: 1786, brush: false });
+    // upper fangs and teeth along the mouth line
+    [[1.92, -0.07, 0.22], [1.64, -0.04, 0.09], [1.38, -0.02, 0.08], [1.14, 0.0, 0.06]].forEach(([u, v, h], k) => {
+      shape(d, PL([[u - 0.06, v], [u + 0.01, v + h], [u + 0.05, v]]), { w: W(1.6), color: col, seed: 1790 + k, fill: col, amp: 0.3 });
+    });
+    // two long whiskers from the upper lip: one arcs up over the snout, the
+    // other sweeps down past the open jaw and streams back
+    [[[2.18, -0.44], [2.4, -0.72], [2.36, -1.1], [2.0, -1.4], [1.4, -1.5], [0.9, -1.72]],
+      [[2.1, -0.2], [2.3, 0.08], [2.36, 0.48], [2.08, 0.92], [1.52, 1.2], [0.86, 1.3], [0.1, 1.62]]].forEach((ctrl, k) => {
+      const base = spline(ctrl, 6);
+      const pts = base.map((q, i) => {
+        const f = i / (base.length - 1);
+        const nrm = K.normalsOf(base)[i];
+        const wv = Math.sin(f * 11 - t * 6 + k * 1.7) * 0.1 * (0.25 + 0.75 * f);
+        return P(q[0] + nrm[0] * wv, q[1] + nrm[1] * wv);
+      });
+      stroke(d, pts, { w: W(2.4), color: col, seed: 1800 + k, taperIn: 2, taperOut: W(70) });
+    });
+    // beard hanging from the chin
+    [[1.05, 0.3], [0.8, 0.33], [0.55, 0.32]].forEach(([u, v], k) => {
+      const b0 = J(u, v);
+      const sw = Math.sin(t * 5 + k * 1.3);
+      const tip = add(b0, add(mul(up, -S * (0.5 + 0.12 * k)), mul(fwd, -S * (0.3 + 0.1 * sw))));
+      stroke(d, [b0, add(mix(b0, tip, 0.5), mul(fwd, S * 0.08)), tip], { w: W(3), color: col, seed: 1810 + k, taperOut: W(14) });
+    });
   }
 
   // --------------------------------------------------------------- eagle

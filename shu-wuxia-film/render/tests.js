@@ -93,6 +93,14 @@
     N.bigWave(d, 1100, 1060, 300, { phase: 0.8, seed: 5 });
   };
 
+  // dragon head close-ups: flying right, diving down-right (as in the
+  // writing scene) and flying left
+  T.dragonHead = (d, t) => {
+    F.dragon(d, K.spline([[-300, 380], [300, 300], [720, 330]], 10), 1, t, { len: 700, width: 140 });
+    F.dragon(d, K.spline([[1050, -60], [1300, 150], [1500, 420], [1600, 640]], 10), 1, t, { len: 600, width: 100 });
+    F.dragon(d, K.spline([[1300, 1000], [800, 1000], [420, 880]], 10), 1, t, { len: 600, width: 100 });
+  };
+
   T.fx = (d, t) => {
     FX.slashArc(d, [500, 500], 300, -150, 20, 0.45, {});
     FX.burst(d, [1100, 400], 200, 0.4, {});

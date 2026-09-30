@@ -15,7 +15,10 @@ OUT = os.path.join(HERE, "fonts")
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 FAMILIES = [
-    "LXGW+WenKai+TC:wght@400;700",
+    # Iansui (芫荽): Traditional Chinese Kai-style face that follows the Taiwan
+    # MOE standard glyph forms (LXGW WenKai TC, used before, keeps inherited
+    # forms such as 兼 with a 秝 top, 爲, 眞 and the two-dot 辶).
+    "Iansui",
     "Cormorant+Garamond:ital,wght@0,600;1,500;1,600",
 ]
 

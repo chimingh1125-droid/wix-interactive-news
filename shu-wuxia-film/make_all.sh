@@ -10,6 +10,7 @@ PY=${PY:-/opt/venv/bin/python}
 WORKERS=${WORKERS:-4}
 
 $PY assets/fetch_fonts.py
+$PY assets/logo/trace_logo.py
 $PY render/make_paper.py
 $PY tts/make_vo.py --voice zm_yunyang --speed 0.80
 $PY qa/check_vo.py

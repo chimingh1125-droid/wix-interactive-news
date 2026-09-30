@@ -122,7 +122,7 @@
     const fade = 1 - SC.dp(ts, tm.hit + 0.1, tm.hit + 0.8);
     if (hd > 0 && fade > 0) {
       d.open('opacity="' + fade.toFixed(3) + '"');
-      F.dragon(d, PATH, hd, ts, { len: 900, width: 86, p: SC.dp(ts, tm.strike, tm.strike + 0.4) });
+      F.dragon(d, PATH, hd, ts, { len: 900, width: 86, flip: 1, p: SC.dp(ts, tm.strike, tm.strike + 0.4) });
       d.close();
     }
     FX.burst(d, add(J.A1.W, [30, 0]), 200, inv(tm.strike, tm.strike + 0.5, ts), { seed: 23, n: 12 });

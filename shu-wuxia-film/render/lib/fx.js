@@ -174,7 +174,11 @@
     const sx = o.vertical ? x : (anchor === 'middle' ? x - total / 2 : anchor === 'end' ? x - total : x);
     const sy = o.vertical ? (anchor === 'middle' ? y - total / 2 : y) : y;
     const stag = o.stagger === undefined ? 0.6 : o.stagger;
-    const fam = o.font || "'LXGW WenKai TC', 'Noto Serif CJK TC', serif";
+    const fam = o.font || K.ZH_FONT;
+    // Chinese: single-weight face, bold as an outline in the text colour
+    const wAttr = o.font ? ' font-weight="' + (o.weight || 700) + '"' : '';
+    const boldW = !o.font && (o.weight || 700) >= 600 ? (size * K.ZH_BOLD).toFixed(2) : 0;
+    const bold = (col) => boldW ? ' stroke="' + col + '" stroke-width="' + boldW + '" stroke-linejoin="round"' : '';
     chars.forEach((ch, i) => {
       if (ch === ' ') return;
       const span = 1 / (n - (n - 1) * stag);
@@ -182,13 +186,15 @@
       if (cp <= 0) return;
       const cx = o.vertical ? sx : sx + i * adv + size / 2;
       const cy = o.vertical ? sy + i * adv + size * 0.5 : sy;
-      const top = cy - size * 0.95, h = size * 1.3;
+      // the wipe box is placed from the glyph baseline so it spans the whole
+      // em box (ascent 0.88, descent 0.12) of the character
+      const ty = o.vertical ? cy + size * 0.36 : cy;
+      const top = ty - size * 0.95, h = size * 1.14;
       const id = d.id('rv');
       const wipe = easeInOut(cp);
       d.add('<defs><clipPath id="' + id + '"><rect x="' + f1(cx - size * 0.7) + '" y="' + f1(top) + '" width="' + f1(size * 1.4) + '" height="' + f1(h * wipe) + '"/></clipPath></defs>');
-      const ty = o.vertical ? cy + size * 0.36 : cy;
-      if (o.glow) d.add('<text x="' + f1(cx) + '" y="' + f1(ty) + '" font-family="' + fam + '" font-size="' + size + '" font-weight="' + (o.weight || 700) + '" fill="' + (o.glowColor || R.pal.gold) + '" text-anchor="middle" clip-path="url(#' + id + ')" filter="url(#blur8)" opacity="' + (o.glow * (1 - 0.5 * cp)).toFixed(3) + '">' + esc(ch) + '</text>');
-      d.add('<text x="' + f1(cx) + '" y="' + f1(ty) + '" font-family="' + fam + '" font-size="' + size + '" font-weight="' + (o.weight || 700) + '" fill="' + (o.color || R.pal.line) + '" text-anchor="middle" clip-path="url(#' + id + ')"' + (o.opacity !== undefined ? ' opacity="' + o.opacity + '"' : '') + (o.stroke ? ' stroke="' + o.stroke + '" stroke-width="' + (o.strokeW || 6) + '" paint-order="stroke"' : '') + '>' + esc(ch) + '</text>');
+      if (o.glow) d.add('<text x="' + f1(cx) + '" y="' + f1(ty) + '" font-family="' + fam + '" font-size="' + size + '"' + wAttr + ' fill="' + (o.glowColor || R.pal.gold) + '"' + bold(o.glowColor || R.pal.gold) + ' text-anchor="middle" clip-path="url(#' + id + ')" filter="url(#blur8)" opacity="' + (o.glow * (1 - 0.5 * cp)).toFixed(3) + '">' + esc(ch) + '</text>');
+      d.add('<text x="' + f1(cx) + '" y="' + f1(ty) + '" font-family="' + fam + '" font-size="' + size + '"' + wAttr + ' fill="' + (o.color || R.pal.line) + '" text-anchor="middle" clip-path="url(#' + id + ')"' + (o.opacity !== undefined ? ' opacity="' + o.opacity + '"' : '') + (o.stroke ? ' stroke="' + o.stroke + '" stroke-width="' + (o.strokeW || 6) + '" paint-order="stroke"' : bold(o.color || R.pal.line)) + '>' + esc(ch) + '</text>');
       // brush tip following the wipe edge
       if (cp < 1 && o.tip !== false) halo(d, [cx, top + h * wipe], size * 0.25, 'gold', 0.5 * (1 - cp));
     });

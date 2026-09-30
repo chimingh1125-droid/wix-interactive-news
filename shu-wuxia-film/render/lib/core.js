@@ -356,20 +356,30 @@
     return clamp((p - a) / span);
   }
 
+  // Chinese typeface: Iansui (芫荽) follows the Taiwan MOE standard glyph
+  // forms. It ships a single weight, so bold is emulated with a thin outline
+  // in the text colour (the browser's synthetic bold is far heavier);
+  // ZH_BOLD is the outline width per px of font size that matches the ink of
+  // a real bold weight.
+  const ZH_FONT = "'Iansui', 'Noto Serif CJK TC', serif";
+  const ZH_BOLD = 0.012;
+
   // text helper
   function text(d, str, x, y, o = {}) {
-    const fam = o.font || "'LXGW WenKai TC', 'Noto Serif CJK TC', serif";
+    const fam = o.font || ZH_FONT;
+    const size = o.size || 40;
     const attrs = [
       'x="' + f1(x) + '"', 'y="' + f1(y) + '"',
-      'font-family="' + fam.replace(/"/g, "'") + '"', 'font-size="' + (o.size || 40) + '"',
+      'font-family="' + fam.replace(/"/g, "'") + '"', 'font-size="' + size + '"',
       'fill="' + (o.color || R.pal.line) + '"',
       'text-anchor="' + (o.anchor || 'middle') + '"',
     ];
-    if (o.weight) attrs.push('font-weight="' + o.weight + '"');
+    if (o.weight && o.font) attrs.push('font-weight="' + o.weight + '"');
     if (o.italic) attrs.push('font-style="italic"');
     if (o.spacing) attrs.push('letter-spacing="' + o.spacing + '"');
     if (o.opacity !== undefined) attrs.push('opacity="' + o.opacity + '"');
     if (o.stroke) attrs.push('stroke="' + o.stroke + '" stroke-width="' + (o.strokeW || 2) + '" paint-order="stroke"');
+    else if (!o.font && (o.weight || 400) >= 600) attrs.push('stroke="' + (o.color || R.pal.line) + '" stroke-width="' + (size * ZH_BOLD).toFixed(2) + '" stroke-linejoin="round"');
     if (o.transform) attrs.push('transform="' + o.transform + '"');
     if (o.baseline) attrs.push('dominant-baseline="' + o.baseline + '"');
     if (o.vertical) attrs.push('writing-mode="vertical-rl"');
@@ -398,5 +408,6 @@
     P, add, sub, mul, len, dist, norm, perp, mix, rot, polar, rotAbout, bez, qbez, arc, ellipse, rectPts, spline,
     transformPts, mirrorX, cumlen, resample, normalsOf, cutPts, pointAt, tangentAt, polyLen, bbox,
     R, PALETTES, f1, pathD, smoothD, esc, Builder, wobble, jit, ribbonD, stroke, shape, sketchLine, seqP, text, halo, camOpen,
+    ZH_FONT, ZH_BOLD,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
