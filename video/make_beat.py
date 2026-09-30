@@ -1,10 +1,10 @@
-"""產生 120 BPM、30 秒的原創節拍音軌（純 Python，無外部依賴）。"""
+"""產生 120 BPM、48 秒的原創節拍音軌（純 Python，無外部依賴）。"""
 import math, random, struct, wave
 
 SR = 44100
 BPM = 120
 BEAT = 60 / BPM
-DUR = 30.0
+DUR = 48.0
 N = int(SR * DUR)
 buf = [0.0] * N
 random.seed(7)
@@ -70,11 +70,12 @@ for b in range(beats):
         add(t + BEAT / 2, bass(roots[(b // 4) % 4] * 2, BEAT * 0.4, 0.12))
 
 # 場景轉換重音 + 開場前的上升音效
-for at in (4, 8, 14, 20, 25, 28):
+for at in (4, 9, 16, 22, 28, 33, 38, 43):
     add(at, impact())
 add(2.0, riser(2.0))
-add(12.0, riser(2.0, 0.18))
-add(26.0, riser(2.0, 0.18))
+add(14.0, riser(2.0, 0.18))
+add(31.0, riser(2.0, 0.18))
+add(41.0, riser(2.0, 0.2))
 
 peak = max(abs(s) for s in buf)
 with wave.open("beat.wav", "wb") as w:

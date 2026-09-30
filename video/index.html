@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>許志明 動態數據短影音</title>
     <style>
-      :root {
-        --bg: #0b0f14;
-        --ink: #f4f1ea;
-      }
+      :root { --bg: #0b0f14; --ink: #f4f1ea; }
       html, body {
         margin: 0;
         height: 100%;
@@ -16,34 +13,15 @@
         color: var(--ink);
         font-family: "Noto Sans TC", "WenQuanYi Zen Hei", "Microsoft JhengHei", sans-serif;
       }
-      body {
-        display: grid;
-        place-items: center;
-        gap: 12px;
-        padding: 16px;
-        box-sizing: border-box;
-      }
+      body { display: grid; place-items: center; gap: 12px; padding: 16px; box-sizing: border-box; }
       canvas {
         width: min(100%, calc((100vh - 90px) * 9 / 16));
         aspect-ratio: 9 / 16;
         background: #000;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       }
-      .controls {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        font-size: 14px;
-      }
-      button {
-        font: inherit;
-        padding: 8px 16px;
-        border: 1px solid #3a4450;
-        background: #161d25;
-        color: var(--ink);
-        border-radius: 6px;
-        cursor: pointer;
-      }
+      .controls { display: flex; gap: 10px; align-items: center; font-size: 14px; flex-wrap: wrap; justify-content: center; }
+      button { font: inherit; padding: 8px 16px; border: 1px solid #3a4450; background: #161d25; color: var(--ink); border-radius: 6px; cursor: pointer; }
       input[type="range"] { width: 220px; }
       body.render { padding: 0; display: block; }
       body.render .controls { display: none; }
@@ -54,49 +32,75 @@
     <canvas id="stage" width="1080" height="1920"></canvas>
     <div class="controls">
       <button id="play">▶ 播放</button>
-      <input id="scrub" type="range" min="0" max="30" step="0.01" value="0">
+      <input id="scrub" type="range" min="0" max="48" step="0.01" value="0">
       <span id="clock">0.00s</span>
     </div>
     <audio id="beat" src="beat.wav" preload="auto"></audio>
 
     <script>
-      // ============ 內容設定：替換這裡的數字即可重新輸出 ============
-      // sample: true 時畫面角落會標示「示意數據」。填入真實數字後改為 false。
+      // ============ 內容設定（資料來源：許志明老師提供之簡歷 2025.05.06 與講師介紹卡）============
       const DATA = {
-        sample: true,
         name: "許志明",
         title: "世新大學新聞學系 副教授",
         degree: "世新大學 傳播博士",
-        specialties: ["AI與媒體產業", "AI與新聞實務", "電視新聞", "專題報導", "新聞節目製作", "新媒體"],
-        counters: [
-          { label: "新聞實務年資", value: 25, unit: "年" },
-          { label: "指導學生作品", value: 300, unit: "+" },
-          { label: "授課學生人次", value: 5000, unit: "+" },
+        roles: ["記者", "製作人", "新聞總監", "作者", "副教授", "AI 講師"],
+        specialties: [
+          "AI與媒體產業", "AI與新聞實作", "電視新聞", "專題", "新聞性節目製作",
+          "新媒體新聞採寫與製作", "平面媒體採寫與視覺設計", "批判理論及傳播政治經濟學", "族群傳播",
         ],
-        // 課堂導入 AI 工具比例（逐年成長曲線）
-        growth: { title: "課堂導入 AI 工具比例", years: ["2021", "2022", "2023", "2024", "2025", "2026"], values: [5, 18, 42, 63, 81, 92] },
-        // 專業能力雷達
-        radar: [
-          { label: "電視新聞", v: 0.95 },
-          { label: "專題報導", v: 0.9 },
-          { label: "AI 應用", v: 0.88 },
-          { label: "節目製作", v: 0.92 },
-          { label: "新媒體", v: 0.85 },
-          { label: "數據敘事", v: 0.8 },
+        career: [
+          { tag: "平面", org: "台灣時報・中時晚報", role: "記者" },
+          { tag: "電子", org: "超視・三立新聞・東森新聞", role: "記者" },
+          { tag: "東森原民台", org: "", role: "副台長" },
+          { tag: "東森新聞台", org: "", role: "協理" },
+          { tag: "東森財經台", org: "製作人 → 副理 → 協理", role: "新聞總監" },
         ],
-        closing: ["用數據說故事", "用 AI 重新定義新聞"],
+        pubs: [
+          { label: "著作總數", value: 24, unit: "篇/本" },
+          { label: "專書・照片書", value: 7, unit: "本" },
+          { label: "期刊論文", value: 7, unit: "篇" },
+          { label: "研討會論文", value: 9, unit: "篇" },
+        ],
+        // 已標註年份的 22 篇著作（專書、專書論文、期刊、研討會）逐年分布
+        byYear: { years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], values: [2, 0, 2, 1, 0, 4, 5, 5, 1, 2] },
+        books: [
+          { y: 2018, t: "媒體裂變–從駐地記者到博士總監" },
+          { y: 2018, t: "批判和實踐典範的會診初探", award: "入圍曾虛白新聞獎 學術著作獎" },
+          { y: 2019, t: "電視與新媒體新聞製作實務" },
+          { y: 2021, t: "族語主播之眼（照片書）" },
+          { y: 2022, t: "族群記者之眼（照片書）" },
+          { y: 2023, t: "原住民族電視新聞工作者口述歷史" },
+          { y: 2023, t: "主播的搖籃─世新大學新聞學系" },
+        ],
+        schools: ["國立體育大學", "臺北市立大學", "世新大學"],
+        cert: ["資策會", "生成式AI美術設計能力認證", "中級"],
+        talks: [
+          "農業部", "中華郵政", "新北市公用頻道協會", "東森電視", "客家電視台", "原住民族電視台",
+          "TVBS華文永續報導獎", "八大電視台", "飛特立航空公司", "順益汽車公司", "漢聲廣播電台",
+        ],
+        closing: ["從新聞現場", "到 AI 課堂"],
+        blog: "chinimgh1.wixsite.com/website",
       };
 
       // ============ 節奏設定 ============
       const BPM = 120;
       const BEAT = 60 / BPM; // 0.5s
-      const DURATION = 30;
+      const DURATION = 48;
       const W = 1080, H = 1920;
       const C = { bg: "#0b0f14", ink: "#f4f1ea", muted: "#8a96a3", red: "#ff4d3a", teal: "#19c4c9", gold: "#ffc24a", blue: "#4d8dff" };
       const FONT = '"Noto Sans TC", "WenQuanYi Zen Hei", "Microsoft JhengHei", sans-serif';
 
       const canvas = document.getElementById("stage");
       const ctx = canvas.getContext("2d");
+
+      const IMG = {};
+      const imgList = { full: "assets/hsu-full.png", event: "assets/hsu-event.jpg", portrait: "assets/hsu-portrait.jpg", office: "assets/hsu-office.jpg" };
+      window.ready = Promise.all(Object.entries(imgList).map(([k, src]) => new Promise((res) => {
+        const im = new Image();
+        im.onload = () => { IMG[k] = im; res(); };
+        im.onerror = () => res();
+        im.src = src;
+      })));
 
       // ---------- 工具 ----------
       const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -105,11 +109,14 @@
       const easeInOut = (t) => { t = clamp(t); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
       const backOut = (t) => { t = clamp(t); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
       const prog = (t, start, dur) => clamp((t - start) / dur);
-      // 每拍後的衝擊值 1 → 0
       const pulse = (t, decay = 8) => Math.exp(-((t % BEAT) / BEAT) * decay);
       const beatIndex = (t) => Math.floor(t / BEAT);
       const fmt = (n) => Math.round(n).toLocaleString("en-US");
       function rand(seed) { const x = Math.sin(seed * 12.9898) * 43758.5453; return x - Math.floor(x); }
+      function hexA(hex, a) {
+        const n = parseInt(hex.slice(1), 16);
+        return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+      }
 
       function text(str, x, y, size, color, opts = {}) {
         ctx.save();
@@ -118,68 +125,109 @@
         ctx.textAlign = opts.align || "center";
         ctx.textBaseline = opts.baseline || "middle";
         ctx.globalAlpha *= opts.alpha ?? 1;
-        if (opts.stroke) { ctx.lineWidth = opts.stroke; ctx.strokeStyle = color; ctx.strokeText(str, x, y); }
-        else ctx.fillText(str, x, y);
+        if (opts.shadow) { ctx.shadowColor = "rgba(0,0,0,0.7)"; ctx.shadowBlur = opts.shadow; }
+        ctx.fillText(str, x, y);
         ctx.restore();
       }
+      function measure(str, size, weight = 900) { ctx.save(); ctx.font = `${weight} ${size}px ${FONT}`; const w = ctx.measureText(str).width; ctx.restore(); return w; }
 
-      // ---------- 背景：網格 + 掃描光 + 粒子 ----------
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      // 以 cover 方式繪製照片，zoom 做 Ken Burns 推近
+      function drawCover(im, x, y, w, h, zoom = 1, fx = 0.5, fy = 0.5) {
+        if (!im) return;
+        const s = Math.max(w / im.width, h / im.height) * zoom;
+        const sw = w / s, sh = h / s;
+        const sx = clamp((im.width - sw) * fx, 0, im.width - sw);
+        const sy = clamp((im.height - sh) * fy, 0, im.height - sh);
+        ctx.drawImage(im, sx, sy, sw, sh, x, y, w, h);
+      }
+
+      // ---------- 背景 ----------
       function background(t, tint = C.teal) {
         ctx.fillStyle = C.bg;
         ctx.fillRect(0, 0, W, H);
         const g = ctx.createRadialGradient(W / 2, H * 0.42, 50, W / 2, H * 0.42, 1100);
-        g.addColorStop(0, hexA(tint, 0.18 + 0.1 * pulse(t, 6)));
+        g.addColorStop(0, hexA(tint, 0.2 + 0.1 * pulse(t, 6)));
         g.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
-
         ctx.save();
         ctx.strokeStyle = "rgba(255,255,255,0.05)";
         ctx.lineWidth = 1;
         const off = (t * 60) % 90;
         for (let x = -90 + off; x < W + 90; x += 90) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
         for (let y = -90 + off; y < H + 90; y += 90) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-        ctx.restore();
-
-        // 數據粒子
-        ctx.save();
         for (let i = 0; i < 70; i++) {
           const px = rand(i) * W;
           const py = (rand(i + 99) * H - t * (40 + rand(i + 7) * 120)) % H;
-          const y = py < 0 ? py + H : py;
           ctx.fillStyle = hexA(i % 3 ? C.teal : C.gold, 0.15 + rand(i + 3) * 0.35);
-          ctx.fillRect(px, y, 3, 3 + rand(i + 5) * 14);
+          ctx.fillRect(px, py < 0 ? py + H : py, 3, 3 + rand(i + 5) * 14);
         }
         ctx.restore();
       }
 
-      function hexA(hex, a) {
-        const n = parseInt(hex.slice(1), 16);
-        return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+      function photoBackground(t, im, lt, dur, fy = 0.3) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, W, H);
+        drawCover(im, 0, 0, W, H, 1.05 + 0.12 * (lt / dur), 0.5, fy);
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, "rgba(11,15,20,0.55)");
+        g.addColorStop(0.45, "rgba(11,15,20,0.72)");
+        g.addColorStop(1, "rgba(11,15,20,0.96)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
       }
 
+      function heading(str, lt, color = C.ink, y = 330, sub) {
+        const hp = easeOut(prog(lt, 0, 0.4));
+        text(str, W / 2, y - (1 - hp) * 60, 80, color, { alpha: hp });
+        if (sub) text(sub, W / 2, y + 90, 40, C.gold, { alpha: hp, weight: 700 });
+      }
+
+      // ---------- 常駐 HUD / 跑馬燈 ----------
       function hud(t) {
-        // 上方進度條與時間碼，營造新聞直播感
         ctx.save();
         ctx.fillStyle = "rgba(255,255,255,0.12)";
         ctx.fillRect(60, 90, W - 120, 6);
         ctx.fillStyle = C.red;
         ctx.fillRect(60, 90, (W - 120) * (t / DURATION), 6);
-        ctx.fillStyle = C.red;
         ctx.beginPath(); ctx.arc(76, 140, 10 * (0.7 + 0.3 * pulse(t, 4)), 0, Math.PI * 2); ctx.fill();
         text("LIVE DATA", 100, 141, 30, C.ink, { align: "left", weight: 700 });
-        const s = t.toFixed(2).padStart(5, "0");
-        text(`00:${s}`, W - 60, 141, 30, C.muted, { align: "right", weight: 700 });
-        text("SHU JOURNALISM", W / 2, H - 90, 26, C.muted, { weight: 700 });
-        if (DATA.sample) {
-          ctx.fillStyle = "rgba(255,194,74,0.16)";
-          ctx.fillRect(W - 220, 170, 160, 44);
-          text("示意數據", W - 140, 193, 24, C.gold, { weight: 700 });
-        }
+        text(`00:${t.toFixed(2).padStart(5, "0")}`, W - 60, 141, 30, C.muted, { align: "right", weight: 700 });
         ctx.restore();
       }
 
-      // 轉場：拍點上的色塊掃過
+      function ticker(t) {
+        if (t < 9 || t >= 43) return;
+        const a = prog(t, 9, 0.3) * (1 - prog(t, 42.7, 0.3));
+        ctx.save();
+        ctx.globalAlpha = a;
+        const y = 1740, h = 84;
+        ctx.fillStyle = "rgba(11,15,20,0.88)";
+        ctx.fillRect(0, y, W, h);
+        const str = DATA.specialties.join("   ●   ") + "   ●   ";
+        const sw = measure(str, 36, 700);
+        const off = ((t - 9) * 180) % sw;
+        ctx.beginPath(); ctx.rect(200, y, W - 200, h); ctx.clip();
+        for (let x = 200 - off; x < W; x += sw) text(str, x, y + h / 2 + 2, 36, C.ink, { align: "left", weight: 700 });
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = C.red;
+        ctx.fillRect(0, y, 200, h);
+        text("學術專長", 100, y + h / 2 + 2, 36, "#fff");
+        ctx.restore();
+      }
+
       function wipe(t, at, color) {
         const p = prog(t, at - BEAT / 2, BEAT);
         if (p <= 0 || p >= 1) return;
@@ -192,268 +240,340 @@
         ctx.restore();
       }
 
-      // ---------- 場景 ----------
-      // 1. 0–4s：開場閃切
+      // ================= 場景 =================
+      // 1. 0–4s：身分閃切
       function sceneHook(t) {
         background(t, C.red);
-        const words = ["新聞", "×", "AI", "×", "數據", "誰在改寫", "新聞的未來？", "?"];
-        const i = Math.min(words.length - 1, beatIndex(t));
-        const p = pulse(t, 5);
+        const words = [...DATA.roles, "他是誰？"];
+        const i = Math.min(words.length - 1, Math.floor(t / (4 / (words.length + 1))));
+        const p = pulse(t * 1.5, 5);
         const w = words[i];
         ctx.save();
         ctx.translate(W / 2 + (rand(i) - 0.5) * 30 * p, H / 2 + (rand(i + 4) - 0.5) * 30 * p);
-        ctx.scale(1 + 0.25 * p, 1 + 0.25 * p);
-        const size = w.length > 3 ? 120 : 300;
-        // RGB 分離
+        ctx.scale(1 + 0.2 * p, 1 + 0.2 * p);
+        const size = w.length > 3 ? 170 : 240;
         ctx.globalCompositeOperation = "lighter";
         text(w, -12 * p, 0, size, hexA(C.red, 0.9));
         text(w, 12 * p, 0, size, hexA(C.teal, 0.9));
         ctx.globalCompositeOperation = "source-over";
         text(w, 0, 0, size, C.ink, { alpha: 0.85 });
         ctx.restore();
-        if (i === 7) {
-          // 最後一拍白閃
-          ctx.fillStyle = `rgba(255,255,255,${0.9 * p})`;
-          ctx.fillRect(0, 0, W, H);
-        }
+        // 身分計數
+        text(`${String(Math.min(i + 1, DATA.roles.length)).padStart(2, "0")} / ${String(DATA.roles.length).padStart(2, "0")}`, W / 2, H / 2 + 220, 40, C.muted, { weight: 700 });
+        const fp = prog(t, 3.5, 0.5);
+        if (fp > 0) { ctx.fillStyle = `rgba(255,255,255,${0.9 * Math.sin(fp * Math.PI)})`; ctx.fillRect(0, 0, W, H); }
       }
 
-      // 2. 4–8s：姓名登場
-      function sceneName(t) {
+      // 2. 4–9s：人物登場
+      function sceneHero(t) {
         const lt = t - 4;
         background(t, C.teal);
-        const chars = [...DATA.name];
-        chars.forEach((ch, k) => {
-          const p = backOut(prog(lt, k * BEAT, 0.4));
-          if (p <= 0) return;
-          const x = W / 2 + (k - (chars.length - 1) / 2) * 290;
+        // 巨大背景字
+        text("HSU", W / 2 + 200 - lt * 30, 760, 420, hexA(C.teal, 0.08));
+        // 全身照從下方升起
+        const pp = easeOut(prog(lt, 0, 0.8));
+        const im = IMG.full;
+        if (im) {
+          const ih = 1500, iw = ih * im.width / im.height;
           ctx.save();
-          ctx.translate(x, H * 0.42 + (1 - p) * 200);
-          ctx.globalAlpha = clamp(p);
+          ctx.shadowColor = hexA(C.teal, 0.6);
+          ctx.shadowBlur = 60;
+          ctx.globalAlpha = pp;
+          ctx.drawImage(im, W - iw - 20 + (1 - pp) * 80, 330 + (1 - pp) * 500, iw, ih);
+          ctx.restore();
+        }
+        // 姓名逐字
+        [...DATA.name].forEach((ch, k) => {
+          const p = backOut(prog(lt, 0.5 + k * BEAT, 0.4));
+          if (p <= 0) return;
+          ctx.save();
+          ctx.translate(90 + 90, 520 + k * 250);
           ctx.scale(p, p);
-          text(ch, 0, 0, 260, C.ink);
+          ctx.globalAlpha = clamp(p);
+          text(ch, 0, 0, 220, C.ink, { shadow: 30 });
           ctx.restore();
         });
-        // 底線延展
-        const lp = easeOut(prog(lt, 1.5, 0.6));
+        const lp = easeOut(prog(lt, 2, 0.5));
         ctx.fillStyle = C.red;
-        ctx.fillRect(W / 2 - 420 * lp, H * 0.42 + 170, 840 * lp, 14);
-        // 職稱打字機
-        const tp = prog(lt, 2, 1.2);
+        ctx.fillRect(80, 1300, 520 * lp, 12);
+        const tp = prog(lt, 2.3, 1.2);
         const shown = [...DATA.title].slice(0, Math.ceil(tp * DATA.title.length)).join("");
-        text(shown, W / 2, H * 0.42 + 270, 58, C.teal, { weight: 700 });
-        const dp = easeOut(prog(lt, 3, 0.5));
-        text(DATA.degree, W / 2, H * 0.42 + 360, 44, C.muted, { weight: 700, alpha: dp });
+        text(shown, 80, 1380, 50, C.teal, { align: "left", weight: 700, shadow: 20 });
+        text(DATA.degree, 80, 1460, 44, C.ink, { align: "left", weight: 700, alpha: easeOut(prog(lt, 3.5, 0.5)), shadow: 20 });
       }
 
-      // 3. 8–14s：專長標籤逐拍彈出
-      function sceneTags(t) {
-        const lt = t - 8;
-        background(t, C.blue);
-        const hp = easeOut(prog(lt, 0, 0.4));
-        text("專長領域", W / 2, 360 - (1 - hp) * 60, 84, C.ink, { alpha: hp });
-        text(`${DATA.specialties.length} 大核心`, W / 2, 460, 44, C.gold, { alpha: hp, weight: 700 });
-        const colors = [C.red, C.teal, C.gold, C.blue, C.red, C.teal];
-        DATA.specialties.forEach((s, k) => {
-          const start = 0.5 + k * BEAT * 1.5;
-          const p = backOut(prog(lt, start, 0.35));
+      // 3. 9–16s：媒體生涯階梯
+      function sceneCareer(t) {
+        const lt = t - 9;
+        background(t, C.gold);
+        heading("媒體生涯", lt, C.ink, 300, "從駐地記者 到 新聞總監");
+        const n = DATA.career.length;
+        const x0 = 120, yTop = 560, gap = 220;
+        // 主軸
+        const lineP = easeOut(prog(lt, 0.4, n * BEAT * 2));
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
+        ctx.fillRect(x0 - 3, yTop, 6, gap * (n - 1));
+        ctx.fillStyle = C.gold;
+        ctx.fillRect(x0 - 3, yTop, 6, gap * (n - 1) * lineP);
+        DATA.career.forEach((c, k) => {
+          const start = 0.5 + k * BEAT * 2;
+          const p = backOut(prog(lt, start, 0.4));
           if (p <= 0) return;
-          const y = 620 + k * 170;
-          const fromLeft = k % 2 === 0;
-          const x = fromLeft ? lerp(-600, 110, p) : lerp(W + 600, W - 110, p);
-          const bw = 760;
+          const y = yTop + k * gap;
+          const last = k === n - 1;
           ctx.save();
-          ctx.fillStyle = hexA(colors[k], 0.18);
-          ctx.strokeStyle = colors[k];
-          ctx.lineWidth = 4;
-          const bx = fromLeft ? x : x - bw;
-          roundRect(bx, y - 60, bw, 120, 60);
-          ctx.fill(); ctx.stroke();
-          text(String(k + 1).padStart(2, "0"), bx + 80, y + 2, 44, colors[k], { weight: 900 });
-          text(s, bx + 150, y + 2, 56, C.ink, { align: "left", weight: 900 });
+          ctx.fillStyle = last ? C.red : C.gold;
+          ctx.beginPath(); ctx.arc(x0, y, 22 * p + (last ? 8 * pulse(t, 5) : 0), 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = clamp(p);
+          const x = x0 + 60 + (1 - p) * 200;
+          text(c.tag, x, y - 40, 42, C.muted, { align: "left", weight: 700 });
+          text(c.role, x, y + 25, last ? 80 : 64, last ? C.red : C.ink, { align: "left" });
+          if (c.org) text(c.org, x + measure(c.role, last ? 80 : 64) + 28, y + 30, 34, C.muted, { align: "left", weight: 700 });
           ctx.restore();
         });
+        // 媒體數計數
+        const cp = easeOut(prog(lt, 1, 4));
+        ctx.save();
+        ctx.globalAlpha = prog(lt, 1, 0.3);
+        text(`${Math.round(5 * cp)}`, W - 150, 1560, 170, C.gold);
+        text("家媒體", W - 150, 1660, 40, C.ink, { weight: 700 });
+        ctx.restore();
       }
 
-      function roundRect(x, y, w, h, r) {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.arcTo(x + w, y, x + w, y + h, r);
-        ctx.arcTo(x + w, y + h, x, y + h, r);
-        ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r);
-        ctx.closePath();
-      }
-
-      // 4. 14–20s：數字跳動
-      function sceneCounters(t) {
-        const lt = t - 14;
-        background(t, C.gold);
-        text("用數字認識他", W / 2, 330, 80, C.ink, { alpha: easeOut(prog(lt, 0, 0.4)) });
-        DATA.counters.forEach((c, k) => {
-          const start = 0.5 + k * 1.5;
-          const p = prog(lt, start, 1.2);
+      // 4. 16–22s：著作數字
+      function scenePubs(t) {
+        const lt = t - 16;
+        background(t, C.blue);
+        heading("學術產出", lt, C.ink, 300);
+        const cols = [C.gold, C.red, C.teal, C.blue];
+        DATA.pubs.forEach((c, k) => {
+          const big = k === 0;
+          const start = big ? 0.4 : 1.6 + (k - 1) * BEAT * 2;
+          const p = prog(lt, start, big ? 1.2 : 0.8);
           if (p <= 0) return;
-          const y = 620 + k * 400;
           const e = easeOut(p);
-          const landed = p >= 1;
-          const bump = landed ? 1 + 0.12 * Math.exp(-(lt - start - 1.2) * 10) : 1;
+          const landed = lt - start - (big ? 1.2 : 0.8);
+          const bump = landed > 0 ? 1 + 0.15 * Math.exp(-landed * 10) : 1;
+          let x, y, w, h;
+          if (big) { x = 90; y = 440; w = W - 180; h = 520; }
+          else { w = (W - 180 - 40) / 3; h = 420; x = 90 + (k - 1) * (w + 20); y = 1010; }
           ctx.save();
           ctx.globalAlpha = clamp(p * 4);
           ctx.fillStyle = "rgba(255,255,255,0.06)";
-          ctx.fillRect(90, y - 150, W - 180, 330);
-          ctx.fillStyle = [C.red, C.teal, C.gold][k];
-          ctx.fillRect(90, y - 150, 12, 330 * e);
-          text(c.label, 150, y - 90, 44, C.muted, { align: "left", weight: 700 });
-          ctx.translate(150, y + 60);
+          roundRect(x, y, w, h, 24); ctx.fill();
+          ctx.fillStyle = cols[k];
+          ctx.fillRect(x, y + h - 10, w * e, 10);
+          text(c.label, x + w / 2, y + 70, big ? 50 : 40, C.muted, { weight: 700 });
+          ctx.translate(x + w / 2, y + h / 2 + (big ? 40 : 20));
           ctx.scale(bump, bump);
-          const num = fmt(c.value * e);
-          ctx.font = `900 190px ${FONT}`;
-          const nw = ctx.measureText(num).width;
-          text(num, 0, 0, 190, C.ink, { align: "left" });
-          text(c.unit, nw + 20, 30, 80, [C.red, C.teal, C.gold][k], { align: "left" });
+          text(fmt(c.value * e), 0, 0, big ? 300 : 170, C.ink);
+          text(c.unit, 0, big ? 170 : 120, big ? 50 : 38, cols[k], { weight: 700 });
           ctx.restore();
         });
+        const np = easeOut(prog(lt, 4.5, 0.4));
+        text("含 TSSCI 期刊論文 1 篇・專書論文 1 篇", W / 2, 1560, 40, C.gold, { alpha: np, weight: 700 });
       }
 
-      // 5. 20–25s：成長曲線 + 柱狀
-      function sceneGrowth(t) {
-        const lt = t - 20;
+      // 5. 22–28s：逐年產出長條圖
+      function sceneYears(t) {
+        const lt = t - 22;
         background(t, C.teal);
-        const g = DATA.growth;
-        text(g.title, W / 2, 330, 68, C.ink, { alpha: easeOut(prog(lt, 0, 0.4)) });
-        const x0 = 130, x1 = W - 110, y0 = 1380, y1 = 620;
-        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        heading("著作年度分布", lt, C.ink, 300, "2016 – 2025");
+        const d = DATA.byYear;
+        const x0 = 110, x1 = W - 70, y0 = 1420, y1 = 620, max = 6;
+        ctx.strokeStyle = "rgba(255,255,255,0.18)";
         ctx.lineWidth = 2;
-        for (let v = 0; v <= 100; v += 25) {
-          const y = lerp(y0, y1, v / 100);
+        for (let v = 0; v <= max; v += 2) {
+          const y = lerp(y0, y1, v / max);
           ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
-          text(`${v}%`, x0 - 20, y, 26, C.muted, { align: "right", weight: 700 });
+          text(`${v}`, x0 - 24, y, 28, C.muted, { align: "right", weight: 700 });
         }
-        const n = g.values.length;
+        const n = d.years.length;
         const step = (x1 - x0) / n;
-        const pts = [];
-        g.values.forEach((v, k) => {
-          const p = backOut(prog(lt, 0.5 + k * BEAT, 0.4));
-          const bx = x0 + step * k + step * 0.2;
-          const bh = (y0 - y1) * (v / 100) * clamp(p, 0, 1.1);
-          ctx.fillStyle = hexA(C.teal, 0.35);
-          ctx.fillRect(bx, y0 - bh, step * 0.6, bh);
-          text(g.years[k], bx + step * 0.3, y0 + 50, 30, C.muted, { weight: 700 });
-          if (p > 0.6) text(`${Math.round(v * clamp(p))}%`, bx + step * 0.3, y0 - bh - 40, 34, C.ink, { weight: 900 });
-          pts.push([bx + step * 0.3, y0 - (y0 - y1) * (v / 100)]);
+        let acc = 0, accShown = 0;
+        d.values.forEach((v, k) => {
+          const p = backOut(prog(lt, 0.5 + k * BEAT * 0.75, 0.35));
+          const peak = v === Math.max(...d.values);
+          const bx = x0 + step * k + step * 0.15;
+          const bh = (y0 - y1) * (v / max) * clamp(p, 0, 1.1);
+          ctx.fillStyle = peak ? C.gold : hexA(C.teal, 0.75);
+          ctx.fillRect(bx, y0 - bh, step * 0.7, bh);
+          text(String(d.years[k]).slice(2), bx + step * 0.35, y0 + 44, 34, C.muted, { weight: 700 });
+          if (p > 0.5 && v > 0) text(`${v}`, bx + step * 0.35, y0 - bh - 36, 40, peak ? C.gold : C.ink);
+          acc += v;
+          if (p > 0.5) accShown = acc;
         });
-        // 折線逐段描繪
-        const lp = clamp((lt - 0.8) / (n * BEAT));
-        const segs = (n - 1) * lp;
-        ctx.save();
-        ctx.strokeStyle = C.gold;
-        ctx.lineWidth = 10;
-        ctx.lineJoin = "round";
-        ctx.shadowColor = C.gold;
-        ctx.shadowBlur = 30;
-        ctx.beginPath();
-        ctx.moveTo(...pts[0]);
-        let head = pts[0];
-        for (let k = 1; k < n; k++) {
-          const f = clamp(segs - (k - 1));
-          if (f <= 0) break;
-          head = [lerp(pts[k - 1][0], pts[k][0], f), lerp(pts[k - 1][1], pts[k][1], f)];
-          ctx.lineTo(...head);
-        }
-        ctx.stroke();
-        ctx.fillStyle = C.gold;
-        ctx.beginPath(); ctx.arc(head[0], head[1], 18 + 8 * pulse(t, 6), 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-        // 倍數強調
-        const kp = backOut(prog(lt, 4, 0.4));
+        // 累計數跑表
+        text(`累計 ${accShown} 篇`, W / 2, 1560, 64, C.ink, { alpha: prog(lt, 0.6, 0.3) });
+        const kp = backOut(prog(lt, 4.2, 0.4));
         if (kp > 0) {
-          const mult = Math.round(g.values[n - 1] / g.values[0]);
           ctx.save();
-          ctx.translate(W / 2, 1600);
+          ctx.translate(W / 2, 1660);
           ctx.scale(kp, kp);
-          text(`${g.years[0]} → ${g.years[n - 1]}  成長 ${mult} 倍`, 0, 0, 64, C.gold);
+          text("2021–2023 三年產出 14 篇", 0, 0, 44, C.gold, { weight: 700 });
           ctx.restore();
         }
       }
 
-      // 6. 25–28s：能力雷達
-      function sceneRadar(t) {
-        const lt = t - 25;
+      // 6. 28–33s：專書書牆
+      function sceneBooks(t) {
+        const lt = t - 28;
         background(t, C.red);
-        text("專業能力雷達", W / 2, 330, 72, C.ink, { alpha: easeOut(prog(lt, 0, 0.3)) });
-        const cx = W / 2, cy = 1000, R = 380;
-        const n = DATA.radar.length;
-        const ang = (k) => -Math.PI / 2 + (k / n) * Math.PI * 2;
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate((1 - easeOut(prog(lt, 0, 0.8))) * -0.6);
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
-        ctx.lineWidth = 2;
-        for (let r = 1; r <= 4; r++) {
-          ctx.beginPath();
-          for (let k = 0; k <= n; k++) { const a = ang(k); ctx.lineTo(Math.cos(a) * R * r / 4, Math.sin(a) * R * r / 4); }
-          ctx.stroke();
-        }
-        const p = easeOut(prog(lt, 0.5, 1.0));
-        ctx.beginPath();
-        DATA.radar.forEach((d, k) => {
-          const a = ang(k);
-          const wob = 1 + 0.03 * pulse(t, 6);
-          ctx.lineTo(Math.cos(a) * R * d.v * p * wob, Math.sin(a) * R * d.v * p * wob);
-        });
-        ctx.closePath();
-        ctx.fillStyle = hexA(C.red, 0.35);
-        ctx.strokeStyle = C.red;
-        ctx.lineWidth = 6;
-        ctx.fill(); ctx.stroke();
-        ctx.restore();
-        DATA.radar.forEach((d, k) => {
-          const a = ang(k);
-          const lp = easeOut(prog(lt, 0.3 + k * 0.2, 0.3));
-          text(d.label, cx + Math.cos(a) * (R + 110), cy + Math.sin(a) * (R + 80), 40, C.ink, { alpha: lp, weight: 700 });
-          text(`${Math.round(d.v * 100 * p)}`, cx + Math.cos(a) * (R + 110), cy + Math.sin(a) * (R + 80) + 50, 34, C.gold, { alpha: lp });
+        heading("7 本專書", lt, C.ink, 300, "新聞實務 × 族群傳播 × 教學實踐");
+        const cols = [C.red, C.gold, C.teal, C.blue, C.teal, C.gold, C.red];
+        const bh = 128, gap = 14, yBase = 1580;
+        DATA.books.forEach((b, k) => {
+          const start = 0.4 + k * BEAT;
+          const p = prog(lt, start, 0.3);
+          if (p <= 0) return;
+          const e = easeOut(p);
+          const settle = lt - start - 0.3;
+          const squash = settle > 0 ? 1 + 0.06 * Math.exp(-settle * 12) : 1;
+          const y = yBase - (k + 1) * (bh + gap);
+          const yy = lerp(-200, y, e);
+          const w = 880 - (k % 3) * 40;
+          const x = (W - w) / 2 + ((k % 2) ? 18 : -18);
+          ctx.save();
+          ctx.translate(x + w / 2, yy + bh / 2);
+          ctx.scale(squash, 2 - squash);
+          ctx.fillStyle = hexA(cols[k], 0.9);
+          roundRect(-w / 2, -bh / 2, w, bh, 10); ctx.fill();
+          ctx.fillStyle = "rgba(0,0,0,0.25)";
+          ctx.fillRect(-w / 2 + 110, -bh / 2, 4, bh);
+          text(String(b.y), -w / 2 + 56, 2, 34, "#0b0f14");
+          text(b.t, -w / 2 + 136, b.award ? -18 : 2, 38, "#0b0f14", { align: "left" });
+          if (b.award) text(`★ ${b.award}`, -w / 2 + 136, 34, 28, "#0b0f14", { align: "left", weight: 700 });
+          ctx.restore();
         });
       }
 
-      // 7. 28–30s：收尾
-      function sceneClosing(t) {
-        const lt = t - 28;
-        background(t, C.gold);
-        DATA.closing.forEach((line, k) => {
-          const p = backOut(prog(lt, k * BEAT, 0.4));
+      // 7. 33–38s：AI 教學與認證
+      function sceneAI(t) {
+        const lt = t - 33;
+        photoBackground(t, IMG.office, lt, 5, 0.25);
+        heading("AI 教學", lt, C.teal, 300, "開設 AI 與媒體相關課程");
+        const sp = easeOut(prog(lt, 0.3, 1.2));
+        text(`${Math.round(3 * sp)}`, 240, 640, 240, C.ink, { shadow: 20 });
+        text("所大學", 240, 790, 44, C.teal, { weight: 700 });
+        DATA.schools.forEach((s, k) => {
+          const p = backOut(prog(lt, 0.6 + k * BEAT, 0.35));
           if (p <= 0) return;
           ctx.save();
-          ctx.translate(W / 2, 700 + k * 160);
-          ctx.scale(p, p);
-          text(line, 0, 0, 90, k ? C.gold : C.ink);
+          ctx.globalAlpha = clamp(p);
+          const x = 430 + (1 - p) * 300, y = 520 + k * 120;
+          ctx.fillStyle = "rgba(25,196,201,0.2)";
+          ctx.strokeStyle = C.teal;
+          ctx.lineWidth = 3;
+          roundRect(x, y, 560, 96, 48); ctx.fill(); ctx.stroke();
+          text(s, x + 280, y + 50, 46, C.ink);
           ctx.restore();
         });
-        const np = easeOut(prog(lt, 1.0, 0.4));
+        // 認證徽章蓋章
+        const cp = prog(lt, 2.4, 0.35);
+        if (cp > 0) {
+          const s = lerp(2.2, 1, easeOut(cp));
+          ctx.save();
+          ctx.translate(W / 2, 1230);
+          ctx.rotate(-0.06);
+          ctx.scale(s, s);
+          ctx.globalAlpha = clamp(cp * 1.5);
+          ctx.strokeStyle = C.gold;
+          ctx.lineWidth = 8;
+          ctx.fillStyle = "rgba(11,15,20,0.8)";
+          roundRect(-420, -170, 840, 340, 30); ctx.fill(); ctx.stroke();
+          text("AI 認證", 0, -105, 40, C.gold, { weight: 700 });
+          text(DATA.cert[0], 0, -40, 44, C.ink, { weight: 700 });
+          text(DATA.cert[1], 0, 30, 56, C.ink);
+          ctx.fillStyle = C.gold;
+          roundRect(-80, 80, 160, 64, 32); ctx.fill();
+          text(DATA.cert[2], 0, 114, 38, "#0b0f14");
+          ctx.restore();
+          // 蓋章瞬間的閃光
+          const fl = prog(lt, 2.75, 0.3);
+          if (fl > 0 && fl < 1) { ctx.fillStyle = `rgba(255,194,74,${0.35 * (1 - fl)})`; ctx.fillRect(0, 0, W, H); }
+        }
+      }
+
+      // 8. 38–43s：AI 演講足跡（8 分音符節奏快速彈出）
+      function sceneTalks(t) {
+        const lt = t - 38;
+        photoBackground(t, IMG.event, lt, 5, 0.2);
+        heading("AI 演講足跡", lt, C.gold, 300);
+        const cp = easeOut(prog(lt, 0.4, 11 * BEAT / 2 + 0.3));
+        text(`${Math.round(DATA.talks.length * cp)}`, W / 2, 560, 220, C.ink, { shadow: 30 });
+        text("個機構・媒體・企業", W / 2, 700, 44, C.gold, { weight: 700, shadow: 20 });
+        // 流式排版
+        const size = 42, padX = 30, h = 88, gap = 18, maxW = W - 140;
+        let x = 70, y = 800;
+        const cols = [C.gold, C.teal, C.red, C.blue];
+        DATA.talks.forEach((s, k) => {
+          const w = measure(s, size) + padX * 2;
+          if (x + w > 70 + maxW) { x = 70; y += h + gap; }
+          const p = backOut(prog(lt, 0.4 + k * BEAT / 2, 0.3));
+          if (p > 0) {
+            ctx.save();
+            ctx.translate(x + w / 2, y + h / 2);
+            ctx.scale(p, p);
+            ctx.fillStyle = "rgba(11,15,20,0.8)";
+            ctx.strokeStyle = cols[k % 4];
+            ctx.lineWidth = 4;
+            roundRect(-w / 2, -h / 2, w, h, h / 2); ctx.fill(); ctx.stroke();
+            text(s, 0, 2, size, C.ink);
+            ctx.restore();
+          }
+          x += w + gap;
+        });
+      }
+
+      // 9. 43–48s：收尾
+      function sceneClosing(t) {
+        const lt = t - 43;
+        background(t, C.gold);
+        // 圓形大頭照
+        const pp = backOut(prog(lt, 0, 0.5));
+        const r = 260;
+        ctx.save();
+        ctx.translate(W / 2, 640);
+        ctx.scale(pp, pp);
+        ctx.beginPath(); ctx.arc(0, 0, r + 14, 0, Math.PI * 2); ctx.fillStyle = C.gold; ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
+        drawCover(IMG.portrait, -r, -r, r * 2, r * 2, 1 + 0.08 * lt / 5, 0.5, 0.25);
+        ctx.restore();
+        DATA.closing.forEach((line, k) => {
+          const p = backOut(prog(lt, 0.8 + k * BEAT, 0.4));
+          if (p <= 0) return;
+          ctx.save();
+          ctx.translate(W / 2, 1060 + k * 130);
+          ctx.scale(p, p);
+          text(line, 0, 0, 96, k ? C.gold : C.ink);
+          ctx.restore();
+        });
+        const np = easeOut(prog(lt, 2, 0.4));
         ctx.fillStyle = C.red;
-        ctx.fillRect(W / 2 - 300 * np, 1060, 600 * np, 10);
-        text(DATA.name, W / 2, 1200, 140, C.ink, { alpha: np });
-        text(DATA.title, W / 2, 1320, 48, C.teal, { alpha: np, weight: 700 });
-        // 結尾淡出
-        const fo = prog(t, DURATION - 0.3, 0.3);
+        ctx.fillRect(W / 2 - 300 * np, 1290, 600 * np, 10);
+        text(DATA.name, W / 2, 1410, 130, C.ink, { alpha: np });
+        text(DATA.title, W / 2, 1530, 48, C.teal, { alpha: np, weight: 700 });
+        text(DATA.blog, W / 2, 1620, 34, C.muted, { alpha: easeOut(prog(lt, 2.6, 0.4)), weight: 700 });
+        const fo = prog(t, DURATION - 0.4, 0.4);
         ctx.fillStyle = `rgba(0,0,0,${fo})`;
         ctx.fillRect(0, 0, W, H);
       }
 
       const SCENES = [
-        [0, 4, sceneHook],
-        [4, 8, sceneName],
-        [8, 14, sceneTags],
-        [14, 20, sceneCounters],
-        [20, 25, sceneGrowth],
-        [25, 28, sceneRadar],
-        [28, 30, sceneClosing],
+        [0, 4, sceneHook, C.red],
+        [4, 9, sceneHero, C.teal],
+        [9, 16, sceneCareer, C.gold],
+        [16, 22, scenePubs, C.blue],
+        [22, 28, sceneYears, C.teal],
+        [28, 33, sceneBooks, C.red],
+        [33, 38, sceneAI, C.teal],
+        [38, 43, sceneTalks, C.gold],
+        [43, 48, sceneClosing, C.red],
       ];
 
       function renderAt(t) {
         t = clamp(t, 0, DURATION - 1e-6);
         ctx.save();
-        // 每小節強拍的鏡頭微震
         const bar = t % (BEAT * 4);
         const shake = bar < 0.15 ? (0.15 - bar) * 60 : 0;
         ctx.translate((rand(beatIndex(t)) - 0.5) * shake, (rand(beatIndex(t) + 50) - 0.5) * shake);
@@ -461,8 +581,8 @@
         scene[2](t);
         ctx.restore();
         if (t >= 4) hud(t);
-        // 場景之間的色塊轉場
-        [[4, C.red], [8, C.teal], [14, C.gold], [20, C.blue], [25, C.red], [28, C.teal]].forEach(([at, col]) => wipe(t, at, col));
+        ticker(t);
+        SCENES.slice(1).forEach(([at, , , col]) => wipe(t, at, col));
       }
       window.renderAt = renderAt;
       window.DURATION = DURATION;
@@ -472,11 +592,12 @@
       const scrub = document.getElementById("scrub");
       const clock = document.getElementById("clock");
       const audio = document.getElementById("beat");
+      scrub.max = DURATION;
       let playing = false, t0 = 0, offset = 0;
       function frame(now) {
         if (!playing) return;
         const t = offset + (now - t0) / 1000;
-        if (t >= DURATION) { playing = false; playBtn.textContent = "▶ 播放"; audio.pause(); renderAt(DURATION); return; }
+        if (t >= DURATION) { playing = false; offset = DURATION; playBtn.textContent = "▶ 播放"; audio.pause(); renderAt(DURATION); return; }
         renderAt(t);
         scrub.value = t;
         clock.textContent = `${t.toFixed(2)}s`;
@@ -502,7 +623,7 @@
         clock.textContent = `${offset.toFixed(2)}s`;
       });
       if (new URLSearchParams(location.search).has("render")) document.body.classList.add("render");
-      renderAt(5.5);
+      window.ready.then(() => renderAt(6));
     </script>
   </body>
 </html>
