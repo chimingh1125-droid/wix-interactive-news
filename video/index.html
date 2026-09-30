@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>許志明 動態數據短影音</title>
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --ink: #f4f1ea;
+      }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Sans TC", "WenQuanYi Zen Hei", "Microsoft JhengHei", sans-serif;
+      }
+      body {
+        display: grid;
+        place-items: center;
+        gap: 12px;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+      canvas {
+        width: min(100%, calc((100vh - 90px) * 9 / 16));
+        aspect-ratio: 9 / 16;
+        background: #000;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 14px;
+      }
+      button {
+        font: inherit;
+        padding: 8px 16px;
+        border: 1px solid #3a4450;
+        background: #161d25;
+        color: var(--ink);
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      input[type="range"] { width: 220px; }
+      body.render { padding: 0; display: block; }
+      body.render .controls { display: none; }
+      body.render canvas { width: 1080px; height: 1920px; box-shadow: none; }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage" width="1080" height="1920"></canvas>
+    <div class="controls">
+      <button id="play">▶ 播放</button>
+      <input id="scrub" type="range" min="0" max="30" step="0.01" value="0">
+      <span id="clock">0.00s</span>
+    </div>
+    <audio id="beat" src="beat.wav" preload="auto"></audio>
+
+    <script>
+      // ============ 內容設定：替換這裡的數字即可重新輸出 ============
+      // sample: true 時畫面角落會標示「示意數據」。填入真實數字後改為 false。
+      const DATA = {
+        sample: true,
+        name: "許志明",
+        title: "世新大學新聞學系 副教授",
+        degree: "世新大學 傳播博士",
+        specialties: ["AI與媒體產業", "AI與新聞實務", "電視新聞", "專題報導", "新聞節目製作", "新媒體"],
+        counters: [
+          { label: "新聞實務年資", value: 25, unit: "年" },
+          { label: "指導學生作品", value: 300, unit: "+" },
+          { label: "授課學生人次", value: 5000, unit: "+" },
+        ],
+        // 課堂導入 AI 工具比例（逐年成長曲線）
+        growth: { title: "課堂導入 AI 工具比例", years: ["2021", "2022", "2023", "2024", "2025", "2026"], values: [5, 18, 42, 63, 81, 92] },
+        // 專業能力雷達
+        radar: [
+          { label: "電視新聞", v: 0.95 },
+          { label: "專題報導", v: 0.9 },
+          { label: "AI 應用", v: 0.88 },
+          { label: "節目製作", v: 0.92 },
+          { label: "新媒體", v: 0.85 },
+          { label: "數據敘事", v: 0.8 },
+        ],
+        closing: ["用數據說故事", "用 AI 重新定義新聞"],
+      };
+
+      // ============ 節奏設定 ============
+      const BPM = 120;
+      const BEAT = 60 / BPM; // 0.5s
+      const DURATION = 30;
+      const W = 1080, H = 1920;
+      const C = { bg: "#0b0f14", ink: "#f4f1ea", muted: "#8a96a3", red: "#ff4d3a", teal: "#19c4c9", gold: "#ffc24a", blue: "#4d8dff" };
+      const FONT = '"Noto Sans TC", "WenQuanYi Zen Hei", "Microsoft JhengHei", sans-serif';
+
+      const canvas = document.getElementById("stage");
+      const ctx = canvas.getContext("2d");
+
+      // ---------- 工具 ----------
+      const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const easeOut = (t) => 1 - Math.pow(1 - clamp(t), 3);
+      const easeInOut = (t) => { t = clamp(t); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+      const backOut = (t) => { t = clamp(t); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+      const prog = (t, start, dur) => clamp((t - start) / dur);
+      // 每拍後的衝擊值 1 → 0
+      const pulse = (t, decay = 8) => Math.exp(-((t % BEAT) / BEAT) * decay);
+      const beatIndex = (t) => Math.floor(t / BEAT);
+      const fmt = (n) => Math.round(n).toLocaleString("en-US");
+      function rand(seed) { const x = Math.sin(seed * 12.9898) * 43758.5453; return x - Math.floor(x); }
+
+      function text(str, x, y, size, color, opts = {}) {
+        ctx.save();
+        ctx.font = `${opts.weight || 900} ${size}px ${FONT}`;
+        ctx.fillStyle = color;
+        ctx.textAlign = opts.align || "center";
+        ctx.textBaseline = opts.baseline || "middle";
+        ctx.globalAlpha *= opts.alpha ?? 1;
+        if (opts.stroke) { ctx.lineWidth = opts.stroke; ctx.strokeStyle = color; ctx.strokeText(str, x, y); }
+        else ctx.fillText(str, x, y);
+        ctx.restore();
+      }
+
+      // ---------- 背景：網格 + 掃描光 + 粒子 ----------
+      function background(t, tint = C.teal) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, W, H);
+        const g = ctx.createRadialGradient(W / 2, H * 0.42, 50, W / 2, H * 0.42, 1100);
+        g.addColorStop(0, hexA(tint, 0.18 + 0.1 * pulse(t, 6)));
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        ctx.lineWidth = 1;
+        const off = (t * 60) % 90;
+        for (let x = -90 + off; x < W + 90; x += 90) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = -90 + off; y < H + 90; y += 90) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+        ctx.restore();
+
+        // 數據粒子
+        ctx.save();
+        for (let i = 0; i < 70; i++) {
+          const px = rand(i) * W;
+          const py = (rand(i + 99) * H - t * (40 + rand(i + 7) * 120)) % H;
+          const y = py < 0 ? py + H : py;
+          ctx.fillStyle = hexA(i % 3 ? C.teal : C.gold, 0.15 + rand(i + 3) * 0.35);
+          ctx.fillRect(px, y, 3, 3 + rand(i + 5) * 14);
+        }
+        ctx.restore();
+      }
+
+      function hexA(hex, a) {
+        const n = parseInt(hex.slice(1), 16);
+        return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+      }
+
+      function hud(t) {
+        // 上方進度條與時間碼，營造新聞直播感
+        ctx.save();
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.fillRect(60, 90, W - 120, 6);
+        ctx.fillStyle = C.red;
+        ctx.fillRect(60, 90, (W - 120) * (t / DURATION), 6);
+        ctx.fillStyle = C.red;
+        ctx.beginPath(); ctx.arc(76, 140, 10 * (0.7 + 0.3 * pulse(t, 4)), 0, Math.PI * 2); ctx.fill();
+        text("LIVE DATA", 100, 141, 30, C.ink, { align: "left", weight: 700 });
+        const s = t.toFixed(2).padStart(5, "0");
+        text(`00:${s}`, W - 60, 141, 30, C.muted, { align: "right", weight: 700 });
+        text("SHU JOURNALISM", W / 2, H - 90, 26, C.muted, { weight: 700 });
+        if (DATA.sample) {
+          ctx.fillStyle = "rgba(255,194,74,0.16)";
+          ctx.fillRect(W - 220, 170, 160, 44);
+          text("示意數據", W - 140, 193, 24, C.gold, { weight: 700 });
+        }
+        ctx.restore();
+      }
+
+      // 轉場：拍點上的色塊掃過
+      function wipe(t, at, color) {
+        const p = prog(t, at - BEAT / 2, BEAT);
+        if (p <= 0 || p >= 1) return;
+        const x = lerp(-W * 1.2, W * 1.2, easeInOut(p));
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x, 0); ctx.lineTo(x + W, 0); ctx.lineTo(x + W - 300, H); ctx.lineTo(x - 300, H);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // ---------- 場景 ----------
+      // 1. 0–4s：開場閃切
+      function sceneHook(t) {
+        background(t, C.red);
+        const words = ["新聞", "×", "AI", "×", "數據", "誰在改寫", "新聞的未來？", "?"];
+        const i = Math.min(words.length - 1, beatIndex(t));
+        const p = pulse(t, 5);
+        const w = words[i];
+        ctx.save();
+        ctx.translate(W / 2 + (rand(i) - 0.5) * 30 * p, H / 2 + (rand(i + 4) - 0.5) * 30 * p);
+        ctx.scale(1 + 0.25 * p, 1 + 0.25 * p);
+        const size = w.length > 3 ? 120 : 300;
+        // RGB 分離
+        ctx.globalCompositeOperation = "lighter";
+        text(w, -12 * p, 0, size, hexA(C.red, 0.9));
+        text(w, 12 * p, 0, size, hexA(C.teal, 0.9));
+        ctx.globalCompositeOperation = "source-over";
+        text(w, 0, 0, size, C.ink, { alpha: 0.85 });
+        ctx.restore();
+        if (i === 7) {
+          // 最後一拍白閃
+          ctx.fillStyle = `rgba(255,255,255,${0.9 * p})`;
+          ctx.fillRect(0, 0, W, H);
+        }
+      }
+
+      // 2. 4–8s：姓名登場
+      function sceneName(t) {
+        const lt = t - 4;
+        background(t, C.teal);
+        const chars = [...DATA.name];
+        chars.forEach((ch, k) => {
+          const p = backOut(prog(lt, k * BEAT, 0.4));
+          if (p <= 0) return;
+          const x = W / 2 + (k - (chars.length - 1) / 2) * 290;
+          ctx.save();
+          ctx.translate(x, H * 0.42 + (1 - p) * 200);
+          ctx.globalAlpha = clamp(p);
+          ctx.scale(p, p);
+          text(ch, 0, 0, 260, C.ink);
+          ctx.restore();
+        });
+        // 底線延展
+        const lp = easeOut(prog(lt, 1.5, 0.6));
+        ctx.fillStyle = C.red;
+        ctx.fillRect(W / 2 - 420 * lp, H * 0.42 + 170, 840 * lp, 14);
+        // 職稱打字機
+        const tp = prog(lt, 2, 1.2);
+        const shown = [...DATA.title].slice(0, Math.ceil(tp * DATA.title.length)).join("");
+        text(shown, W / 2, H * 0.42 + 270, 58, C.teal, { weight: 700 });
+        const dp = easeOut(prog(lt, 3, 0.5));
+        text(DATA.degree, W / 2, H * 0.42 + 360, 44, C.muted, { weight: 700, alpha: dp });
+      }
+
+      // 3. 8–14s：專長標籤逐拍彈出
+      function sceneTags(t) {
+        const lt = t - 8;
+        background(t, C.blue);
+        const hp = easeOut(prog(lt, 0, 0.4));
+        text("專長領域", W / 2, 360 - (1 - hp) * 60, 84, C.ink, { alpha: hp });
+        text(`${DATA.specialties.length} 大核心`, W / 2, 460, 44, C.gold, { alpha: hp, weight: 700 });
+        const colors = [C.red, C.teal, C.gold, C.blue, C.red, C.teal];
+        DATA.specialties.forEach((s, k) => {
+          const start = 0.5 + k * BEAT * 1.5;
+          const p = backOut(prog(lt, start, 0.35));
+          if (p <= 0) return;
+          const y = 620 + k * 170;
+          const fromLeft = k % 2 === 0;
+          const x = fromLeft ? lerp(-600, 110, p) : lerp(W + 600, W - 110, p);
+          const bw = 760;
+          ctx.save();
+          ctx.fillStyle = hexA(colors[k], 0.18);
+          ctx.strokeStyle = colors[k];
+          ctx.lineWidth = 4;
+          const bx = fromLeft ? x : x - bw;
+          roundRect(bx, y - 60, bw, 120, 60);
+          ctx.fill(); ctx.stroke();
+          text(String(k + 1).padStart(2, "0"), bx + 80, y + 2, 44, colors[k], { weight: 900 });
+          text(s, bx + 150, y + 2, 56, C.ink, { align: "left", weight: 900 });
+          ctx.restore();
+        });
+      }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      // 4. 14–20s：數字跳動
+      function sceneCounters(t) {
+        const lt = t - 14;
+        background(t, C.gold);
+        text("用數字認識他", W / 2, 330, 80, C.ink, { alpha: easeOut(prog(lt, 0, 0.4)) });
+        DATA.counters.forEach((c, k) => {
+          const start = 0.5 + k * 1.5;
+          const p = prog(lt, start, 1.2);
+          if (p <= 0) return;
+          const y = 620 + k * 400;
+          const e = easeOut(p);
+          const landed = p >= 1;
+          const bump = landed ? 1 + 0.12 * Math.exp(-(lt - start - 1.2) * 10) : 1;
+          ctx.save();
+          ctx.globalAlpha = clamp(p * 4);
+          ctx.fillStyle = "rgba(255,255,255,0.06)";
+          ctx.fillRect(90, y - 150, W - 180, 330);
+          ctx.fillStyle = [C.red, C.teal, C.gold][k];
+          ctx.fillRect(90, y - 150, 12, 330 * e);
+          text(c.label, 150, y - 90, 44, C.muted, { align: "left", weight: 700 });
+          ctx.translate(150, y + 60);
+          ctx.scale(bump, bump);
+          const num = fmt(c.value * e);
+          ctx.font = `900 190px ${FONT}`;
+          const nw = ctx.measureText(num).width;
+          text(num, 0, 0, 190, C.ink, { align: "left" });
+          text(c.unit, nw + 20, 30, 80, [C.red, C.teal, C.gold][k], { align: "left" });
+          ctx.restore();
+        });
+      }
+
+      // 5. 20–25s：成長曲線 + 柱狀
+      function sceneGrowth(t) {
+        const lt = t - 20;
+        background(t, C.teal);
+        const g = DATA.growth;
+        text(g.title, W / 2, 330, 68, C.ink, { alpha: easeOut(prog(lt, 0, 0.4)) });
+        const x0 = 130, x1 = W - 110, y0 = 1380, y1 = 620;
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 2;
+        for (let v = 0; v <= 100; v += 25) {
+          const y = lerp(y0, y1, v / 100);
+          ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+          text(`${v}%`, x0 - 20, y, 26, C.muted, { align: "right", weight: 700 });
+        }
+        const n = g.values.length;
+        const step = (x1 - x0) / n;
+        const pts = [];
+        g.values.forEach((v, k) => {
+          const p = backOut(prog(lt, 0.5 + k * BEAT, 0.4));
+          const bx = x0 + step * k + step * 0.2;
+          const bh = (y0 - y1) * (v / 100) * clamp(p, 0, 1.1);
+          ctx.fillStyle = hexA(C.teal, 0.35);
+          ctx.fillRect(bx, y0 - bh, step * 0.6, bh);
+          text(g.years[k], bx + step * 0.3, y0 + 50, 30, C.muted, { weight: 700 });
+          if (p > 0.6) text(`${Math.round(v * clamp(p))}%`, bx + step * 0.3, y0 - bh - 40, 34, C.ink, { weight: 900 });
+          pts.push([bx + step * 0.3, y0 - (y0 - y1) * (v / 100)]);
+        });
+        // 折線逐段描繪
+        const lp = clamp((lt - 0.8) / (n * BEAT));
+        const segs = (n - 1) * lp;
+        ctx.save();
+        ctx.strokeStyle = C.gold;
+        ctx.lineWidth = 10;
+        ctx.lineJoin = "round";
+        ctx.shadowColor = C.gold;
+        ctx.shadowBlur = 30;
+        ctx.beginPath();
+        ctx.moveTo(...pts[0]);
+        let head = pts[0];
+        for (let k = 1; k < n; k++) {
+          const f = clamp(segs - (k - 1));
+          if (f <= 0) break;
+          head = [lerp(pts[k - 1][0], pts[k][0], f), lerp(pts[k - 1][1], pts[k][1], f)];
+          ctx.lineTo(...head);
+        }
+        ctx.stroke();
+        ctx.fillStyle = C.gold;
+        ctx.beginPath(); ctx.arc(head[0], head[1], 18 + 8 * pulse(t, 6), 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        // 倍數強調
+        const kp = backOut(prog(lt, 4, 0.4));
+        if (kp > 0) {
+          const mult = Math.round(g.values[n - 1] / g.values[0]);
+          ctx.save();
+          ctx.translate(W / 2, 1600);
+          ctx.scale(kp, kp);
+          text(`${g.years[0]} → ${g.years[n - 1]}  成長 ${mult} 倍`, 0, 0, 64, C.gold);
+          ctx.restore();
+        }
+      }
+
+      // 6. 25–28s：能力雷達
+      function sceneRadar(t) {
+        const lt = t - 25;
+        background(t, C.red);
+        text("專業能力雷達", W / 2, 330, 72, C.ink, { alpha: easeOut(prog(lt, 0, 0.3)) });
+        const cx = W / 2, cy = 1000, R = 380;
+        const n = DATA.radar.length;
+        const ang = (k) => -Math.PI / 2 + (k / n) * Math.PI * 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((1 - easeOut(prog(lt, 0, 0.8))) * -0.6);
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.lineWidth = 2;
+        for (let r = 1; r <= 4; r++) {
+          ctx.beginPath();
+          for (let k = 0; k <= n; k++) { const a = ang(k); ctx.lineTo(Math.cos(a) * R * r / 4, Math.sin(a) * R * r / 4); }
+          ctx.stroke();
+        }
+        const p = easeOut(prog(lt, 0.5, 1.0));
+        ctx.beginPath();
+        DATA.radar.forEach((d, k) => {
+          const a = ang(k);
+          const wob = 1 + 0.03 * pulse(t, 6);
+          ctx.lineTo(Math.cos(a) * R * d.v * p * wob, Math.sin(a) * R * d.v * p * wob);
+        });
+        ctx.closePath();
+        ctx.fillStyle = hexA(C.red, 0.35);
+        ctx.strokeStyle = C.red;
+        ctx.lineWidth = 6;
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+        DATA.radar.forEach((d, k) => {
+          const a = ang(k);
+          const lp = easeOut(prog(lt, 0.3 + k * 0.2, 0.3));
+          text(d.label, cx + Math.cos(a) * (R + 110), cy + Math.sin(a) * (R + 80), 40, C.ink, { alpha: lp, weight: 700 });
+          text(`${Math.round(d.v * 100 * p)}`, cx + Math.cos(a) * (R + 110), cy + Math.sin(a) * (R + 80) + 50, 34, C.gold, { alpha: lp });
+        });
+      }
+
+      // 7. 28–30s：收尾
+      function sceneClosing(t) {
+        const lt = t - 28;
+        background(t, C.gold);
+        DATA.closing.forEach((line, k) => {
+          const p = backOut(prog(lt, k * BEAT, 0.4));
+          if (p <= 0) return;
+          ctx.save();
+          ctx.translate(W / 2, 700 + k * 160);
+          ctx.scale(p, p);
+          text(line, 0, 0, 90, k ? C.gold : C.ink);
+          ctx.restore();
+        });
+        const np = easeOut(prog(lt, 1.0, 0.4));
+        ctx.fillStyle = C.red;
+        ctx.fillRect(W / 2 - 300 * np, 1060, 600 * np, 10);
+        text(DATA.name, W / 2, 1200, 140, C.ink, { alpha: np });
+        text(DATA.title, W / 2, 1320, 48, C.teal, { alpha: np, weight: 700 });
+        // 結尾淡出
+        const fo = prog(t, DURATION - 0.3, 0.3);
+        ctx.fillStyle = `rgba(0,0,0,${fo})`;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      const SCENES = [
+        [0, 4, sceneHook],
+        [4, 8, sceneName],
+        [8, 14, sceneTags],
+        [14, 20, sceneCounters],
+        [20, 25, sceneGrowth],
+        [25, 28, sceneRadar],
+        [28, 30, sceneClosing],
+      ];
+
+      function renderAt(t) {
+        t = clamp(t, 0, DURATION - 1e-6);
+        ctx.save();
+        // 每小節強拍的鏡頭微震
+        const bar = t % (BEAT * 4);
+        const shake = bar < 0.15 ? (0.15 - bar) * 60 : 0;
+        ctx.translate((rand(beatIndex(t)) - 0.5) * shake, (rand(beatIndex(t) + 50) - 0.5) * shake);
+        const scene = SCENES.find(([a, b]) => t >= a && t < b);
+        scene[2](t);
+        ctx.restore();
+        if (t >= 4) hud(t);
+        // 場景之間的色塊轉場
+        [[4, C.red], [8, C.teal], [14, C.gold], [20, C.blue], [25, C.red], [28, C.teal]].forEach(([at, col]) => wipe(t, at, col));
+      }
+      window.renderAt = renderAt;
+      window.DURATION = DURATION;
+
+      // ---------- 瀏覽器預覽 ----------
+      const playBtn = document.getElementById("play");
+      const scrub = document.getElementById("scrub");
+      const clock = document.getElementById("clock");
+      const audio = document.getElementById("beat");
+      let playing = false, t0 = 0, offset = 0;
+      function frame(now) {
+        if (!playing) return;
+        const t = offset + (now - t0) / 1000;
+        if (t >= DURATION) { playing = false; playBtn.textContent = "▶ 播放"; audio.pause(); renderAt(DURATION); return; }
+        renderAt(t);
+        scrub.value = t;
+        clock.textContent = `${t.toFixed(2)}s`;
+        requestAnimationFrame(frame);
+      }
+      playBtn.addEventListener("click", () => {
+        playing = !playing;
+        playBtn.textContent = playing ? "❚❚ 暫停" : "▶ 播放";
+        if (playing) {
+          if (offset >= DURATION - 0.05) offset = 0;
+          t0 = performance.now();
+          try { audio.currentTime = offset; audio.play().catch(() => {}); } catch (e) {}
+          requestAnimationFrame(frame);
+        } else {
+          offset = parseFloat(scrub.value);
+          audio.pause();
+        }
+      });
+      scrub.addEventListener("input", () => {
+        offset = parseFloat(scrub.value);
+        playing = false; playBtn.textContent = "▶ 播放"; audio.pause();
+        renderAt(offset);
+        clock.textContent = `${offset.toFixed(2)}s`;
+      });
+      if (new URLSearchParams(location.search).has("render")) document.body.classList.add("render");
+      renderAt(5.5);
+    </script>
+  </body>
+</html>
