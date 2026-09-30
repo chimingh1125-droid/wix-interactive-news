@@ -19,6 +19,10 @@ PICK = {
     "littleworld": (0.3, 0.72), "interview": (0.4, 0.62), "writing": (0.42, 0.78), "verify": (0.35, 0.72),
     "editing": (0.3, 0.86), "mission": (0.25, 0.8), "legacy": (0.4, 0.75), "endcard": (0.45, 0.8),
 }
+# shots tied to an event instead of a fraction: (scene, shot) -> (line id,
+# seconds after that line ends). The dragon dives at the doors 1.3 s after
+# L12; the lead type has formed the 小世界 masthead 1.5 s after L16.
+EVENT = {("writing", 0): ("L12", 1.32), ("editing", 0): ("L16", 1.5)}
 NAMES = {
     "opening": "開場：木柵・景美溪・山洞口", "title": "片名卡", "founding": "開山立派（1956）", "motto": "總訣：德智兼修 手腦並用",
     "littleworld": "《小世界》創刊（1957）", "interview": "第一式 採訪：獨孤九劍", "writing": "第二式 寫作：降龍十八掌",
@@ -40,10 +44,13 @@ def main():
     for i, s in enumerate(tl["scenes"]):
         for k, fr in enumerate(PICK[s["id"]]):
             t = s["start"] + fr * s["dur"]
+            ev = EVENT.get((s["id"], k))
+            if ev:
+                t = next(ln["abs1"] for ln in s["lines"] if ln["id"] == ev[0]) + ev[1]
             p = os.path.join(out_dir, f"{i + 1:02d}_{s['id']}_{k + 1}.jpg")
             grab(video, t, p)
             shots.append((p, f"{i + 1:02d} {NAMES[s['id']]}  @{t:.1f}s"))
-    font = ImageFont.truetype("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", 22)
+    font = ImageFont.truetype("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", 22, index=3)  # TC face
     tw, th = 640, 360
     cols = 4
     rows = (len(shots) + cols - 1) // cols
