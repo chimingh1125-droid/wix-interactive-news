@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 與新聞：重組、信任與治理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,700;1,8..60,500&display=swap">
+<style>
+/* Layout: 1920×1080 drafting sheets scaled to the window. Every slide is one blueprint sheet —
+   grid paper, a ruled frame and a title block with the sheet number — taken from the source deck. */
+:root{
+  --paper:#F1EFE8; --paper-2:#E6E3D9; --card:#F8F7F2; --outer:#D9D5CA;
+  --ink:#16233D; --ink-2:#44506A; --ink-3:#6E788D;
+  --blue:#2B59A6; --rust:#A84E2A; --sage:#41704F; --slate:#5B6E8F;
+  --blue-soft:#DCE4F1; --rust-soft:#F2E2D7; --sage-soft:#DCE8DF; --slate-soft:#E0E5EE;
+  --machine:#D8DDE6; --human:#F4E6DA;
+  --deep:#16233D; --on-deep:#F1ECE0; --gold:#D7B677;
+  --grid:rgba(22,35,61,.06); --grid-strong:rgba(22,35,61,.13); --rule:rgba(22,35,61,.3);
+  --shade-rgb:22,35,61; --flash-rgb:226,128,72;
+  --flute:rgba(22,35,61,.22); --ai-cube:#3E4A63; --human-cube:#FBF5EE;
+  --img-filter:none;
+  --f-serif:'Source Serif 4','Noto Serif TC','Songti TC',Georgia,serif;
+  --f-latin:'Source Serif 4',Georgia,serif;
+  --f-sans:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.2,.75,.15,1);
+  --base:.45s;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1C31; --paper-2:#172944; --card:#15283F; --outer:#08111E;
+    --ink:#E9EEF6; --ink-2:#B4C1D5; --ink-3:#8696B0;
+    --blue:#82ADF2; --rust:#EE9C74; --sage:#8DCBA0; --slate:#A4B4CF;
+    --blue-soft:#1C355A; --rust-soft:#432C24; --sage-soft:#1D3A2E; --slate-soft:#22324C;
+    --machine:#1A2E4B; --human:#36282A;
+    --deep:#E8E2D2; --on-deep:#16233D; --gold:#87621F;
+    --grid:rgba(150,190,240,.07); --grid-strong:rgba(150,190,240,.15); --rule:rgba(180,205,240,.32);
+    --shade-rgb:0,5,14; --flash-rgb:240,160,110;
+    --flute:rgba(170,200,240,.2); --ai-cube:#2C3D5A; --human-cube:#F4DFCB;
+    --img-filter:invert(.9) hue-rotate(180deg) saturate(1.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1C31; --paper-2:#172944; --card:#15283F; --outer:#08111E;
+  --ink:#E9EEF6; --ink-2:#B4C1D5; --ink-3:#8696B0;
+  --blue:#82ADF2; --rust:#EE9C74; --sage:#8DCBA0; --slate:#A4B4CF;
+  --blue-soft:#1C355A; --rust-soft:#432C24; --sage-soft:#1D3A2E; --slate-soft:#22324C;
+  --machine:#1A2E4B; --human:#36282A;
+  --deep:#E8E2D2; --on-deep:#16233D; --gold:#87621F;
+  --grid:rgba(150,190,240,.07); --grid-strong:rgba(150,190,240,.15); --rule:rgba(180,205,240,.32);
+  --shade-rgb:0,5,14; --flash-rgb:240,160,110;
+  --flute:rgba(170,200,240,.2); --ai-cube:#2C3D5A; --human-cube:#F4DFCB;
+  --img-filter:invert(.9) hue-rotate(180deg) saturate(1.25);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--outer);color:var(--ink);font-family:var(--f-sans);overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#viewport{position:fixed;inset:0;overflow:hidden;touch-action:pan-y}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;perspective:2600px;box-shadow:0 24px 70px rgba(var(--shade-rgb),.28)}
+p,h1,h2,h3,h4,ul,figure,blockquote{margin:0}
+h1,h2,h3{font-family:var(--f-serif);color:var(--ink);text-wrap:balance}
+img{max-width:100%}
+
+/* ---------- sheet ---------- */
+.slide{position:absolute;inset:0;overflow:hidden;visibility:hidden;
+  background:
+    linear-gradient(var(--grid) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/40px 40px,
+    var(--paper)}
+.slide::before{content:"";position:absolute;inset:32px;border:1.5px solid var(--rule);box-shadow:inset 0 0 0 7px transparent,inset 0 0 0 8px var(--grid-strong);pointer-events:none}
+.slide.is-active,.slide.is-leaving{visibility:visible}
+.slide.is-active{z-index:2}
+.slide.is-leaving{z-index:1;pointer-events:none}
+.slide.is-active[data-dir="f"]{animation:inF .85s var(--ease) both}
+.slide.is-active[data-dir="b"]{animation:inB .85s var(--ease) both}
+.slide.is-leaving[data-dir="f"]{animation:outF .7s var(--ease) both}
+.slide.is-leaving[data-dir="b"]{animation:outB .7s var(--ease) both}
+@keyframes inF{from{opacity:0;transform:translate3d(140px,0,-120px) rotateY(-7deg)}}
+@keyframes inB{from{opacity:0;transform:translate3d(-140px,0,-120px) rotateY(7deg)}}
+@keyframes outF{to{opacity:0;transform:translate3d(-180px,0,-260px) rotateY(8deg)}}
+@keyframes outB{to{opacity:0;transform:translate3d(180px,0,-260px) rotateY(-8deg)}}
+
+.tblock{position:absolute;right:32px;bottom:32px;display:flex;font-family:var(--f-mono);font-size:18px;color:var(--ink-3);background:var(--paper);border-top:1.5px solid var(--rule);border-left:1.5px solid var(--rule);z-index:3}
+.tblock span,.tblock b{padding:10px 18px;border-right:1.5px solid var(--rule);white-space:nowrap;font-weight:400}
+.tblock b{border-right:0;color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ---------- type ---------- */
+.head{position:absolute;left:120px;top:92px;width:1680px}
+.eyebrow{display:flex;align-items:center;gap:16px;margin:0 0 20px;font-family:var(--f-mono);font-size:21px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--rust)}
+.eyebrow::before{content:"";width:40px;height:2px;background:currentColor}
+h1{font-weight:900}
+h2{font-size:58px;line-height:1.24;font-weight:900;letter-spacing:.01em}
+h2 .en{display:block;margin-top:6px;font-family:var(--f-latin);font-style:italic;font-weight:500;font-size:36px;letter-spacing:0;color:var(--ink-2)}
+h3{font-size:34px;line-height:1.3;font-weight:700}
+.en-s{font-family:var(--f-latin);font-style:italic;font-weight:500;color:var(--ink-2)}
+.num{font-variant-numeric:tabular-nums}
+.hl{color:var(--rust);font-weight:700}
+.src{position:absolute;left:120px;bottom:50px;font-family:var(--f-mono);font-size:20px;color:var(--ink-3);letter-spacing:.03em}
+.pill{display:inline-block;padding:8px 24px;border:1.5px solid var(--rule);border-radius:999px;background:var(--card);font-size:22px;color:var(--ink-2)}
+.card{background:var(--card);border:1.5px solid var(--rule)}
+.corners{position:relative}
+.corners::after{content:"";position:absolute;inset:-7px;pointer-events:none;
+  background:
+   linear-gradient(var(--rust),var(--rust)) left top/26px 4px no-repeat,linear-gradient(var(--rust),var(--rust)) left top/4px 26px no-repeat,
+   linear-gradient(var(--rust),var(--rust)) right top/26px 4px no-repeat,linear-gradient(var(--rust),var(--rust)) right top/4px 26px no-repeat,
+   linear-gradient(var(--rust),var(--rust)) left bottom/26px 4px no-repeat,linear-gradient(var(--rust),var(--rust)) left bottom/4px 26px no-repeat,
+   linear-gradient(var(--rust),var(--rust)) right bottom/26px 4px no-repeat,linear-gradient(var(--rust),var(--rust)) right bottom/4px 26px no-repeat}
+.gl{pointer-events:none}
+.gl canvas{display:block}
+svg .pop,svg .spin,svg .bob{transform-box:fill-box;transform-origin:center}
+
+/* ---------- motion vocabulary (runs only on the active sheet; at rest everything is visible) ---------- */
+.slide.is-active .rv{animation:rv .9s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s))}
+.slide.is-active .rl{animation:rl .9s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s))}
+.slide.is-active .rr{animation:rr .9s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s))}
+.slide.is-active .fade{animation:fade 1s ease both;animation-delay:calc(var(--base) + var(--d,0s))}
+.slide.is-active .pop{animation:pop .7s cubic-bezier(.3,1.5,.5,1) both;animation-delay:calc(var(--base) + var(--d,0s))}
+.slide.is-active .flipY{animation:flipY 1s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s));transform-origin:0 50%}
+.slide.is-active .flipX{animation:flipX .95s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s));transform-origin:50% 100%}
+.slide.is-active .wipe{animation:wipe 1.1s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s))}
+.slide.is-active .grow-x{animation:growX 1.4s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s));transform-origin:0 50%}
+.slide.is-active .grow-y{animation:growY 1.2s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s));transform-origin:50% 100%}
+.draw{stroke-dasharray:1}
+.slide.is-active .draw{animation:draw 1.4s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s))}
+.ch{display:inline-block}
+.slide.is-active .split .ch{animation:ch .8s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s) + var(--i) * 20ms)}
+.slide.is-active .type .ch{animation:typeIn .08s linear both;animation-delay:calc(var(--base) + var(--d,0s) + var(--i) * 55ms)}
+@keyframes rv{from{opacity:0;transform:translate3d(0,36px,0)}}
+@keyframes rl{from{opacity:0;transform:translate3d(-70px,0,0)}}
+@keyframes rr{from{opacity:0;transform:translate3d(70px,0,0)}}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.55)}}
+@keyframes flipY{from{opacity:0;transform:perspective(1600px) rotateY(-75deg)}}
+@keyframes flipX{from{opacity:0;transform:perspective(1400px) rotateX(75deg)}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes growX{from{transform:scaleX(0)}}
+@keyframes growY{from{transform:scaleY(0)}}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes ch{from{opacity:0;transform:translate3d(0,.4em,0)}}
+@keyframes typeIn{from{opacity:0}to{opacity:1}}
+@keyframes float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-10px,0)}}
+
+/* ---------- 3D primitives built by script ---------- */
+.box3d,.cyl{position:relative;transform-style:preserve-3d}
+.face{position:absolute;font-style:normal;-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--card);border:1.5px solid var(--ink-2);box-shadow:inset 0 0 0 999px rgba(var(--shade-rgb),var(--sh,0))}
+.cyl .face{border:0;border-left:1.5px solid var(--flute)}
+
+/* ---------- S1 cover ---------- */
+.s1 .news-cols{position:absolute;left:1000px;right:72px;top:72px;bottom:72px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+.s1 .news-cols i{background:repeating-linear-gradient(to bottom,transparent 0 16px,var(--grid-strong) 16px 18px)}
+.s1 .news-cols i:nth-child(2){margin-top:140px}
+.s1 .news-cols i:nth-child(3){margin-bottom:200px}
+.s1 .gl{position:absolute;left:860px;top:230px;width:1020px;height:780px}
+.s1 .cover-text{position:absolute;left:120px;top:140px;width:1060px}
+.s1 h1{font-size:118px;line-height:1.16;letter-spacing:.015em}
+.s1 .rule{width:240px;height:4px;margin:40px 0 30px;background:var(--rust)}
+.s1 .cover-sub{font-size:40px;line-height:1.5;font-weight:500;color:var(--ink-2)}
+.s1 .cover-quote{position:absolute;left:120px;top:720px;padding:34px 46px;font-size:38px;line-height:1.6;font-weight:500;color:var(--ink);background:var(--card);border:1.5px solid var(--rule)}
+.s1 .hint{position:absolute;left:120px;bottom:52px;font-family:var(--f-mono);font-size:20px;letter-spacing:.06em;color:var(--ink-3)}
+
+/* ---------- S2 ---------- */
+.s2 .head{width:770px}
+.s2 h2{font-size:54px}
+.s2-stats{position:absolute;left:120px;top:404px;width:770px;display:flex;flex-direction:column;align-items:flex-start;gap:30px}
+.stat{width:100%;display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:34px;row-gap:20px;padding:26px 36px 30px;background:var(--card);border:1.5px solid var(--rule)}
+.stat-num{font-family:var(--f-latin);font-weight:700;font-size:128px;line-height:.95;letter-spacing:-.02em;color:var(--ink)}
+.stat-num .num{display:inline-block;min-width:1.12em;text-align:right}
+.stat-num small{font-size:.58em;margin-left:4px}
+.stat p{font-size:28px;line-height:1.5;font-weight:500;color:var(--ink)}
+.ruler{grid-column:1/-1;position:relative;height:16px;border:1.5px solid var(--rule);background:repeating-linear-gradient(90deg,var(--rule) 0 1.5px,transparent 1.5px 10%)}
+.ruler i{position:absolute;left:0;top:0;bottom:0;width:calc(var(--w) * 100%);background:var(--rust)}
+.ruler span{position:absolute;right:0;top:22px;font-family:var(--f-mono);font-size:18px;color:var(--ink-3)}
+.s2-diagram{position:absolute;left:940px;top:120px;width:880px;height:800px}
+.s2-diagram svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.beam{fill:none;stroke:var(--blue);stroke-width:30;opacity:.92}
+.flow{fill:none;stroke:var(--card);stroke-width:3;stroke-dasharray:12 22;opacity:0}
+.slide.is-active .flow{animation:flow 1.1s linear infinite,fadeIn .6s ease forwards;animation-delay:0s,calc(var(--base) + 1.9s)}
+@keyframes flow{to{stroke-dashoffset:-34}}
+@keyframes fadeIn{to{opacity:.95}}
+.arrowhead{fill:var(--blue)}
+.tool{position:absolute;left:40px;top:325px;width:180px;text-align:center}
+.cube-wrap{width:150px;height:150px;margin:0 auto;perspective:700px}
+.cube{position:relative;width:150px;height:150px;transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(35deg)}
+.slide.is-active .cube{animation:spin 16s linear infinite}
+@keyframes spin{from{transform:rotateX(-24deg) rotateY(35deg)}to{transform:rotateX(-24deg) rotateY(395deg)}}
+.cube i{position:absolute;inset:0;border:3px solid var(--ink-2);background:linear-gradient(var(--grid-strong) 1.5px,transparent 1.5px) 0 0/18.75px 18.75px,linear-gradient(90deg,var(--grid-strong) 1.5px,transparent 1.5px) 0 0/18.75px 18.75px,var(--card);box-shadow:inset 0 0 0 16px var(--card),inset 0 0 0 19px var(--ink-2)}
+.cube i:nth-child(1){transform:translateZ(75px)}
+.cube i:nth-child(2){transform:rotateY(180deg) translateZ(75px)}
+.cube i:nth-child(3){transform:rotateY(90deg) translateZ(75px)}
+.cube i:nth-child(4){transform:rotateY(-90deg) translateZ(75px)}
+.cube i:nth-child(5){transform:rotateX(90deg) translateZ(75px)}
+.cube i:nth-child(6){transform:rotateX(-90deg) translateZ(75px)}
+.tool-lab{margin-top:40px;font-family:var(--f-serif);font-weight:700;font-size:32px;color:var(--ink)}
+.mod{position:absolute;left:412px;width:468px;display:grid;grid-template-columns:58px 1fr;background:var(--card);border:2px solid var(--ink-2);box-shadow:8px 8px 0 var(--paper-2)}
+.mod .port{border-right:2px solid var(--ink-2);background:repeating-linear-gradient(45deg,var(--grid-strong) 0 2px,transparent 2px 9px)}
+.mod .txt{padding:24px 28px 26px}
+.mod h3{font-size:32px}
+.mod p{margin-top:8px;font-size:26px;line-height:1.5;color:var(--ink-2)}
+
+/* ---------- S3 ---------- */
+.s3 .head{width:830px}
+.s3 h2{font-size:54px}
+.s3-chart{position:absolute;left:990px;top:96px;width:820px;height:480px}
+.s3-chart svg{width:100%;height:100%;overflow:visible}
+.ax{stroke:var(--ink-3);stroke-width:2}
+.gridl{stroke:var(--grid-strong);stroke-width:1.5}
+.tick-t{fill:var(--ink-3);font-family:var(--f-mono);font-size:22px}
+.tick-t.on{fill:var(--ink);font-weight:500}
+.ln{fill:none;stroke:var(--blue);stroke-width:5;stroke-linecap:round}
+.pt{fill:var(--card);stroke:var(--blue);stroke-width:5}
+.pt-lab{fill:var(--ink);font-family:var(--f-latin);font-weight:700;font-size:58px}
+.dim{fill:none;stroke:var(--rust);stroke-width:2}
+.dim-dash{fill:none;stroke:var(--rust);stroke-width:1.5;stroke-dasharray:5 6;opacity:.8}
+.dim-t{fill:var(--rust);font-family:var(--f-mono);font-size:24px;font-weight:500}
+.ax-title{fill:var(--ink-3);font-family:var(--f-sans);font-size:22px}
+.s3-cards{position:absolute;left:120px;right:120px;top:634px;display:grid;grid-template-columns:repeat(3,1fr);gap:44px}
+.tcard{background:var(--card);border:2px solid var(--c);padding:0 0 30px;box-shadow:8px 8px 0 var(--paper-2)}
+.tcard .band{height:16px;background:var(--c)}
+.tcard h3{margin:0 28px;padding:22px 6px 16px;font-size:40px;border-bottom:1.5px solid var(--c)}
+.tcard h3 span{font-family:var(--f-latin);font-weight:500}
+.tcard p{padding:18px 34px 0;font-size:28px;line-height:1.6;color:var(--ink)}
+
+/* ---------- S4 ---------- */
+.zones{position:absolute;left:120px;top:322px;width:1680px;height:380px;perspective:2400px}
+.zone-w{position:absolute;top:0;width:830px;height:380px;perspective:2400px}
+.zone-w.mw{left:0;perspective-origin:100% 50%}.zone-w.hw{left:850px;perspective-origin:0 50%}
+.zone{position:relative;width:100%;height:100%;padding:26px 0 0}
+.zone.mach{background:var(--machine);border:1.5px solid var(--rule);transform-origin:100% 50%;transform:rotateY(calc(7deg + var(--mx,0) * 5deg))}
+.zone.hum{background:var(--human);border:1.5px solid var(--rust);transform-origin:0 50%;transform:rotateY(calc(-7deg + var(--mx,0) * 5deg))}
+.zt{position:absolute;top:26px;width:520px;text-align:center}
+.zone.mach .zt{left:20px}.zone.hum .zt{right:20px}
+.zt h3{font-size:38px}
+.zt span{display:block;font-size:24px;color:var(--ink-2)}
+.icons{position:absolute;top:150px;display:flex;gap:40px}
+.zone.mach .icons{left:60px}.zone.hum .icons{right:60px}
+.icn{width:200px;text-align:center}
+.icn svg{width:124px;height:124px;fill:none;stroke:var(--ink);stroke-width:4;stroke-linejoin:round;stroke-linecap:round;overflow:visible}
+.icn svg .acc{stroke:var(--rust)}
+.icn svg .fillz{fill:var(--machine)}
+.icn p{margin-top:10px;font-size:26px;line-height:1.4;font-weight:500;color:var(--ink)}
+.slide.is-active .disk{animation:disk 2.4s ease-in-out infinite}
+.disk.d2{animation-delay:.2s!important}.disk.d3{animation-delay:.4s!important}
+@keyframes disk{0%,55%,100%{transform:none}25%{transform:translateY(-7px)}}
+.slide.is-active .lay-f{animation:lay 3.2s ease-in-out infinite}
+@keyframes lay{0%,100%{transform:none}50%{transform:translate(-12px,-12px)}}
+.slide.is-active .iris{animation:look 4s ease-in-out infinite}
+@keyframes look{0%,100%{transform:translateX(0)}30%{transform:translateX(-11px)}65%{transform:translateX(11px)}}
+.slide.is-active .eye{animation:blink 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,46%,54%,100%{transform:scaleY(1)}50%{transform:scaleY(.1)}}
+.slide.is-active .scrib{animation:scrib 2.6s ease-in-out infinite}
+@keyframes scrib{0%{stroke-dashoffset:1}60%,100%{stroke-dashoffset:0}}
+.slide.is-active .pen{animation:penmv 2.6s ease-in-out infinite}
+@keyframes penmv{0%{transform:translate(-50px,4px)}60%,100%{transform:translate(0,0)}}
+.bridge-arrow{position:absolute;left:530px;top:118px;width:640px;height:170px}
+.bridge-arrow svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ba-body{fill:var(--card);stroke:var(--blue);stroke-width:4;stroke-linejoin:round}
+.ba-hatch{fill:url(#hatch)}
+.bridge-arrow p{position:absolute;left:30px;top:34px;width:470px;text-align:center;font-size:30px;line-height:1.45;font-weight:700;color:var(--ink)}
+.flowdots{position:absolute;left:120px;top:262px;width:1200px;height:20px;pointer-events:none}
+.flowdots i{position:absolute;left:0;top:0;width:12px;height:12px;background:var(--blue);opacity:0}
+.slide.is-active .flowdots i{animation:dots 3.6s linear infinite;animation-delay:calc(var(--k) * -.6s + 1.5s)}
+@keyframes dots{0%{transform:translateX(0);opacity:0;background:var(--blue)}10%{opacity:1}70%{background:var(--blue)}85%{opacity:1;background:var(--rust)}100%{transform:translateX(1180px);opacity:0;background:var(--rust)}}
+.vtable{position:absolute;left:300px;top:740px;width:1320px;border:2px solid var(--ink);background:var(--card)}
+.vh{padding:9px;text-align:center;background:var(--deep);color:var(--on-deep);font-family:var(--f-serif);font-weight:700;font-size:30px}
+.vrow{display:grid;grid-template-columns:72px 1fr;border-top:1.5px solid var(--ink)}
+.vrow .n{display:grid;place-items:center;border-right:1.5px solid var(--ink);font-family:var(--f-latin);font-size:32px}
+.vrow .c{display:flex;align-items:center;gap:22px;padding:14px 30px;font-size:30px;color:var(--ink)}
+.vrow .old{min-width:440px}
+.arr{position:relative;display:inline-block;width:80px;height:3px;background:var(--rust)}
+.arr::after{content:"";position:absolute;right:-2px;top:-7px;border:8.5px solid transparent;border-left:14px solid var(--rust);border-right:0}
+
+/* ---------- S5 ---------- */
+.s5 .gl{position:absolute;left:420px;top:236px;width:1080px;height:474px}
+.corp{position:absolute;top:330px;width:270px;text-align:center}
+.corp.a{left:120px}.corp.b{left:1530px}
+.corp h3{font-size:38px}
+.corp .en-s{display:block;font-size:30px}
+.corp .n{margin-top:20px;font-family:var(--f-mono);font-size:30px;font-weight:500;color:var(--blue)}
+.corp.b .n{color:var(--rust)}
+.brace{position:absolute;top:262px;width:44px;height:430px;overflow:visible}
+.brace path{fill:none;stroke-width:3}
+.brace.a{left:386px}.brace.a path{stroke:var(--blue)}
+.brace.b{left:1490px}.brace.b path{stroke:var(--rust)}
+.s5 .cap{position:absolute;left:0;right:0;top:708px;text-align:center;font-family:var(--f-mono);font-size:20px;color:var(--ink-3)}
+.method{position:absolute;left:120px;top:752px;width:1680px;border:2px solid var(--ink);background:var(--card)}
+.method .mh{padding:7px;text-align:center;background:var(--deep);color:var(--on-deep);font-family:var(--f-serif);font-weight:700;font-size:30px}
+.method .mh span{font-family:var(--f-latin);font-weight:500}
+.mrow{display:grid;grid-template-columns:190px 1fr;align-items:center;border-top:1.5px solid var(--ink)}
+.mrow h4{align-self:stretch;display:grid;place-items:center;font-size:28px;font-weight:700;color:var(--ink);background:var(--paper-2);border-right:1.5px solid var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:14px;padding:14px 22px}
+.chip{padding:8px 20px;border:1.5px solid var(--rule);border-radius:6px;background:var(--paper);font-size:25px;font-weight:500;color:var(--ink)}
+.chip span{margin-left:10px;font-family:var(--f-mono);font-size:19px;font-weight:400;color:var(--ink-3)}
+
+/* ---------- S6 ---------- */
+.s6 .gl{position:absolute;left:600px;top:300px;width:580px;height:680px}
+.lbl{position:absolute;left:120px;width:430px;padding:16px 22px;text-align:center;background:var(--card);border:1.5px solid var(--ink-2)}
+.lbl h3{font-size:31px}
+.lbl .en-s{display:block;margin-top:2px;font-size:23px}
+.lbl::after{content:"";position:absolute;left:100%;top:50%;width:64px;height:2px;background:var(--ink-2)}
+.lbl::before{content:"";position:absolute;left:calc(100% + 58px);top:calc(50% - 8px);border:8px solid transparent;border-left:13px solid var(--ink-2);border-right:0}
+.l1{top:330px}.l2{top:528px}.l3{top:818px}
+.rc{position:absolute;left:1210px;width:590px;padding:22px 30px 24px;background:var(--card);border:1.5px solid var(--ink-2)}
+.rc1{top:290px}.rc2{top:592px}
+.rc h3{font-size:31px}
+.rc .en-s{font-size:24px}
+.rc ul{margin:14px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.rc li{position:relative;padding-left:28px;font-size:25px;line-height:1.5;color:var(--ink)}
+.rc li::before{content:"";position:absolute;left:2px;top:.62em;width:10px;height:10px;background:var(--rust)}
+.pv{display:inline-block;padding:0 10px;font-family:var(--f-mono);font-weight:500;color:var(--card);background:var(--rust);border-radius:4px}
+.slide.is-active .pv{animation:pulse 2.4s ease-in-out infinite;animation-delay:2.5s}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--flash-rgb),.0)}40%{box-shadow:0 0 0 10px rgba(var(--flash-rgb),.28)}}
+
+/* ---------- S7 ---------- */
+.grp{position:absolute;top:322px;width:810px}
+.grp.g1{left:120px}.grp.g2{left:990px}
+.grp-h{padding:10px;text-align:center;font-family:var(--f-serif);font-weight:700;font-size:36px;background:var(--paper-2);border:2px solid var(--ink);border-bottom:0}
+.grp-b{padding:22px 34px 24px;background:var(--card);border:2px solid var(--ink)}
+.grp-row{display:flex;align-items:center;justify-content:center;gap:56px;height:176px}
+.fig3d{position:relative;width:250px;height:168px;perspective:900px}
+.fig3d .rig{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(calc(var(--mx,0) * 18deg)) rotateX(calc(var(--my,0) * -10deg))}
+.fig3d .plate{position:absolute;inset:8px 0;border:1.5px dashed var(--rule);background:var(--paper);transform:translateZ(-24px)}
+.fig3d img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:var(--img-filter);transform:translateZ(36px)}
+.slide.is-active .fig3d img{animation:float3d 5s ease-in-out infinite}
+@keyframes float3d{0%,100%{transform:translateZ(36px)}50%{transform:translateZ(56px) translateY(-6px)}}
+.metric{text-align:center;min-width:170px}
+.metric .big{font-family:var(--f-latin);font-weight:700;font-size:92px;line-height:1;color:var(--rust)}
+.metric .unit{font-size:30px;font-weight:700;color:var(--ink);margin-left:6px}
+.metric .lab{margin-top:8px;font-size:22px;color:var(--ink-2)}
+.ring{position:relative;width:150px;height:150px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .tr{fill:none;stroke:var(--grid-strong);stroke-width:12}
+.ring .pr{fill:none;stroke:var(--blue);stroke-width:12;stroke-linecap:butt}
+.ring .in{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring .in b{font-family:var(--f-latin);font-size:64px;line-height:1;color:var(--blue)}
+.ring .in span{font-size:22px;font-weight:700;color:var(--ink)}
+.grp-b .desc{margin-top:16px;text-align:center;font-size:28px;line-height:1.5;color:var(--ink)}
+.down{position:relative;height:58px}
+.down::before{content:"";position:absolute;left:50%;top:6px;width:24px;height:26px;margin-left:-12px;background:var(--c)}
+.down::after{content:"";position:absolute;left:50%;top:30px;margin-left:-26px;border:26px solid transparent;border-top:24px solid var(--c);border-bottom:0}
+.outc{position:relative;padding:12px;text-align:center;font-family:var(--f-serif);font-weight:700;font-size:38px;color:var(--c);background:var(--card);border:2.5px solid var(--c)}
+.outc::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:28px;background:var(--ink-2)}
+.g1{--c:var(--rust)}.g2{--c:var(--blue)}
+.ctx{position:absolute;left:400px;top:836px;width:1120px;padding:16px 30px 18px;text-align:center;background:var(--card);border:2px solid var(--ink)}
+.ctx p{font-size:29px;line-height:1.5;font-weight:500;color:var(--ink)}
+.ctx .cite{font-size:24px;font-weight:400;color:var(--ink-2)}
+
+/* ---------- S8 ---------- */
+.steps{position:absolute;left:120px;top:252px;width:1680px;height:706px}
+.stp{position:absolute;top:0;width:372px;height:706px;perspective:1600px}
+.stp-in{position:relative;height:100%;display:flex;flex-direction:column;padding:28px 26px 18px;background:var(--card);border:2px solid var(--ink-2);outline:1.5px solid var(--rule);outline-offset:6px;transform-style:preserve-3d;transform:rotateY(calc(var(--mx,0) * 8deg)) rotateX(calc(var(--my,0) * -5deg))}
+.stp h3{font-size:34px;line-height:1.25}
+.stp .en-s{display:block;margin-top:6px;font-size:23px;line-height:1.3}
+.stp hr{width:100%;margin:16px 0;border:0;border-top:1.5px solid var(--rule)}
+.stp p{font-size:26px;line-height:1.55;color:var(--ink)}
+.stp .art{margin-top:auto;height:250px;display:grid;place-items:center;transform:translateZ(70px);transform-style:preserve-3d}
+.stp:first-child .art{height:420px}
+.stp .art img{max-height:100%;filter:var(--img-filter)}
+.slide.is-active .stp .art img{animation:float 5s ease-in-out infinite;animation-delay:calc(var(--k) * -1.2s)}
+.chev{position:absolute;top:300px;width:56px;height:90px;overflow:visible}
+.chev path{fill:var(--rust-soft);stroke:var(--ink-2);stroke-width:2.5;stroke-linejoin:round}
+.slide.is-active .chev path{animation:chev 2.4s ease-in-out infinite;animation-delay:calc(1.6s + var(--k) * .3s)}
+@keyframes chev{0%,60%,100%{fill:var(--rust-soft)}20%{fill:var(--rust)}}
+
+/* ---------- S9 ---------- */
+.s9-chart{position:absolute;left:120px;top:298px;width:960px}
+.s9-chart h3{font-size:34px}
+.s9-chart .sub{margin-top:4px;font-family:var(--f-mono);font-size:21px;color:var(--ink-3)}
+.bars{position:relative;margin-top:44px;padding-left:200px}
+.gridx{position:absolute;left:200px;top:-22px;height:406px;width:642px;background:repeating-linear-gradient(90deg,var(--grid-strong) 0 1.5px,transparent 1.5px 128px)}
+.brow{position:relative;display:flex;align-items:center;height:96px}
+.blab{position:absolute;left:-200px;width:176px;text-align:right;font-size:28px;font-weight:700;color:var(--ink)}
+.bar{position:relative;height:58px;width:calc(var(--v) * 12.8px);background:var(--c)}
+.bar::before{content:"";position:absolute;left:0;bottom:100%;width:100%;height:16px;background:inherit;filter:brightness(1.3);transform:skewX(-45deg);transform-origin:0 100%}
+.bar::after{content:"";position:absolute;left:100%;top:0;width:16px;height:100%;background:inherit;filter:brightness(.7);transform:skewY(-45deg);transform-origin:0 0}
+.bval{margin-left:34px;font-family:var(--f-latin);font-weight:700;font-size:40px;color:var(--ink)}
+.axis{position:relative;height:40px;margin-top:6px;width:642px;font-family:var(--f-mono);font-size:20px;color:var(--ink-3)}
+.axis span{position:absolute;top:0;transform:translateX(-50%)}
+.callout{display:flex;align-items:center;gap:24px;margin-top:22px;padding:16px 26px;border:1.5px solid var(--blue);background:var(--blue-soft)}
+.callout b{font-family:var(--f-latin);font-size:56px;line-height:1;color:var(--blue)}
+.callout p{font-size:26px;line-height:1.45;color:var(--ink)}
+.rcard{position:absolute;left:1140px;width:660px;padding:24px 32px 26px;background:var(--card);border:1.5px solid var(--ink-2)}
+.rcard.r1{top:298px}.rcard.r2{top:540px}
+.rcard h3{font-size:32px}
+.rcard h3 span{font-family:var(--f-latin);font-weight:500}
+.rcard hr{margin:14px 0 16px;border:0;border-top:1.5px solid var(--rust)}
+.rcard p{font-size:27px;line-height:1.55;color:var(--ink)}
+.thy{display:grid;grid-template-columns:62px 1fr;gap:18px;align-items:start}
+.thy+.thy{margin-top:18px}
+.thy svg{width:62px;height:62px;fill:none;stroke:var(--rust);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.slide.is-active .thy .spin{animation:rot 8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ---------- S10 ---------- */
+.stairs{position:absolute;left:120px;top:262px;width:1680px;height:488px;perspective:2400px}
+.stairs-in{position:relative;height:100%;display:flex;align-items:flex-end;gap:30px;transform-style:preserve-3d;transform:rotateX(-9deg) rotateY(calc(var(--mx,0) * 6deg - 2deg))}
+.stp3{width:540px;display:flex;flex-direction:column;transform-style:preserve-3d}
+.stp3 .txt{padding:0 12px 54px;transform:translateZ(80px)}
+.stp3 .lab{display:flex;align-items:flex-end;justify-content:space-between;height:84px}
+.stp3 .lab b{font-family:var(--f-mono);font-size:26px;font-weight:500;letter-spacing:.12em;color:var(--c)}
+.stp3 .lab img{height:84px;filter:var(--img-filter)}
+.slide.is-active .stp3 .lab img{animation:float 4.5s ease-in-out infinite}
+.stp3 h3{margin-top:10px;font-size:34px;line-height:1.25}
+.stp3 .en-s{display:block;font-size:23px}
+.stp3 p{margin-top:10px;font-size:26px;line-height:1.5;color:var(--ink)}
+.podium .face{background:var(--cs);border:2px solid var(--c)}
+.podium .f-front{background:repeating-linear-gradient(-45deg,transparent 0 12px,rgba(var(--shade-rgb),.07) 12px 14px),var(--cs)}
+.st1{--c:var(--rust);--cs:var(--rust-soft)}.st2{--c:var(--slate);--cs:var(--slate-soft)}.st3{--c:var(--sage);--cs:var(--sage-soft)}
+.say{position:absolute;top:782px;width:810px;padding:16px 32px 18px;background:var(--card);border:2px solid var(--ink)}
+.say.stop{left:120px}.say.start{left:990px}
+.say h3{font-size:30px;padding-bottom:8px;margin-bottom:12px;border-bottom:1.5px solid var(--rust)}
+.say h3 span{font-family:var(--f-latin);font-weight:500}
+.say .q{display:grid;grid-template-columns:64px 1fr;gap:20px;align-items:center;font-size:28px;line-height:1.5;color:var(--ink)}
+.say svg{width:64px;height:64px;fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.strike{position:relative;justify-self:start}
+.strike::after{content:"";position:absolute;left:-4px;right:-4px;top:52%;height:3px;background:var(--rust);transform-origin:0 50%}
+.slide.is-active .strike::after{animation:growX .7s var(--ease) both;animation-delay:calc(var(--base) + 1.9s)}
+
+/* ---------- S11 ---------- */
+.vault{position:absolute;left:100px;top:226px;width:980px;height:750px;perspective:1700px}
+.v-rig{position:absolute;left:40px;top:76px;width:900px;height:660px;transform-style:preserve-3d;transform:rotateY(calc(-13deg + var(--mx,0) * 12deg)) rotateX(calc(4deg - var(--my,0) * 6deg))}
+.v-rig img{position:absolute;inset:0;width:100%;height:100%;filter:var(--img-filter)}
+.v-keyw{position:absolute;inset:0;transform:translateZ(80px);transform-style:preserve-3d}
+.v-keyin{position:absolute;inset:0}
+.slide.is-active .v-keyin{animation:keyIn 1.7s var(--ease) both;animation-delay:calc(var(--base) + .4s)}
+@keyframes keyIn{from{opacity:0;transform:translate3d(300px,-30px,160px)}}
+.slide.is-active .v-key{animation:rattle 3.6s ease-in-out infinite;animation-delay:calc(var(--base) + 2.1s)}
+@keyframes rattle{0%,20%,100%{transform:none}4%{transform:translateX(12px)}8%{transform:translateX(-5px)}12%{transform:translateX(7px)}16%{transform:translateX(-2px)}}
+.v-flash{position:absolute;left:46.5%;top:47%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;background:radial-gradient(circle,rgba(var(--flash-rgb),.85),rgba(var(--flash-rgb),0) 62%);opacity:0;transform:translateZ(50px)}
+.slide.is-active .v-flash{animation:flash 3.6s ease-out infinite;animation-delay:calc(var(--base) + 2.1s)}
+@keyframes flash{0%{opacity:0;transform:translateZ(50px) scale(.3)}4%{opacity:1}30%{opacity:0;transform:translateZ(50px) scale(1.25)}100%{opacity:0}}
+.v-lab{position:absolute;text-align:center;transform:translateZ(30px)}
+.v-lab b{display:block;font-family:var(--f-serif);font-size:34px;color:var(--ink)}
+.v-lab span{font-size:23px;color:var(--ink-2)}
+.v-lab.l1{left:170px;top:-74px;width:280px}
+.v-lab.l2{left:630px;top:450px;width:250px}
+.ic{position:absolute;left:1130px;width:670px;background:var(--card);border:1.5px solid var(--ink-2)}
+.ic1{top:240px}.ic2{top:546px}.ic3{top:746px}
+.ih{display:flex;align-items:center;gap:14px;padding:11px 22px;background:var(--paper-2);border-bottom:1.5px solid var(--ink-2);font-family:var(--f-serif);font-weight:700;font-size:30px;color:var(--ink)}
+.ih span{font-family:var(--f-latin);font-weight:500}
+.ih svg{width:36px;height:36px;flex:none;fill:none;stroke:var(--ink-2);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ih svg .acc{stroke:var(--rust)}
+.ib{padding:14px 22px 18px;font-size:26px;line-height:1.55;color:var(--ink)}
+.interns{display:grid;grid-template-columns:repeat(50,8px);gap:4px;margin-top:12px}
+.interns i{width:8px;height:8px;background:var(--blue)}
+.slide.is-active .interns i{animation:pop .35s ease-out both;animation-delay:calc(var(--base) + .9s + var(--i) * 14ms)}
+
+/* ---------- S12 ---------- */
+.cmp{position:absolute;left:120px;top:322px;width:1680px;display:grid;grid-template-columns:380px 1fr 1fr;perspective:2600px}
+.ccol{display:grid;grid-template-rows:116px 160px 160px;background:var(--card);border:2px solid var(--ink)}
+.ccol+.ccol{border-left:0}
+.ccol>div{display:flex;align-items:center;gap:18px;padding:0 28px;border-top:1.5px solid var(--ink)}
+.ccol>div:first-child{border-top:0}
+.rowlab>div{font-size:29px;font-weight:700;line-height:1.35;color:var(--ink)}
+.rowlab>div span{display:block;font-family:var(--f-latin);font-weight:500;color:var(--ink-2)}
+.hdr{justify-content:center;text-align:center}
+.hdr h3{font-size:36px;line-height:1.25}
+.hdr h3 span{display:block;font-family:var(--f-latin);font-weight:500;font-size:30px;color:var(--ink-2)}
+.cnews{border-color:var(--rust);border-left:2px solid var(--rust)!important;background:repeating-linear-gradient(45deg,transparent 0 14px,rgba(var(--flash-rgb),.08) 14px 16px),var(--card)}
+.cmp svg.ico{width:70px;height:70px;flex:none;fill:none;stroke:var(--ink-2);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.cmp svg .acc{stroke:var(--rust)}
+.cell-t{font-size:28px;line-height:1.5;color:var(--ink)}
+.cell-col{flex-direction:column;align-items:flex-start!important;justify-content:center;gap:12px!important}
+.sprint{display:flex;gap:6px}
+.sprint i{width:56px;height:26px;display:grid;place-items:center;background:var(--rust);color:var(--card);font-style:normal;font-family:var(--f-mono);font-size:15px}
+.slide.is-active .sprint i{animation:pop .45s ease-out both;animation-delay:calc(var(--base) + 1.2s + var(--k) * .12s)}
+.roadmap{width:520px;height:30px;overflow:visible}
+.roadmap .rl{fill:none;stroke:var(--blue);stroke-width:3}
+.roadmap .ms{fill:var(--card);stroke:var(--blue);stroke-width:3}
+.slide.is-active .cnews{animation:apartL 1.4s var(--ease) both;animation-delay:calc(var(--base) + .3s)}
+.slide.is-active .cit{animation:apartR 1.4s var(--ease) both;animation-delay:calc(var(--base) + .3s)}
+@keyframes apartL{from{transform:translateX(-50px) rotateY(32deg);opacity:.2}}
+@keyframes apartR{from{transform:translateX(50px) rotateY(-32deg);opacity:.2}}
+.glitch{display:inline}
+.slide.is-active .glitch{animation:glitch 2.8s steps(1) both;animation-delay:calc(var(--base) + 1.1s)}
+@keyframes glitch{0%{text-shadow:none}4%{text-shadow:-5px 0 var(--blue),5px 0 var(--rust)}8%{text-shadow:4px 0 var(--blue),-4px 0 var(--rust)}12%{text-shadow:none}16%{text-shadow:-3px 0 var(--blue),3px 0 var(--rust)}20%,100%{text-shadow:none}}
+.sol{position:absolute;left:120px;top:800px;width:1680px;height:160px;display:grid;grid-template-columns:230px 1fr 280px;align-items:center;background:var(--card);border:4px double var(--ink)}
+.sol .tab{position:absolute;left:50%;top:-30px;transform:translateX(-50%);padding:4px 34px;background:var(--card);border:2px solid var(--ink);font-family:var(--f-serif);font-weight:700;font-size:32px;color:var(--ink);white-space:nowrap}
+.sol .tab span{font-family:var(--f-latin);font-weight:500}
+.sol p{padding-top:14px;text-align:center;font-size:30px;line-height:1.55;font-weight:500;color:var(--ink)}
+.sol svg{width:100%;height:130px;overflow:visible;fill:none;stroke:var(--ink-2);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.sol svg .acc{stroke:var(--rust)}
+.gear{stroke-width:13;stroke-dasharray:7 7}
+.slide.is-active .gear.spin{animation:rot 9s linear infinite}
+.slide.is-active .gear.spin.ccw{animation-direction:reverse}
+
+/* ---------- S13 ---------- */
+.s13 .glw{position:absolute;left:100px;top:246px;width:1000px;height:734px}
+.s13 .gl{position:absolute;inset:0}
+.sc-lab{position:absolute;left:0;top:0;width:360px;text-align:center;pointer-events:none;display:none}
+.glw.on .sc-lab{display:block}
+.sc-lab b{display:block;font-size:28px;font-weight:700;color:var(--ink)}
+.sc-lab span{display:block;font-size:22px;color:var(--ink-2)}
+.sc-lab.h b{color:var(--rust)}
+.prem{position:absolute;left:1160px;top:300px;width:640px;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:42px}
+.prem li{position:relative;padding-left:44px;font-size:30px;line-height:1.55;color:var(--ink)}
+.prem li::before{content:"";position:absolute;left:0;top:.45em;width:22px;height:22px;border-radius:50%;background:var(--rust);box-shadow:0 0 0 5px var(--rust-soft)}
+.prem b{color:var(--rust)}
+.cite-r{position:absolute;right:120px;top:900px;font-size:26px;color:var(--ink-2)}
+
+/* ---------- S14 ---------- */
+.pillars{position:absolute;left:120px;top:292px;width:1680px;height:680px;perspective:2600px}
+.pl-in{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;transform-style:preserve-3d;transform:rotateX(-7deg) rotateY(calc(var(--mx,0) * 8deg))}
+.pl-row{display:flex;justify-content:space-around;width:1560px;transform-style:preserve-3d}
+.pillar{width:330px;display:flex;flex-direction:column;align-items:center;transform-style:preserve-3d}
+.p-title{height:94px;text-align:center}
+.p-title h3{font-size:36px;line-height:1.2}
+.p-title span{display:block;font-size:22px;color:var(--ink-2)}
+.col3d{display:flex;flex-direction:column;align-items:center;transform-style:preserve-3d;transform-origin:50% 100%}
+.slide.is-active .col3d{animation:growY 1.3s var(--ease) both;animation-delay:calc(var(--base) + .5s + var(--k) * .18s)}
+.col3d .face{border-color:var(--blue)}
+.col-text{position:absolute;left:50%;top:40px;width:164px;margin-left:-82px;transform:translateZ(98px);-webkit-backface-visibility:hidden;backface-visibility:hidden;text-align:center;font-size:25px;line-height:1.5;font-weight:700;color:var(--ink)}
+.slab .face{background:var(--rust-soft);border:2px solid var(--rust)}
+.slab .f-right,.slab .f-left{background:repeating-linear-gradient(45deg,transparent 0 10px,rgba(var(--flash-rgb),.25) 10px 12px),var(--rust-soft)}
+.slab-txt{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font-size:34px;line-height:1.45;font-weight:700;color:var(--ink)}
+.slab-txt span{font-weight:500}
+
+/* ---------- S15 ---------- */
+.sum{position:absolute;left:120px;top:240px;width:1680px;display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:2px solid var(--ink)}
+.cell{display:grid;grid-template-columns:140px 1fr;gap:24px;align-items:center;height:236px;padding:20px 34px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+.cell:nth-child(2n){border-right:0}
+.cell:nth-child(n+3){border-bottom:0}
+.big-n{font-family:var(--f-latin);font-weight:700;font-size:170px;line-height:1;text-align:center;color:var(--ink)}
+.odo{display:inline-block;height:1em;overflow:hidden;vertical-align:top}
+.odo>span{display:block;line-height:1;transform:translateY(calc(var(--n) * -1em))}
+.slide.is-active .odo>span{animation:odo 1.7s var(--ease) both;animation-delay:calc(var(--base) + var(--d,0s))}
+@keyframes odo{from{transform:translateY(0)}}
+.cell h3{font-size:34px;line-height:1.25}
+.cell h3 span{display:block;font-family:var(--f-latin);font-weight:500;font-size:27px;color:var(--ink-2)}
+.cell p{margin-top:10px;font-size:27px;line-height:1.5;color:var(--ink)}
+.final{position:absolute;left:120px;top:744px;width:1680px;height:214px;display:grid;grid-template-columns:140px 1fr;gap:24px;align-items:center;padding:0 34px;background:var(--deep);border:2px solid var(--deep);box-shadow:inset 0 0 0 8px var(--deep),inset 0 0 0 9.5px var(--gold)}
+.final .big-n{color:var(--gold)}
+.final h3{color:var(--gold);font-size:36px}
+.final h3 span{font-family:var(--f-latin);font-weight:500}
+.final p{margin-top:8px;font-size:30px;line-height:1.5;color:var(--on-deep)}
+
+/* ---------- controls ---------- */
+#controls{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:4px;padding:6px;background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:0 10px 30px rgba(var(--shade-rgb),.2);font-family:var(--f-mono);font-size:13px;color:var(--ink-2);transition:opacity .35s,transform .35s}
+body.idle #controls{opacity:0;transform:translate(-50%,10px);pointer-events:none}
+#controls button{appearance:none;display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--ink);cursor:pointer}
+#controls button:hover{background:var(--paper-2)}
+#controls button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+#controls svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#dots{display:flex;align-items:center;gap:3px;padding:0 6px}
+#dots button{width:15px!important;height:26px!important;border-radius:3px!important}
+#dots button i{display:block;width:100%;height:4px;border-radius:2px;background:var(--rule)}
+#dots button.seen i{background:var(--ink-3)}
+#dots button[aria-current="true"] i{height:8px;background:var(--rust)}
+#counter{min-width:70px;text-align:center;font-variant-numeric:tabular-nums;color:var(--ink)}
+#rot{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:20;display:none;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--rule);font-size:13px;color:var(--ink-2);white-space:nowrap}
+@media (max-width:760px){#dots{display:none}}
+@media (orientation:portrait) and (max-width:760px){#rot{display:block}}
+
+@media (prefers-reduced-motion: reduce){
+  .slide,.slide *,.slide *::before,.slide *::after{animation:none!important;transition:none!important}
+  .flow{opacity:.95}
+}
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage" role="region" aria-roledescription="簡報" aria-label="AI 與新聞：重組、信任與治理">
+
+<!-- ===================== 1 · Cover ===================== -->
+<section class="slide s1" data-title="封面" aria-label="封面">
+  <div class="news-cols" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="gl" data-gl="cover" aria-hidden="true"></div>
+  <div class="cover-text">
+    <p class="eyebrow rv">Strategic Briefing · 2025–2026</p>
+    <h1 class="split" style="--d:.15s">AI 與新聞：<br>重組、信任與治理</h1>
+    <div class="rule grow-x" style="--d:1s"></div>
+    <p class="cover-sub rv" style="--d:1.1s">寫給媒體高層的 2025–2026 前瞻研究戰略解讀</p>
+  </div>
+  <blockquote class="cover-quote corners rv" style="--d:1.5s">從自動化工具到結構性轉型，<br>重新定義新聞業的核心價值。</blockquote>
+  <p class="hint fade" style="--d:2.4s">按 → 或空白鍵翻頁 · F 全螢幕 · R 重播動畫</p>
+</section>
+
+<!-- ===================== 2 · Structural shift ===================== -->
+<section class="slide s2" data-title="結構轉型" aria-label="結構轉型">
+  <header class="head">
+    <p class="eyebrow rv">結構轉型 · Structural Shift</p>
+    <h2 class="split">AI 已由單一工具議題，轉向新聞組織、受眾與商業模式的結構性轉型。</h2>
+  </header>
+  <div class="s2-stats">
+    <div class="stat corners rv" style="--d:.7s">
+      <div class="stat-num"><span class="num" data-to="78" data-delay="1100">78</span><small>%</small></div>
+      <p>數位媒體領導者認為投資 AI 關係新聞業生存。</p>
+      <div class="ruler" aria-hidden="true"><i class="grow-x" style="--w:.78;--d:.55s"></i></div>
+    </div>
+    <div class="stat corners rv" style="--d:.95s">
+      <div class="stat-num"><span class="num" data-to="73" data-delay="1350">73</span><small>%</small></div>
+      <p>新聞機構已正式採用 AI 技術。</p>
+      <div class="ruler" aria-hidden="true"><i class="grow-x" style="--w:.73;--d:.55s"></i></div>
+    </div>
+    <p class="pill fade" style="--d:1.6s">資料來源：Sonni (2025)</p>
+  </div>
+  <div class="s2-diagram">
+    <svg viewBox="0 0 880 800" aria-hidden="true">
+      <path class="beam draw" pathLength="1" style="--d:.9s" d="M200 400C300 400 290 130 380 130"/>
+      <path class="beam draw" pathLength="1" style="--d:1s" d="M200 400L380 400"/>
+      <path class="beam draw" pathLength="1" style="--d:1.1s" d="M200 400C300 400 290 670 380 670"/>
+      <path class="flow" d="M200 400C300 400 290 130 380 130"/>
+      <path class="flow" d="M200 400L380 400"/>
+      <path class="flow" d="M200 400C300 400 290 670 380 670"/>
+      <polygon class="arrowhead pop" style="--d:1.7s" points="378,100 414,130 378,160"/>
+      <polygon class="arrowhead pop" style="--d:1.8s" points="378,370 414,400 378,430"/>
+      <polygon class="arrowhead pop" style="--d:1.9s" points="378,640 414,670 378,700"/>
+    </svg>
+    <div class="tool pop" style="--d:.5s">
+      <div class="cube-wrap"><div class="cube"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <p class="tool-lab">單一工具</p>
+    </div>
+    <div class="mod flipY" style="top:42px;--d:1.6s"><div class="port"></div><div class="txt"><h3>編輯室技術整合</h3><p>改變生產流程與策展邏輯。</p></div></div>
+    <div class="mod flipY" style="top:312px;--d:1.75s"><div class="port"></div><div class="txt"><h3>受眾消費模式轉變</h3><p>演算法把關與個人化資訊吸收。</p></div></div>
+    <div class="mod flipY" style="top:582px;--d:1.9s"><div class="port"></div><div class="txt"><h3>商業模式創新</h3><p>混合收入與動態付費牆重構。</p></div></div>
+  </div>
+</section>
+
+<!-- ===================== 3 · Literature ===================== -->
+<section class="slide s3" data-title="十年文獻" aria-label="十年文獻回顧">
+  <header class="head">
+    <p class="eyebrow rv">十年文獻 · 2014–2024</p>
+    <h2 class="split">十年文獻回顧（2014–2024）證實，我們正從理論探討進入全面部署階段。</h2>
+  </header>
+  <figure class="s3-chart">
+    <svg viewBox="0 0 820 480" role="img" aria-label="年度文獻數：2019 年 41，2023 年 122，約為 3 倍">
+      <text class="ax-title fade" x="70" y="34">年度文獻數</text>
+      <g class="fade" style="--d:.3s">
+        <line class="gridl" x1="70" x2="790" y1="317.1" y2="317.1"/>
+        <line class="gridl" x1="70" x2="790" y1="214.3" y2="214.3"/>
+        <line class="gridl" x1="70" x2="790" y1="111.4" y2="111.4"/>
+        <text class="tick-t" x="56" y="425" text-anchor="end">0</text>
+        <text class="tick-t" x="56" y="322" text-anchor="end">40</text>
+        <text class="tick-t" x="56" y="219" text-anchor="end">80</text>
+        <text class="tick-t" x="56" y="116" text-anchor="end">120</text>
+      </g>
+      <line class="ax draw" pathLength="1" style="--d:.2s" x1="70" x2="790" y1="420" y2="420"/>
+      <g class="fade" style="--d:.5s">
+        <path class="ax" d="M70 420v8M142 420v8M214 420v8M286 420v8M358 420v8M430 420v8M502 420v8M574 420v8M646 420v8M718 420v8M790 420v8"/>
+        <text class="tick-t" x="70" y="458" text-anchor="middle">2014</text>
+        <text class="tick-t on" x="430" y="458" text-anchor="middle">2019</text>
+        <text class="tick-t on" x="718" y="458" text-anchor="middle">2023</text>
+      </g>
+      <path class="ln draw" pathLength="1" style="--d:1.1s" d="M430 314.6L718 106.3"/>
+      <circle class="pt pop" style="--d:.9s" cx="430" cy="314.6" r="11"/>
+      <circle class="pt pop" style="--d:2.2s" cx="718" cy="106.3" r="11"/>
+      <text class="pt-lab fade" style="--d:.9s" x="410" y="296" text-anchor="end" data-to="41" data-delay="1300">41</text>
+      <text class="pt-lab fade" style="--d:2.2s" x="698" y="92" text-anchor="end" data-to="122" data-delay="2500">122</text>
+      <g class="fade" style="--d:2.8s">
+        <path class="dim-dash" d="M444 314.6H800M732 106.3H800"/>
+        <path class="dim" d="M790 314.6V106.3M782 306l8 8.6 8-8.6M782 115l8-8.7 8 8.7"/>
+        <text class="dim-t" x="778" y="220" text-anchor="end">約 3 倍</text>
+      </g>
+    </svg>
+  </figure>
+  <div class="s3-cards">
+    <article class="tcard flipX" style="--c:var(--blue);--d:1.2s"><div class="band"></div><h3>技術 <span>(Tech)</span></h3><p>ChatGPT 導入、自動化生成、預測分析與編輯室流程重組。</p></article>
+    <article class="tcard flipX" style="--c:var(--rust);--d:1.4s"><div class="band"></div><h3>受眾 <span>(Audience)</span></h3><p>個人化推薦、資訊氣泡形成與 AI 新聞信任挑戰。</p></article>
+    <article class="tcard flipX" style="--c:var(--ink);--d:1.6s"><div class="band"></div><h3>商業 <span>(Business)</span></h3><p>演算法訂閱優化、混合收入與個人化付費內容。</p></article>
+  </div>
+</section>
+
+<!-- ===================== 4 · Digital curator ===================== -->
+<section class="slide s4" data-title="數位策展人" aria-label="數位策展人">
+  <header class="head">
+    <p class="eyebrow rv">角色進化 · Digital Curator</p>
+    <h2 class="split">記者的角色正由單純的「撰稿者」進化為<br>「數位策展人（Digital Curator）」。</h2>
+  </header>
+  <div class="zones">
+    <div class="zone-w mw rl" style="--d:.7s">
+      <div class="zone mach">
+        <div class="zt"><h3>機器協作區</h3><span>(Machine Zone)</span></div>
+        <div class="icons">
+          <div class="icn">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <g class="disk d3"><path class="fillz" d="M24 78v18c0 7 16 12 36 12s36-5 36-12V78"/><path d="M24 78c0 7 16 12 36 12s36-5 36-12"/></g>
+              <g class="disk d2"><path class="fillz" d="M24 52v26c0 7 16 12 36 12s36-5 36-12V52"/><path d="M24 52c0 7 16 12 36 12s36-5 36-12"/></g>
+              <g class="disk d1"><path class="fillz" d="M24 26v26c0 7 16 12 36 12s36-5 36-12V26"/><ellipse class="fillz" cx="60" cy="26" rx="36" ry="12"/></g>
+            </svg>
+            <p>大量資料處理</p>
+          </div>
+          <div class="icn">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <rect class="fillz" x="16" y="16" width="62" height="62"/>
+              <g class="lay-f"><rect class="fillz" x="42" y="42" width="62" height="62"/><path class="acc" d="M42 58V42h16M104 88v16H88"/></g>
+            </svg>
+            <p>初稿生成、<br>模式識別</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="zone-w hw rr" style="--d:.85s">
+      <div class="zone hum">
+        <div class="zt"><h3>人類決策區</h3><span>(Human Zone)</span></div>
+        <div class="icons">
+          <div class="icn" style="width:300px">
+            <div style="display:flex;justify-content:center;gap:34px">
+              <svg viewBox="0 0 120 120" aria-hidden="true"><g class="eye"><path d="M8 60C28 30 92 30 112 60C92 90 28 90 8 60Z"/><path class="acc" d="M8 60C28 30 92 30 112 60"/><g class="iris"><circle cx="60" cy="60" r="21"/><circle class="acc" cx="60" cy="60" r="8"/></g></g></svg>
+              <svg viewBox="0 0 120 120" aria-hidden="true"><path class="scrib acc" pathLength="1" style="stroke-dasharray:1" d="M10 104c10-10 18 6 28-3s16 6 26-4"/><g class="pen"><path d="M64 96l-16 6 6-16 44-44 10 10z"/><path class="acc" d="M90 50l10 10"/><path d="M54 86l10 10"/></g></svg>
+            </div>
+            <p>最終編輯決策、<br>價值判斷、倫理課責</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flowdots" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i></div>
+    <div class="bridge-arrow rl" style="--d:1.3s">
+      <svg viewBox="0 0 640 170" aria-hidden="true">
+        <defs><pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="none"/><line x1="0" y1="0" x2="0" y2="10" stroke="var(--blue)" stroke-width="3"/></pattern></defs>
+        <path class="ba-body" d="M2 30H500V2L638 85L500 168V140H2Z"/>
+        <path class="ba-hatch" d="M2 126H500V140H2Z"/>
+      </svg>
+      <p>人機共生、多層次查核、<br>永續商業模式</p>
+    </div>
+  </div>
+  <div class="vtable rv" style="--d:1.6s">
+    <div class="vh">重新定義新聞價值</div>
+    <div class="vrow"><div class="n">1</div><div class="c"><span class="old">傳統客觀性 (Objectivity)</span><i class="arr grow-x" style="--d:1.9s"></i><span>現在必須包含 <b class="hl">演算法無偏見</b></span></div></div>
+    <div class="vrow"><div class="n">2</div><div class="c"><span class="old">傳統透明度 (Transparency)</span><i class="arr grow-x" style="--d:2.1s"></i><span>現在必須包含 <b class="hl">演算法邏輯揭露</b></span></div></div>
+  </div>
+</section>
+
+<!-- ===================== 5 · Bias question ===================== -->
+<section class="slide s5" data-title="偏見之問" aria-label="AI 能否減少媒體偏見">
+  <header class="head">
+    <p class="eyebrow rv">偏見之問 · Lyu &amp; Wu, 2026</p>
+    <h2 class="split">AI 究竟是能減少媒體偏見，還是只會將其巧妙偽裝？</h2>
+  </header>
+  <div class="gl" data-gl="cloud" aria-hidden="true"></div>
+  <svg class="brace a fade" style="--d:.6s" viewBox="0 0 44 430" aria-hidden="true"><path d="M40 2C18 2 22 30 22 60V180C22 200 16 213 2 215C16 217 22 230 22 250V370C22 400 18 428 40 428"/></svg>
+  <svg class="brace b fade" style="--d:.6s" viewBox="0 0 44 430" aria-hidden="true"><path d="M4 2C26 2 22 30 22 60V180C22 200 28 213 42 215C28 217 22 230 22 250V370C22 400 26 428 4 428"/></svg>
+  <div class="corp a rl" style="--d:.5s"><h3>AI 語料</h3><span class="en-s">(NewsGPT)</span><p class="n">N = <span class="num" data-to="18282" data-delay="900" data-dur="2400">18,282</span></p></div>
+  <div class="corp b rr" style="--d:.5s"><h3>人類新聞語料</h3><span class="en-s">(LexisNexis)</span><p class="n">N = <span class="num" data-to="18210" data-delay="900" data-dur="2400">18,210</span></p></div>
+  <p class="cap fade" style="--d:2.6s">每一點代表一篇報導 · 點位分佈為示意</p>
+  <div class="method rv" style="--d:1.2s">
+    <div class="mh">研究方法 <span>(Lyu &amp; Wu, 2026)</span></div>
+    <div class="mrow"><h4>分析維度</h4><div class="chips">
+      <span class="chip pop" style="--d:1.6s">報導偏見<span>Reporting</span></span>
+      <span class="chip pop" style="--d:1.7s">把關偏見<span>Gatekeeping</span></span>
+      <span class="chip pop" style="--d:1.8s">陳述偏見<span>Presentation</span></span>
+    </div></div>
+    <div class="mrow"><h4>技術手段</h4><div class="chips">
+      <span class="chip pop" style="--d:2s">LDA 主題模型</span>
+      <span class="chip pop" style="--d:2.1s">Gephi 語義網絡</span>
+      <span class="chip pop" style="--d:2.2s">CNN 標題黨分類</span>
+      <span class="chip pop" style="--d:2.3s">BERT／TextBlob 情感分析</span>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== 6 · Mirror & amplifier ===================== -->
+<section class="slide s6" data-title="鏡像與放大器" aria-label="鏡像與選擇性放大器">
+  <header class="head">
+    <p class="eyebrow rv">偏見機制 · Mirror &amp; Amplifier</p>
+    <h2 class="split">AI 並未消除偏見，<br>而是作為「鏡像與選擇性放大器」</h2>
+  </header>
+  <div class="gl" data-gl="funnel" aria-hidden="true"></div>
+  <div class="lbl l1 rl" style="--d:.6s"><h3>歷史人類偏見</h3><span class="en-s">(Historical Human Bias)</span></div>
+  <div class="lbl l2 rl" style="--d:1s"><h3>AI 處理機制</h3><span class="en-s">(Mirror &amp; Selective Amplifier)</span></div>
+  <div class="lbl l3 rl" style="--d:1.4s"><h3>結構化統計模式</h3><span class="en-s">(Structured Statistical Patterns)</span></div>
+  <div class="rc rc1 rr" style="--d:1.2s">
+    <h3>輸出輪廓 <span class="en-s">(Output Profile)</span></h3>
+    <ul><li><b>模組化隔離：</b>不同議題間的脈絡連結較弱，加劇資訊氣泡。</li><li><b>極化標題：</b>AI 生成標題更具極化與誘發點擊特質。</li></ul>
+  </div>
+  <div class="rc rc2 rr" style="--d:1.5s">
+    <h3>表面中立性的陷阱<br><span class="en-s">(Danger of Surface Neutrality)</span></h3>
+    <ul><li>AI 文字流暢、語氣平穩，卻掩蓋了底層的深層偏見。</li><li>BERT 分析顯示：AI 的表達偏見顯著高於人類新聞（<span class="pv">p &lt; .001</span>）。</li></ul>
+  </div>
+</section>
+
+<!-- ===================== 7 · Political information experiment ===================== -->
+<section class="slide s7" data-title="政治資訊實驗" aria-label="互動式 AI 與對立政治資訊">
+  <header class="head">
+    <p class="eyebrow rv">政治資訊實驗 · Jennings et al., 2025</p>
+    <h2 class="split">互動式 AI 將接收對立政治資訊的體驗，<br>由「被敵意媒體攻擊」轉變為「自主探索」。</h2>
+  </header>
+  <div class="grp g1 rv" style="--d:.6s">
+    <div class="grp-h">對照組／靜態組</div>
+    <div class="grp-b">
+      <div class="grp-row">
+        <div class="fig3d"><div class="rig"><div class="plate"></div><img src="img/s7-static.webp" alt="讀者閱讀文章的插圖"></div></div>
+        <div class="metric"><div><span class="big num" data-to="875" data-delay="1000" data-dur="1800">875</span><span class="unit">字</span></div><p class="lab">靜態反態度評論</p></div>
+      </div>
+      <p class="desc">閱讀 875 字的靜態反態度評論文章。</p>
+    </div>
+    <div class="down"></div>
+    <div class="outc">感受：被敵意媒體攻擊</div>
+  </div>
+  <div class="grp g2 rv" style="--d:.8s">
+    <div class="grp-h">AI 互動組</div>
+    <div class="grp-b">
+      <div class="grp-row">
+        <div class="fig3d"><div class="rig"><div class="plate"></div><img src="img/s7-ai.webp" alt="使用者與 ChatGPT 對話的插圖"></div></div>
+        <div class="ring"><svg viewBox="0 0 150 150" aria-hidden="true"><circle class="tr" cx="75" cy="75" r="62"/><circle class="pr draw" pathLength="1" style="--d:.9s;animation-duration:2.6s" cx="75" cy="75" r="62"/></svg><div class="in"><b class="num" data-to="5" data-delay="1300" data-dur="2300">5</b><span>分鐘</span></div></div>
+      </div>
+      <p class="desc">與 ChatGPT 進行 5 分鐘文明對話探討該議題。</p>
+    </div>
+    <div class="down"></div>
+    <div class="outc">感受：自主探索</div>
+  </div>
+  <div class="ctx rv" style="--d:1.4s"><p>研究情境：測試 AI 對抗「反態度政治資訊」的影響（N = <span class="num" data-to="306" data-delay="1800">306</span>）<br><span class="cite">(Jennings et al., 2025)</span></p></div>
+</section>
+
+<!-- ===================== 8 · Cognitive bridge ===================== -->
+<section class="slide s8" data-title="認知橋樑" aria-label="機器的無黨派標籤">
+  <header class="head">
+    <p class="eyebrow rv">認知橋樑 · Machine Heuristic</p>
+    <h2 class="split">機器的無黨派標籤，反而成為跨越政治鴻溝的認知橋樑。</h2>
+  </header>
+  <div class="steps">
+    <div class="stp flipY" style="left:0;--d:.5s;--k:0"><div class="stp-in"><h3>1. AI 互動</h3><span class="en-s">(AI Interaction)</span><hr><div class="art"><img src="img/s8-1.webp" alt="使用者與 AI 介面互動的插圖"></div></div></div>
+    <div class="stp flipY" style="left:436px;--d:.75s;--k:1"><div class="stp-in"><h3>2. 降低來源敵意</h3><span class="en-s">(Lower Source Hostility)</span><hr><p>觸發「機器啟發式（Machine Heuristic）」，使用者不將 AI 視為特定政黨代理人。</p><div class="art"><img src="img/s8-2.webp" alt="人與機器人並列、政黨標誌被劃除的插圖"></div></div></div>
+    <div class="stp flipY" style="left:872px;--d:1s;--k:2"><div class="stp-in"><h3>3. 降低信念固著</h3><span class="en-s">(Reduced Belief Perseverance)</span><hr><p>消除傳統閱讀敵對專欄時的「反彈效應」。</p><div class="art"><img src="img/s8-3.webp" alt="大腦轉向 AI、敵對專欄被劃除的插圖"></div></div></div>
+    <div class="stp flipY" style="left:1308px;--d:1.25s;--k:3"><div class="stp-in"><h3>4. 提升政治學習</h3><span class="en-s">(Higher Political Learning)</span><hr><p>去極化後，客觀知識獲取與後續資訊尋求意願顯著提升。</p><div class="art"><img src="img/s8-4.webp" alt="閱讀、資料與成長圖表的插圖"></div></div></div>
+    <svg class="chev fade" style="left:376px;--d:1.4s;--k:0" viewBox="0 0 56 90" aria-hidden="true"><path d="M2 2H26L54 45L26 88H2L30 45Z"/></svg>
+    <svg class="chev fade" style="left:812px;--d:1.5s;--k:1" viewBox="0 0 56 90" aria-hidden="true"><path d="M2 2H26L54 45L26 88H2L30 45Z"/></svg>
+    <svg class="chev fade" style="left:1248px;--d:1.6s;--k:2" viewBox="0 0 56 90" aria-hidden="true"><path d="M2 2H26L54 45L26 88H2L30 45Z"/></svg>
+  </div>
+</section>
+
+<!-- ===================== 9 · Authorship ===================== -->
+<section class="slide s9" data-title="署名難題" aria-label="署名的難題">
+  <header class="head">
+    <p class="eyebrow rv">署名難題 · Bien-Aimé et al., 2025</p>
+    <h2 class="split">署名的難題<span class="en">The Authorship Dilemma</span></h2>
+  </header>
+  <div class="s9-chart">
+    <h3 class="rv" style="--d:.4s">面對模糊署名，讀者認為作者是誰？</h3>
+    <p class="sub rv" style="--d:.5s">讀者歸因比例 · N = 269</p>
+    <div class="bars" role="img" aria-label="人機協作 40.1%，AI 作者 37.5%，純人類 15.2%，不確定 6.3%">
+      <div class="gridx fade" style="--d:.5s"></div>
+      <div class="brow"><span class="blab">人機協作</span><div class="bar grow-x" style="--v:40.1;--c:var(--blue);--d:.8s"></div><b class="bval fade" style="--d:1.2s"><span class="num" data-to="40.1" data-dec="1" data-delay="1300">40.1</span>%</b></div>
+      <div class="brow"><span class="blab">AI 作者</span><div class="bar grow-x" style="--v:37.5;--c:var(--blue);--d:.95s"></div><b class="bval fade" style="--d:1.35s"><span class="num" data-to="37.5" data-dec="1" data-delay="1450">37.5</span>%</b></div>
+      <div class="brow"><span class="blab">純人類</span><div class="bar grow-x" style="--v:15.2;--c:var(--rust);--d:1.1s"></div><b class="bval fade" style="--d:1.5s"><span class="num" data-to="15.2" data-dec="1" data-delay="1600">15.2</span>%</b></div>
+      <div class="brow"><span class="blab">不確定</span><div class="bar grow-x" style="--v:6.3;--c:var(--ink-3);--d:1.25s"></div><b class="bval fade" style="--d:1.65s"><span class="num" data-to="6.3" data-dec="1" data-delay="1750">6.3</span>%</b></div>
+      <div class="axis fade" style="--d:.6s" aria-hidden="true"><span style="left:0">0%</span><span style="left:128px">10%</span><span style="left:256px">20%</span><span style="left:384px">30%</span><span style="left:512px">40%</span><span style="left:640px">50%</span></div>
+    </div>
+    <div class="callout rv" style="--d:2s"><b><span class="num" data-to="77.6" data-dec="1" data-delay="2300">77.6</span>%</b><p>的讀者認為 AI 參與了寫作<br>（人機協作 40.1% ＋ AI 作者 37.5%）</p></div>
+  </div>
+  <div class="rcard r1 corners rr" style="--d:.7s">
+    <h3>研究背景 <span>(Bien-Aimé et al., 2025)</span></h3><hr>
+    <p>探索讀者如何推論「作者是誰」以及其對品質感知的影響（N = <span class="num" data-to="269" data-delay="1100">269</span>）。</p>
+  </div>
+  <div class="rcard r2 corners rr" style="--d:.95s">
+    <h3>核心理論 <span>(Theory at Play)</span></h3><hr>
+    <div class="thy"><svg viewBox="0 0 62 62" aria-hidden="true"><g class="spin"><circle cx="26" cy="34" r="12"/><circle cx="26" cy="34" r="19" stroke-dasharray="6 5"/></g><path d="M46 6l-6 12h8l-6 12"/></svg><p><b>期望違背</b> (Expectancy Violation)：當署名模糊時，讀者會產生責任不清的不信任感。</p></div>
+    <div class="thy"><svg viewBox="0 0 62 62" aria-hidden="true"><circle cx="26" cy="26" r="17"/><path d="M38 38l18 18"/><path d="M18 22c3-5 13-5 16 0M18 30c3 5 13 5 16 0"/></svg><p><b>演算法素養</b> (Algorithmic Literacy)：高媒體素養讀者能輕易辨識出 AI 介入痕跡。</p></div>
+  </div>
+</section>
+
+<!-- ===================== 10 · Transparency spectrum ===================== -->
+<section class="slide s10" data-title="透明度光譜" aria-label="透明度的光譜">
+  <header class="head">
+    <p class="eyebrow rv">透明度 · Disclosure</p>
+    <h2 class="split">透明度的光譜<span class="en">The Transparency Spectrum</span></h2>
+  </header>
+  <div class="stairs">
+    <div class="stairs-in">
+      <div class="stp3 st1">
+        <div class="txt"><div class="rv" style="--d:.9s"><div class="lab"><b>STEP 1</b><img src="img/s10-1.webp" alt="帶問號的齒輪圖示"></div><h3>模糊的 AI 聲明</h3><span class="en-s">(Vague AI usage)</span><p>僅聲明「本文有使用 AI」會引發猜忌並破壞信任。</p></div></div>
+        <div class="box3d podium grow-y" data-w="540" data-h="40" data-d="160" style="--d:.5s"></div>
+      </div>
+      <div class="stp3 st2">
+        <div class="txt"><div class="rv" style="--d:1.1s"><div class="lab"><b>STEP 2</b><img src="img/s10-2.webp" alt="人與機器人協作圖示"></div><h3>人機協作</h3><span class="en-s">(Human-AI Collaboration)</span><p>多數讀者拒絕接受 AI 作為完全獨立的新聞行動者，強烈要求保留人類監督。</p></div></div>
+        <div class="box3d podium grow-y" data-w="540" data-h="100" data-d="160" style="--d:.65s"></div>
+      </div>
+      <div class="stp3 st3">
+        <div class="txt"><div class="rv" style="--d:1.3s"><div class="lab"><b>STEP 3</b><img src="img/s10-3.webp" alt="查核清單與人手圖示"></div><h3>具體 AI 任務揭露 + 人類監督</h3><span class="en-s">(Specific task disclosure + Human oversight)</span><p>揭露具體 AI 任務與人類監督角色，最能建立信任並減少擔憂。</p></div></div>
+        <div class="box3d podium grow-y" data-w="540" data-h="160" data-d="160" style="--d:.8s"></div>
+      </div>
+    </div>
+  </div>
+  <div class="say stop rv" style="--d:1.5s">
+    <h3>停止說 <span>(Stop saying)</span></h3>
+    <div class="q"><svg viewBox="0 0 64 64" aria-hidden="true" style="stroke:var(--rust)"><circle cx="32" cy="32" r="24" stroke-dasharray="7 5"/><path d="M18 18l28 28M46 18L18 46"/></svg><span class="strike">「本文使用了 AI 輔助」。</span></div>
+  </div>
+  <div class="say start rv" style="--d:1.7s">
+    <h3>開始說 <span>(Start explaining)</span></h3>
+    <div class="q"><svg viewBox="0 0 64 64" aria-hidden="true" style="stroke:var(--blue)"><path d="M10 14h44v30H30l-12 10V44h-8z"/><path d="M22 30l7 7 14-14"/></svg><span class="type" style="--d:2.3s">「AI 負責處理與彙整初始數據；人類記者進行了事實查核與最終撰寫」。</span></div>
+  </div>
+</section>
+
+<!-- ===================== 11 · Investigative journalism ===================== -->
+<section class="slide s11" data-title="調查新聞" aria-label="調查新聞">
+  <header class="head">
+    <p class="eyebrow rv">壓力測試 · De Cooker et al., 2026</p>
+    <h2 class="split">AI 應用的終極壓力測試：調查新聞</h2>
+  </header>
+  <div class="vault fade" style="--d:.2s">
+    <div class="v-rig">
+      <img class="v-vault" src="img/s11-vault.webp" alt="調查新聞：一扇緊閉的保險庫門">
+      <div class="v-flash"></div>
+      <div class="v-keyw"><div class="v-keyin"><img class="v-key" src="img/s11-key.webp" alt="黑箱演算法：一把電路紋路的鑰匙"></div></div>
+      <div class="v-lab l1"><b>調查新聞</b><span>Investigative Journalism</span></div>
+      <div class="v-lab l2"><b>黑箱演算法</b><span>AI Black Box</span></div>
+    </div>
+  </div>
+  <div class="ic ic1 rr" style="--d:.6s">
+    <div class="ih"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="7"/><circle cx="18" cy="18" r="13" stroke-dasharray="4 4"/></svg>研究脈絡 <span>(De Cooker et al., 2026)</span></div>
+    <div class="ib">荷蘭媒體機構實證研究。管理層期待 AI 像「<b class="hl"><span class="num" data-to="100" data-delay="1000">100</span> 名不知疲倦的實習生</b>」掃描海量文件，但核心調查報導的正式採用率依然極低。<div class="interns" aria-hidden="true"></div></div>
+  </div>
+  <div class="ic ic2 rr" style="--d:.85s">
+    <div class="ih"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3l12 5v9c0 8-5 13-12 16C11 30 6 25 6 17V8z"/><circle class="acc" cx="17" cy="17" r="5"/><path class="acc" d="M21 21l5 5"/></svg>調查新聞的核心本質</div>
+    <div class="ib">絕對的來源控制、嚴密的證據鏈、完全的可驗證性。</div>
+  </div>
+  <div class="ic ic3 rr" style="--d:1.1s">
+    <div class="ih"><svg viewBox="0 0 36 36" aria-hidden="true"><rect x="9" y="9" width="18" height="18"/><path d="M14 9V4M22 9V4M14 32v-5M22 32v-5M9 14H4M9 22H4M32 14h-5M32 22h-5"/><path class="acc" d="M3 3l30 30M33 3L3 33"/></svg>技術衝突所在</div>
+    <div class="ib">AI 的本質是不可解釋的黑箱與潛在的幻覺。兩者存在天然、無法妥協的信任衝突。</div>
+  </div>
+</section>
+
+<!-- ===================== 12 · Translation error ===================== -->
+<section class="slide s12" data-title="翻譯失誤" aria-label="跨專業協作的翻譯失誤">
+  <header class="head">
+    <p class="eyebrow rv">跨專業協作 · Newsroom × IT</p>
+    <h2 class="split">AI 導入失敗往往不是工具不好，<br>而是跨專業協作設計的<span class="glitch">「翻譯失誤（Translation Error）」</span>。</h2>
+  </header>
+  <div class="cmp">
+    <div class="ccol rowlab rv" style="--d:.3s">
+      <div></div>
+      <div><svg class="ico" viewBox="0 0 70 70" aria-hidden="true"><circle cx="35" cy="35" r="24"/><circle cx="35" cy="35" r="13"/><circle class="acc" cx="35" cy="35" r="3"/><path d="M35 4v12M35 54v12M4 35h12M54 35h12"/></svg><p>核心價值：準確<span>(Accuracy)</span></p></div>
+      <div><svg class="ico" viewBox="0 0 70 70" aria-hidden="true"><circle cx="28" cy="28" r="20"/><path d="M28 16v12l8 6"/><rect x="38" y="40" width="26" height="24"/><path class="acc" d="M38 48h26M45 54h2M52 54h2M59 54h2M45 59h2M52 59h2"/></svg><p>運作節奏：時間<span>(Time)</span></p></div>
+    </div>
+    <div class="ccol cnews">
+      <div class="hdr"><svg class="ico" viewBox="0 0 70 70" aria-hidden="true"><rect x="8" y="10" width="44" height="52"/><path d="M15 21h30M15 30h12M15 38h12M15 47h30M15 54h20"/><rect x="32" y="28" width="13" height="12"/><circle class="acc" cx="50" cy="48" r="9"/><path class="acc" d="M56 55l9 9"/></svg><h3>新聞編輯室<span>(Newsroom)</span></h3></div>
+      <div><p class="cell-t">符合事實真相、具備社會脈絡。</p></div>
+      <div class="cell-col"><div class="sprint" aria-hidden="true"><i style="--k:0">W1</i><i style="--k:1">W2</i><i style="--k:2">W3</i><i style="--k:3">W4</i><i style="--k:4">W5</i><i style="--k:5">W6</i></div><p class="cell-t"><span class="num" data-to="6" data-delay="1400" data-dur="900">6</span> 週高度機動的專案衝刺。</p></div>
+    </div>
+    <div class="ccol cit">
+      <div class="hdr"><svg class="ico" viewBox="0 0 70 70" aria-hidden="true"><rect x="20" y="20" width="30" height="30"/><rect class="acc" x="28" y="28" width="14" height="14"/><path d="M27 20v-10M35 20v-10M43 20v-10M27 50v10M35 50v10M43 50v10M20 27h-10M20 35h-10M20 43h-10M50 27h10M50 35h10M50 43h10"/></svg><h3>IT 部門<span>(IT Dept)</span></h3></div>
+      <div><p class="cell-t">模型統計上的 Precision 與 Recall 指標。</p></div>
+      <div class="cell-col"><svg class="roadmap" viewBox="0 0 520 30" aria-hidden="true"><path class="rl draw" pathLength="1" style="--d:1.3s" d="M2 15H500M488 5l14 10-14 10"/><polygon class="ms pop" style="--d:1.5s" points="68,4 79,15 68,26 57,15"/><polygon class="ms pop" style="--d:1.7s" points="178,4 189,15 178,26 167,15"/><polygon class="ms pop" style="--d:1.9s" points="288,4 299,15 288,26 277,15"/><polygon class="ms pop" style="--d:2.1s" points="398,4 409,15 398,26 387,15"/></svg><p class="cell-t">依賴敏捷開發與長期排程運作的 Roadmap。</p></div>
+    </div>
+  </div>
+  <div class="sol rv" style="--d:1.6s">
+    <div class="tab">解決方案 <span>(The Solution)</span></div>
+    <svg viewBox="0 0 230 130" aria-hidden="true"><circle class="gear spin" cx="80" cy="70" r="36"/><circle cx="80" cy="70" r="16"/><circle class="gear spin ccw acc" cx="150" cy="44" r="22"/><circle class="acc" cx="150" cy="44" r="8"/></svg>
+    <p>組織極需能同時理解新聞價值與技術邏輯的<br>「<b class="hl">邊界跨越者 (Boundary Spanners)／計算記者</b>」來打破孤島。</p>
+    <svg viewBox="0 0 280 130" aria-hidden="true"><g class="acc"><path class="draw" pathLength="1" style="--d:2s" d="M10 100H270"/><path class="draw" pathLength="1" style="--d:2.2s" d="M70 112V20M210 112V20"/><path class="draw" pathLength="1" style="--d:2.4s" d="M10 96C40 70 60 30 70 22C90 70 190 70 210 22C220 30 240 70 270 96"/></g><path class="draw" pathLength="1" style="--d:2.6s" d="M100 100V58M140 100V64M180 100V58"/></svg>
+  </div>
+</section>
+
+<!-- ===================== 13 · Human premium ===================== -->
+<section class="slide s13" data-title="人類溢價" aria-label="人類權威的溢價">
+  <header class="head">
+    <p class="eyebrow rv">人類溢價 · Amigo &amp; Porlezza, 2025</p>
+    <h2 class="split">人類權威的溢價<span class="en">The Premium of Human Authority</span></h2>
+  </header>
+  <div class="glw fade" style="--d:.2s">
+    <div class="gl" data-gl="scale" aria-hidden="true"></div>
+    <div class="sc-lab a"><b>AI 資訊噪音與 Deepfake</b><span>(AI Noise &amp; Deepfakes)</span></div>
+    <div class="sc-lab h"><b>人類專業特質</b><span>(Human Traits)</span></div>
+  </div>
+  <ul class="prem">
+    <li class="rr" style="--d:.8s"><b>內部反彈：</b>記者擔憂後台效率工具（翻譯、摘要）被轉化為「裁員」的藉口。</li>
+    <li class="rr" style="--d:1.1s"><b>溢價效應：</b>AI 製造越多資訊噪音與假訊息，受眾越渴望不可偽造的「人類品質保險單」。</li>
+    <li class="rr" style="--d:1.4s"><b>升值的核心能力：</b>現場實地採訪、非語言訊息捕捉、同理心、幽默感，與深度脈絡化。</li>
+  </ul>
+  <p class="cite-r fade" style="--d:1.8s">(Amigo &amp; Porlezza, 2025)</p>
+</section>
+
+<!-- ===================== 14 · Governance pillars ===================== -->
+<section class="slide s14" data-title="治理四支柱" aria-label="負責任 AI 治理的四個支柱">
+  <header class="head">
+    <p class="eyebrow rv">治理框架 · Governance</p>
+    <h2 class="split">負責任 AI 治理的四個支柱<span class="en">The 4 Pillars of Responsible AI Governance</span></h2>
+  </header>
+  <div class="pillars">
+    <div class="pl-in">
+      <div class="pl-row">
+        <div class="pillar"><div class="p-title rv" style="--d:1.2s"><h3>動態指引</h3><span>(Dynamic Guidelines)</span></div>
+          <div class="col3d" style="--k:0"><div class="box3d" data-w="250" data-h="24" data-d="250"></div><div class="cyl" data-r="112" data-h="24"></div><div class="cyl shaft" data-r="96" data-h="310"><p class="col-text">規範需隨技術持續迭代，拒絕一次性僵化政策。</p></div><div class="cyl" data-r="112" data-h="24"></div><div class="box3d" data-w="250" data-h="28" data-d="250"></div></div></div>
+        <div class="pillar"><div class="p-title rv" style="--d:1.35s"><h3>適度透明</h3><span>(Appropriate Transparency)</span></div>
+          <div class="col3d" style="--k:1"><div class="box3d" data-w="250" data-h="24" data-d="250"></div><div class="cyl" data-r="112" data-h="24"></div><div class="cyl shaft" data-r="96" data-h="310"><p class="col-text">實質生成內容必須標示；避免對一般後台工具過度標籤引發疲勞。</p></div><div class="cyl" data-r="112" data-h="24"></div><div class="box3d" data-w="250" data-h="28" data-d="250"></div></div></div>
+        <div class="pillar"><div class="p-title rv" style="--d:1.5s"><h3>批判性反思</h3><span>(Critical Reflection)</span></div>
+          <div class="col3d" style="--k:2"><div class="box3d" data-w="250" data-h="24" data-d="250"></div><div class="cyl" data-r="112" data-h="24"></div><div class="cyl shaft" data-r="96" data-h="310"><p class="col-text">商業與技術效率絕不能凌駕於新聞專業判斷之上。</p></div><div class="cyl" data-r="112" data-h="24"></div><div class="box3d" data-w="250" data-h="28" data-d="250"></div></div></div>
+        <div class="pillar"><div class="p-title rv" style="--d:1.65s"><h3>雙向素養</h3><span>(AI/Media Literacy)</span></div>
+          <div class="col3d" style="--k:3"><div class="box3d" data-w="250" data-h="24" data-d="250"></div><div class="cyl" data-r="112" data-h="24"></div><div class="cyl shaft" data-r="96" data-h="310"><p class="col-text">編輯室與管理層需理解 AI 幻覺；並肩負教育受眾之責。</p></div><div class="cyl" data-r="112" data-h="24"></div><div class="box3d" data-w="250" data-h="28" data-d="250"></div></div></div>
+      </div>
+      <div class="box3d slab" data-w="1580" data-h="150" data-d="290"><div class="slab-txt on-front">共同底線 (Common Baseline)：<span>Human Oversight（人類監督）、事實查核、責任可追溯體系。</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 15 · Executive summary ===================== -->
+<section class="slide s15" data-title="戰略總結" aria-label="戰略總結命題">
+  <header class="head">
+    <p class="eyebrow rv">戰略總結 · 2026+</p>
+    <h2 class="split">Executive Summary：2026+ 戰略總結命題</h2>
+  </header>
+  <div class="sum">
+    <div class="cell rv" style="--d:.5s"><div class="big-n"><span class="odo" data-n="1" style="--d:.5s"></span></div><div><h3>結構轉型，非僅戰術<span>(Structural, Not Tactical)</span></h3><p>AI 正推動組織與制度轉型，而不僅是自動化工具的替換。</p></div></div>
+    <div class="cell rv" style="--d:.7s"><div class="big-n"><span class="odo" data-n="2" style="--d:.7s"></span></div><div><h3>效率 ≠ 品質<span>(Efficiency ≠ Quality)</span></h3><p>偏見、資訊氣泡與雜訊將隨生產力同步放大，編輯室的警覺性必須升級。</p></div></div>
+    <div class="cell rv" style="--d:.9s"><div class="big-n"><span class="odo" data-n="3" style="--d:.9s"></span></div><div><h3>透明度需具體<span>(Transparency is Specific)</span></h3><p>受眾不再只問「有沒有 AI」，而是嚴格要求交代「誰負責、AI 做了什麼」。</p></div></div>
+    <div class="cell rv" style="--d:1.1s"><div class="big-n"><span class="odo" data-n="4" style="--d:1.1s"></span></div><div><h3>人類溢價<span>(The Human Premium)</span></h3><p>未來新聞可信度的競爭核心，將回歸人類的可驗證性、同理心與脈絡化能力。</p></div></div>
+  </div>
+  <div class="final rv" style="--d:1.5s"><div class="big-n"><span class="odo" data-n="5" style="--d:1.5s"></span></div><div><h3>終極戰略 <span>(The Ultimate Strategy)</span></h3><p>最終的贏家不是「被 AI 取代的新聞室」，而是「由人類主導的增強型新聞編輯室 (Human-Led Augmented Newsroom)」。</p></div></div>
+</section>
+
+</div>
+</div>
+
+<p id="rot">橫向持握手機可看到完整版面</p>
+<nav id="controls" aria-label="簡報導覽">
+  <button id="prev" type="button" aria-label="上一頁"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div id="dots"></div>
+  <span id="counter" aria-live="polite">01 / 15</span>
+  <button id="next" type="button" aria-label="下一頁"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <button id="replay" type="button" aria-label="重播本頁動畫"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg></button>
+  <button id="fs" type="button" aria-label="全螢幕"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+document.documentElement.lang = 'zh-Hant';
+const root = document.documentElement;
+const stage = document.getElementById('stage');
+const slides = [...document.querySelectorAll('.slide')];
+const N = slides.length;
+const MOTION = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tok = n => getComputedStyle(root).getPropertyValue(n).trim();
+const pad = n => String(n).padStart(2, '0');
+let cur = 0, stageScale = 1;
+
+/* ---------- text splitting (keeps CJK punctuation attached, keeps Latin words whole) ---------- */
+const OPEN = '「『（(《〈“‘', CLOSE = '，。、：；？！」』）)》〉”’…,.:;?!%';
+function split(el, i = 0) {
+  for (const node of [...el.childNodes]) {
+    if (node.nodeType === 3) {
+      const toks = node.textContent.match(/[A-Za-z0-9][A-Za-z0-9.'’\-+\/&–—]*|\s+|./gu) || [];
+      const out = []; let open = '';
+      for (const t of toks) {
+        if (/^\s+$/.test(t)) { if (open) { out.push(open); open = ''; } out.push(t); continue; }
+        if (OPEN.includes(t)) { open += t; continue; }
+        if (CLOSE.includes(t) && out.length && !/^\s+$/.test(out[out.length - 1])) { out[out.length - 1] += t; continue; }
+        out.push(open + t); open = '';
+      }
+      if (open) out.push(open);
+      const frag = document.createDocumentFragment();
+      for (const t of out) {
+        if (/^\s+$/.test(t)) { frag.appendChild(document.createTextNode(t)); continue; }
+        const s = document.createElement('span'); s.className = 'ch'; s.style.setProperty('--i', i++); s.textContent = t; frag.appendChild(s);
+      }
+      node.replaceWith(frag);
+    } else if (node.nodeType === 1 && node.tagName !== 'BR') {
+      i = split(node, i);
+    }
+  }
+  return i;
+}
+document.querySelectorAll('.split').forEach(el => { el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim()); split(el); });
+document.querySelectorAll('.type').forEach(el => split(el));
+
+/* ---------- generated decoration ---------- */
+slides.forEach((s, i) => {
+  const tb = document.createElement('div');
+  tb.className = 'tblock'; tb.setAttribute('aria-hidden', 'true');
+  tb.innerHTML = `<span>AI × 新聞 · 戰略解讀</span><span>${s.dataset.title}</span><b>${pad(i + 1)} / ${pad(N)}</b>`;
+  s.appendChild(tb);
+});
+document.querySelectorAll('.interns').forEach(el => { for (let i = 0; i < 100; i++) { const d = document.createElement('i'); d.style.setProperty('--i', i); el.appendChild(d); } });
+document.querySelectorAll('.odo').forEach(el => {
+  const n = +el.dataset.n, s = document.createElement('span');
+  const digits = []; for (let k = 0; k < 10; k++) digits.push(k); for (let k = 0; k <= n; k++) digits.push(k);
+  s.innerHTML = digits.join('<br>'); el.style.setProperty('--n', 10 + n); el.setAttribute('aria-label', n); s.setAttribute('aria-hidden', 'true'); el.appendChild(s);
+});
+function buildBox(el) {
+  const w = +el.dataset.w, h = +el.dataset.h, d = +el.dataset.d;
+  el.style.width = w + 'px'; el.style.height = h + 'px';
+  const front = el.querySelector('.on-front');
+  [['front', w, h, `translateZ(${d / 2}px)`, 0], ['back', w, h, `rotateY(180deg) translateZ(${d / 2}px)`, .3],
+   ['right', d, h, `rotateY(90deg) translateZ(${w / 2}px)`, .2], ['left', d, h, `rotateY(-90deg) translateZ(${w / 2}px)`, .08],
+   ['top', w, d, `rotateX(90deg) translateZ(${h / 2}px)`, 0], ['bottom', w, d, `rotateX(-90deg) translateZ(${h / 2}px)`, .3]
+  ].forEach(([n, fw, fh, tf, sh]) => {
+    const f = document.createElement('i'); f.className = 'face f-' + n;
+    f.style.cssText = `width:${fw}px;height:${fh}px;left:${(w - fw) / 2}px;top:${(h - fh) / 2}px;transform:${tf};--sh:${sh}`;
+    if (n === 'front' && front) f.appendChild(front);
+    el.appendChild(f);
+  });
+}
+function buildCyl(el) {
+  const r = +el.dataset.r, h = +el.dataset.h, n = +el.dataset.n || 20, w = 2 * r * Math.tan(Math.PI / n) + 1.2;
+  el.style.width = 2 * r + 'px'; el.style.height = h + 'px';
+  for (let k = 0; k < n; k++) {
+    const a = k * 360 / n, f = document.createElement('i');
+    const sh = .34 * (1 - Math.cos((a + 32) * Math.PI / 180)) / 2;
+    f.className = 'face';
+    f.style.cssText = `width:${w}px;height:${h}px;left:${r - w / 2}px;top:0;transform:rotateY(${a}deg) translateZ(${r}px);--sh:${sh.toFixed(3)}`;
+    el.insertBefore(f, el.firstChild);
+  }
+}
+document.querySelectorAll('.box3d').forEach(buildBox);
+document.querySelectorAll('.cyl').forEach(buildCyl);
+
+/* ---------- count-ups ---------- */
+function countUp(el) {
+  const to = parseFloat(el.dataset.to), dec = +(el.dataset.dec || 0), dur = +(el.dataset.dur || 1700), delay = +(el.dataset.delay || 600);
+  const fmt = v => v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  const tokn = el._tok = (el._tok || 0) + 1;
+  if (!MOTION) { el.textContent = fmt(to); return; }
+  el.textContent = fmt(0);
+  const t0 = performance.now() + delay;
+  const step = now => {
+    if (el._tok !== tokn) return;
+    const k = Math.min(1, Math.max(0, (now - t0) / dur));
+    el.textContent = fmt(to * (1 - Math.pow(1 - k, 4)));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ---------- WebGL scenes ---------- */
+const scenes = [];
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeIO = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+const backOut = x => { const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const sm = { x: 0, y: 0, tx: 0, ty: 0, idle: 1, last: -1e9 };
+
+function segGeo(segs) {
+  const a = new Float32Array(segs.length * 6);
+  segs.forEach((s, i) => { a.set(s[0], i * 6); a.set(s[1], i * 6 + 3); });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a, 3)); g.userData.n = segs.length * 2; return g;
+}
+function thick(geo, mat, parent, n = 3) {
+  const offs = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]].slice(0, n + 1);
+  const ls = offs.map(() => { const l = new THREE.LineSegments(geo, mat); l.frustumCulled = false; parent.add(l); return l; });
+  return { set(e) { ls.forEach((l, i) => l.position.set(offs[i][0] * e, offs[i][1] * e, offs[i][2] * e)); } };
+}
+function box12(A, x0, y0, z0, x1, y1, z1) {
+  const c = [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1], [x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]];
+  [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => A.push([c[a], c[b]]));
+}
+function addSolid(geo, mat, edgeMat, parent) {
+  const m = new THREE.Mesh(geo, mat); parent.add(m);
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), edgeMat); m.add(e); return m;
+}
+
+class Scene3D {
+  constructor(el) {
+    this.el = el; this.scene = new THREE.Scene(); this.t = 0;
+    this.r = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    this.r.setClearColor(0x000000, 0);
+    this.r.domElement.setAttribute('aria-hidden', 'true');
+    el.appendChild(this.r.domElement);
+  }
+  size() {
+    const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1;
+    this.w = w; this.h = h;
+    this.pr = Math.min(2.5, Math.max(1, (window.devicePixelRatio || 1) * stageScale));
+    this.r.setPixelRatio(this.pr); this.r.setSize(w, h); this.resize(w, h);
+  }
+  persE(D) { return 2 * D * Math.tan(this.cam.fov * Math.PI / 360) / (this.h * this.pr); }
+  resize() {} theme() {} frame() {}
+  enter() { this.t = 0; }
+  render() { this.r.render(this.scene, this.cam); }
+}
+
+/* Cover: the blueprint building, drawn line by line and turned in isometric space */
+class Cover extends Scene3D {
+  constructor(el) {
+    super(el);
+    this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, -200, 200);
+    const M = [], C = [], D = [], s = (A, a, b) => A.push([a, b]);
+    const rz = (A, x0, y0, x1, y1, z) => { s(A, [x0, y0, z], [x1, y0, z]); s(A, [x1, y0, z], [x1, y1, z]); s(A, [x1, y1, z], [x0, y1, z]); s(A, [x0, y1, z], [x0, y0, z]); };
+    const ry = (A, x0, z0, x1, z1, y) => { s(A, [x0, y, z0], [x1, y, z0]); s(A, [x1, y, z0], [x1, y, z1]); s(A, [x1, y, z1], [x0, y, z1]); s(A, [x0, y, z1], [x0, y, z0]); };
+    const rx = (A, z0, y0, z1, y1, x) => { s(A, [x, y0, z0], [x, y0, z1]); s(A, [x, y0, z1], [x, y1, z1]); s(A, [x, y1, z1], [x, y1, z0]); s(A, [x, y1, z0], [x, y0, z0]); };
+    box12(M, 0, 0, 0, 4, 3.2, 3); ry(M, .15, .15, 3.85, 2.85, 3.2);
+    for (let k = 0; k <= 5; k++) { const x = .35 + k * .32; s(M, [x, .35, 3], [x, 2.85, 3]); }
+    for (let j = 0; j <= 10; j++) { const y = .35 + j * .25; s(M, [.35, y, 3], [1.95, y, 3]); }
+    rz(M, 2.4, 0, 3.6, 2.3, 3); rz(M, 2.4, 0, 3.6, 2.3, 2.3);
+    [[2.4, 0], [3.6, 0], [2.4, 2.3], [3.6, 2.3]].forEach(([x, y]) => s(M, [x, y, 3], [x, y, 2.3]));
+    rz(M, 2.7, .3, 3.3, 2.0, 2.3);
+    for (let k = 0; k < 4; k++) { const z0 = .3 + k * .66; rx(M, z0, 1.1, z0 + .42, 2.7, 0); }
+    box12(M, 4, 0, .4, 9.6, 2.2, 2.6);
+    for (let x = 4.3; x <= 6.01; x += .19) s(M, [x, .2, 2.6], [x, 2.0, 2.6]);
+    s(M, [4.3, .2, 2.6], [6.0, .2, 2.6]); s(M, [4.3, 2.0, 2.6], [6.0, 2.0, 2.6]);
+    rz(M, 6.5, .5, 9.3, 1.8, 2.6); for (let x = 7.2; x < 9.3; x += .7) s(M, [x, .5, 2.6], [x, 1.8, 2.6]); s(M, [6.5, 1.15, 2.6], [9.3, 1.15, 2.6]);
+    [[6.6, .6], [9.4, .6], [6.6, 1.8], [9.4, 1.8]].forEach(([x, z]) => s(M, [x, 2.2, z], [x, 3.5, z]));
+    ry(M, 6.6, .6, 9.4, 1.8, 3.5); for (let x = 6.95; x < 9.4; x += .35) s(M, [x, 3.5, .6], [x, 3.5, 1.8]);
+    M.sort((a, b) => (Math.min(a[0][1], a[1][1]) - Math.min(b[0][1], b[1][1])) || (a[0][0] - b[0][0]));
+    for (let x = -1.2; x <= 10.81; x += 1.2) s(C, [x, 0, -1.2], [x, 0, 4.4]);
+    for (let z = -1.2; z <= 4.41; z += .8) s(C, [-1.2, 0, z], [10.8, 0, z]);
+    [[0, 3], [4, 3], [0, 0], [4, 0]].forEach(([x, z]) => s(C, [x, 0, z], [x, 4.4, z]));
+    s(C, [-1, 3.2, 3], [5, 3.2, 3]); s(C, [-1, 3.2, 0], [5, 3.2, 0]); s(C, [3, 2.2, 2.6], [10.8, 2.2, 2.6]); s(C, [9.6, 0, 2.6], [9.6, 4.2, 2.6]);
+    const tx = (x, y, z) => s(D, [x - .13, y, z + .13], [x + .13, y, z - .13]);
+    const ty = (x, y, z) => s(D, [x, y - .13, z + .13], [x, y + .13, z - .13]);
+    s(D, [0, 0, 3.9], [9.6, 0, 3.9]); [0, 4, 9.6].forEach(x => tx(x, 0, 3.9));
+    s(D, [0, 0, 3.1], [0, 0, 4.05]); s(D, [4, 0, 3.1], [4, 0, 4.05]); s(D, [9.6, 0, 2.7], [9.6, 0, 4.05]);
+    s(D, [-.8, 0, 3], [-.8, 3.2, 3]); ty(-.8, 0, 3); ty(-.8, 3.2, 3); s(D, [-.1, 0, 3], [-.95, 0, 3]); s(D, [-.1, 3.2, 3], [-.95, 3.2, 3]);
+    s(D, [10.4, 0, 2.6], [10.4, 2.2, 2.6]); ty(10.4, 0, 2.6); ty(10.4, 2.2, 2.6); s(D, [9.7, 2.2, 2.6], [10.55, 2.2, 2.6]);
+    this.gM = segGeo(M); this.gC = segGeo(C); this.gD = segGeo(D);
+    this.mM = new THREE.LineBasicMaterial({ transparent: true, opacity: .95 });
+    this.mC = new THREE.LineBasicMaterial({ transparent: true, opacity: .3 });
+    this.mD = new THREE.LineBasicMaterial({ transparent: true, opacity: .9 });
+    const g = new THREE.Group(); g.position.set(-4.8, -1.6, -1.5); this.scene.add(g);
+    this.tM = thick(this.gM, this.mM, g); this.tC = thick(this.gC, this.mC, g, 1); this.tD = thick(this.gD, this.mD, g, 2);
+  }
+  resize(w, h) {
+    const H = 5.1, A = w / h;
+    Object.assign(this.cam, { left: -H * A, right: H * A, top: H, bottom: -H }); this.cam.updateProjectionMatrix();
+    const e = 2 * H / (h * this.pr); this.tM.set(e); this.tC.set(e); this.tD.set(e);
+  }
+  theme() { this.mM.color.set(tok('--blue')); this.mC.color.set(tok('--blue')); this.mD.color.set(tok('--rust')); }
+  frame(t) {
+    const tt = MOTION ? t : 99, m = MOTION ? 1 : 0;
+    const dr = (g, p) => g.setDrawRange(0, Math.floor(clamp(p) * g.userData.n / 2) * 2);
+    dr(this.gC, tt / 1.6); dr(this.gM, easeIO(clamp((tt - .3) / 3))); dr(this.gD, (tt - 3) / 1.1);
+    const az = -.72 + m * (.22 * Math.sin(t * .17) + sm.x * .3), el = .56 + m * (.04 * Math.sin(t * .23) - sm.y * .12);
+    this.cam.position.set(Math.sin(az) * Math.cos(el) * 40, Math.sin(el) * 40, Math.cos(az) * Math.cos(el) * 40);
+    this.cam.lookAt(0, 0, 0);
+  }
+}
+
+/* Slide 5: one point per article, flying in to form the two corpora */
+class Cloud extends Scene3D {
+  constructor(el) {
+    super(el);
+    this.cam = new THREE.PerspectiveCamera(30, 1, .1, 200);
+    const NA = 18282, NB = 18210, NN = NA + NB;
+    const pos = new Float32Array(NN * 3), st = new Float32Array(NN * 3), del = new Float32Array(NN), grp = new Float32Array(NN);
+    const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+    for (let i = 0; i < NN; i++) {
+      const b = i >= NA ? 1 : 0, cx = b ? 2.4 : -2.4;
+      pos[i * 3] = cx + gauss() * .8; pos[i * 3 + 1] = gauss() * .72; pos[i * 3 + 2] = gauss() * .8;
+      st[i * 3] = (Math.random() - .5) * 18; st[i * 3 + 1] = (Math.random() - .5) * 10; st[i * 3 + 2] = (Math.random() - .5) * 10 - 3;
+      del[i] = Math.random() * .9; grp[i] = b;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aStart', new THREE.BufferAttribute(st, 3));
+    g.setAttribute('aDelay', new THREE.BufferAttribute(del, 1)); g.setAttribute('aGroup', new THREE.BufferAttribute(grp, 1));
+    this.mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { uP: { value: 0 }, uS: { value: 2.7 }, uPR: { value: 1 }, uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() } },
+      vertexShader: `attribute vec3 aStart;attribute float aDelay;attribute float aGroup;uniform float uP;uniform float uS;uniform float uPR;uniform vec3 uA;uniform vec3 uB;varying vec3 vC;varying float vA;
+        void main(){float k=clamp((uP-aDelay)/.7,0.,1.);k=1.-pow(1.-k,3.);vec3 p=mix(aStart,position,k);vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=uS*uPR*(11./-mv.z);vC=mix(uA,uB,aGroup);vA=.15+.5*k;}`,
+      fragmentShader: `varying vec3 vC;varying float vA;void main(){vec2 c=gl_PointCoord-.5;if(dot(c,c)>.25)discard;gl_FragColor=vec4(vC,vA);}`
+    });
+    const pts = new THREE.Points(g, this.mat); pts.frustumCulled = false; this.scene.add(pts);
+    const C = [], A = [];
+    for (let x = -6; x <= 6; x++) C.push([[x, -2.7, -3], [x, -2.7, 3]]);
+    for (let z = -3; z <= 3; z++) C.push([[-6, -2.7, z], [6, -2.7, z]]);
+    A.push([[-6, -2.7, 0], [6.4, -2.7, 0]], [[6.4, -2.7, 0], [6.05, -2.55, 0]], [[6.4, -2.7, 0], [6.05, -2.85, 0]],
+      [[-6, -2.7, 0], [-6, 3.1, 0]], [[-6, 3.1, 0], [-6.15, 2.75, 0]], [[-6, 3.1, 0], [-5.85, 2.75, 0]]);
+    this.mC = new THREE.LineBasicMaterial({ transparent: true, opacity: .25 });
+    this.mA = new THREE.LineBasicMaterial({ transparent: true, opacity: .8 });
+    this.tC = thick(segGeo(C), this.mC, this.scene, 1); this.tA = thick(segGeo(A), this.mA, this.scene, 2);
+  }
+  resize(w, h) { this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); this.mat.uniforms.uPR.value = this.pr; const e = this.persE(13); this.tC.set(e); this.tA.set(e); }
+  theme() { this.mat.uniforms.uA.value.set(tok('--blue')); this.mat.uniforms.uB.value.set(tok('--rust')); this.mC.color.set(tok('--ink-3')); this.mA.color.set(tok('--ink-2')); }
+  frame(t) {
+    const tt = MOTION ? t : 99, m = MOTION ? 1 : 0;
+    this.mat.uniforms.uP.value = Math.min(1.7, tt * .72);
+    const az = m * (.38 * Math.sin(t * .2) + sm.x * .4), el = .16 + m * (-sm.y * .1);
+    this.cam.position.set(Math.sin(az) * Math.cos(el) * 13, Math.sin(el) * 13, Math.cos(az) * Math.cos(el) * 13);
+    this.cam.lookAt(0, -.15, 0);
+  }
+}
+
+/* Slide 6: biased fragments fall into a wireframe funnel and come out as an ordered grid */
+class Funnel extends Scene3D {
+  constructor(el) {
+    super(el);
+    this.cam = new THREE.PerspectiveCamera(30, 1, .1, 200);
+    const R = this.R = y => y >= -.6 ? .5 + (y + .6) / 3 * (2.15 - .5) : .5;
+    const L = [], Lr = [];
+    const ring = (A, y, r, n = 72) => { for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; A.push([[Math.cos(a0) * r, y, Math.sin(a0) * r], [Math.cos(a1) * r, y, Math.sin(a1) * r]]); } };
+    ring(L, 2.62, 2.15); ring(L, 2.4, 2.15); ring(L, -1.6, .5);
+    for (let i = 0; i < 72; i++) { const a = i / 72 * Math.PI * 2; Lr.push([[Math.cos(a) * 2.15, 2.4, Math.sin(a) * 2.15], [Math.cos(a) * 2.15, 2.62, Math.sin(a) * 2.15]]); }
+    [1.7, 1.0, .3, -.6, -1.1].forEach(y => ring(Lr, y, R(y)));
+    for (let i = 0; i < 28; i++) {
+      const a = i / 28 * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+      L.push([[c * 2.15, 2.4, s * 2.15], [c * .5, -.6, s * .5]], [[c * .5, -.6, s * .5], [c * .5, -1.6, s * .5]]);
+    }
+    this.mL = new THREE.LineBasicMaterial({ transparent: true, opacity: .85 });
+    this.mR = new THREE.LineBasicMaterial({ transparent: true, opacity: .45 });
+    this.tL = thick(segGeo(L), this.mL, this.scene, 2); this.tR = thick(segGeo(Lr), this.mR, this.scene, 1);
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, .95));
+    const dl = new THREE.DirectionalLight(0xffffff, .55); dl.position.set(3, 6, 5); this.scene.add(dl);
+    this.blobMat = new THREE.MeshPhongMaterial({ flatShading: true, shininess: 6 });
+    this.blobEdge = new THREE.LineBasicMaterial({ transparent: true, opacity: .5 });
+    const ico = new THREE.IcosahedronGeometry(1, 0);
+    this.blobs = [];
+    for (let i = 0; i < 15; i++) { const m = addSolid(ico, this.blobMat, this.blobEdge, this.scene); this.blobs.push({ m }); }
+    this.cubeMatA = new THREE.MeshLambertMaterial(); this.cubeMatB = new THREE.MeshLambertMaterial();
+    this.cubeEdge = new THREE.LineBasicMaterial();
+    const bx = new THREE.BoxGeometry(.36, .36, .36);
+    this.cubes = [];
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+      const m = addSolid(bx, c < 2 ? this.cubeMatA : this.cubeMatB, this.cubeEdge, this.scene);
+      m.position.set((c - 1.5) * .46, -2.3 - r * .46, 0); m.scale.setScalar(.001);
+      this.cubes.push({ m, born: -1, pulse: -9 });
+    }
+  }
+  spawn(b, first) {
+    b.y = 3.6 + Math.random() * 2.4; b.r = Math.random() * 1.4; b.a = Math.random() * Math.PI * 2; b.v = 0;
+    b.size = .2 + Math.random() * .2; b.spin = (Math.random() - .5) * 3; b.wait = first ? Math.random() * 1.4 : Math.random() * .5;
+  }
+  enter() { super.enter(); this.blobs.forEach(b => this.spawn(b, true)); this.filled = 0; this.cubes.forEach(c => { c.born = -1; c.m.scale.setScalar(.001); c.m.visible = false; }); }
+  resize(w, h) { this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); const e = this.persE(16.5); this.tL.set(e); this.tR.set(e); }
+  theme() {
+    this.mL.color.set(tok('--blue')); this.mR.color.set(tok('--blue'));
+    this.blobMat.color.set(tok('--ink-3')); this.blobEdge.color.set(tok('--ink'));
+    this.cubeMatA.color.set(tok('--blue')); this.cubeMatB.color.set(tok('--rust')); this.cubeEdge.color.set(tok('--ink'));
+  }
+  emit() {
+    if (this.filled < 16) { const c = this.cubes[this.filled]; c.born = this.t; c.m.visible = true; this.filled++; }
+    else { this.cubes[Math.floor(Math.random() * 16)].pulse = this.t; }
+  }
+  frame(t, dt) {
+    const m = MOTION ? 1 : 0;
+    if (!MOTION && this.filled < 16) { while (this.filled < 16) this.emit(); this.cubes.forEach(c => c.born = -9); }
+    if (MOTION) for (const b of this.blobs) {
+      if (b.wait > 0) { b.wait -= dt; b.m.visible = false; continue; }
+      b.m.visible = true;
+      if (b.y > 2.4) { b.v += 5 * dt; b.y -= b.v * dt; b.r = Math.min(b.r, 2.15 - b.size - .05); }
+      else {
+        b.y -= (.95 + (2.4 - b.y) * .3) * dt; b.a += dt * (1.3 + (2.4 - b.y) * 1.1);
+        const rmax = Math.max(0, this.R(b.y) - b.size * .9); b.r += (rmax * .82 - b.r) * Math.min(1, dt * 2.6);
+      }
+      let sc = b.size; if (b.y < .4) sc = b.size * clamp((b.y + 1.75) / 2.15);
+      if (b.y < -1.75) { this.spawn(b); this.emit(); continue; }
+      b.m.position.set(Math.cos(b.a) * b.r, b.y, Math.sin(b.a) * b.r); b.m.scale.setScalar(Math.max(.001, sc));
+      b.m.rotation.x += dt * b.spin; b.m.rotation.y += dt * b.spin * .7;
+    } else this.blobs.forEach(b => b.m.visible = false);
+    for (const c of this.cubes) {
+      if (c.born < -5) { c.m.visible = true; c.m.scale.setScalar(1); continue; }
+      if (c.born < 0) continue;
+      let s = backOut(clamp((t - c.born) / .5)); const p = t - c.pulse; if (p < .5) s *= 1 + .18 * Math.sin(p / .5 * Math.PI);
+      c.m.scale.setScalar(Math.max(.001, s));
+    }
+    const az = m * (.3 * Math.sin(t * .2) + sm.x * .35), el = .1 + m * (-sm.y * .08);
+    this.cam.position.set(Math.sin(az) * Math.cos(el) * 16.5, Math.sin(el) * 16.5, Math.cos(az) * Math.cos(el) * 16.5);
+    this.cam.lookAt(0, 0, 0);
+  }
+}
+
+/* Slide 13: the balance — AI noise sinks, the human cube rises and glows */
+class Scale extends Scene3D {
+  constructor(el) {
+    super(el);
+    this.cam = new THREE.PerspectiveCamera(30, 1, .1, 200);
+    this.labs = el.parentElement.querySelectorAll('.sc-lab');
+    el.parentElement.classList.add('on');
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x6f6f6f, .95));
+    const dl = new THREE.DirectionalLight(0xffffff, .6); dl.position.set(4, 7, 6); this.scene.add(dl);
+    this.mPaper = new THREE.MeshLambertMaterial(); this.mDark = new THREE.MeshLambertMaterial(); this.mWarm = new THREE.MeshLambertMaterial();
+    this.eInk = new THREE.LineBasicMaterial({ transparent: true, opacity: .9 }); this.eRust = new THREE.LineBasicMaterial();
+    const S = this.scene;
+    const plinth = addSolid(new THREE.BoxGeometry(3.6, .3, 1.9), this.mPaper, this.eInk, S); plinth.position.y = .15;
+    const base = addSolid(new THREE.CylinderGeometry(.6, 1.3, 1, 4, 1), this.mPaper, this.eInk, S); base.position.y = .8; base.rotation.y = Math.PI / 4;
+    const colm = addSolid(new THREE.CylinderGeometry(.13, .18, 2.3, 12), this.mPaper, this.eInk, S); colm.position.y = 2.45;
+    this.P = new THREE.Vector3(0, 3.6, 0);
+    const G = [], gear = this.gear = new THREE.Group(); gear.position.set(0, 3.6, -.32); S.add(gear);
+    const ring = (r, n = 72) => { for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; G.push([[Math.cos(a0) * r, Math.sin(a0) * r, 0], [Math.cos(a1) * r, Math.sin(a1) * r, 0]]); } };
+    ring(1.0); ring(.78); ring(.26);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; G.push([[Math.cos(a) * .26, Math.sin(a) * .26, 0], [Math.cos(a) * .78, Math.sin(a) * .78, 0]]); }
+    for (let i = 0; i < 22; i++) {
+      const a = i / 22 * Math.PI * 2, w = .07, p = (r, d) => [Math.cos(a + d) * r, Math.sin(a + d) * r, 0];
+      G.push([p(1, -w), p(1.16, -w)], [p(1.16, -w), p(1.16, w)], [p(1.16, w), p(1, w)]);
+    }
+    this.mGear = new THREE.LineBasicMaterial({ transparent: true, opacity: .55 });
+    thick(segGeo(G), this.mGear, gear, 1).set(.012);
+    const beam = this.beam = new THREE.Group(); beam.position.copy(this.P); S.add(beam);
+    addSolid(new THREE.BoxGeometry(6.9, .17, .26), this.mPaper, this.eInk, beam);
+    const hub = addSolid(new THREE.CylinderGeometry(.24, .24, .42, 20), this.mPaper, this.eInk, beam); hub.rotation.x = Math.PI / 2;
+    const lathe = new THREE.LatheGeometry([new THREE.Vector2(0, 0), new THREE.Vector2(.95, 0), new THREE.Vector2(1.18, .26), new THREE.Vector2(1.24, .3)], 40);
+    this.panL = new THREE.Group(); this.panR = new THREE.Group(); S.add(this.panL, this.panR);
+    addSolid(lathe, this.mPaper, this.eInk, this.panL); addSolid(lathe, this.mPaper, this.eInk, this.panR);
+    this.ai = addSolid(new THREE.BoxGeometry(1.3, 1.3, 1.3), this.mDark, this.eInk, this.panL); this.ai.position.y = .3 + .65;
+    const NP = 520, np = new Float32Array(NP * 3); this.noiseBase = new Float32Array(NP * 3);
+    for (let i = 0; i < NP; i++) { for (let k = 0; k < 3; k++) this.noiseBase[i * 3 + k] = (Math.random() - .5) * 2.1; }
+    np.set(this.noiseBase);
+    this.noise = new THREE.BufferGeometry(); this.noise.setAttribute('position', new THREE.BufferAttribute(np, 3));
+    this.mNoise = new THREE.PointsMaterial({ size: 3, sizeAttenuation: false, transparent: true, opacity: .75 });
+    const pts = new THREE.Points(this.noise, this.mNoise); pts.position.y = .3 + .65; this.panL.add(pts);
+    const W = [];
+    for (let i = 0; i < 7; i++) { const x = -.45 + i * .15, h = .45 + Math.random() * .5; W.push([[x, 1.6, 0], [x, 1.6 + h, 0]], [[x - .05, 1.6 + h, 0], [x + .05, 1.6 + h, 0]]); }
+    for (let i = 0; i < 4; i++) { const y = .55 + i * .25; W.push([[-.66, y, .3], [-1.25, y, .3]], [[.66, y, .3], [1.25, y, .3]]); }
+    this.mWire = new THREE.LineBasicMaterial({ transparent: true, opacity: .7 });
+    thick(segGeo(W), this.mWire, this.panL, 1).set(.012);
+    this.hu = addSolid(new THREE.BoxGeometry(.95, .95, .95), this.mWarm, this.eRust, this.panR); this.hu.position.y = .3 + .475;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128; this.glowCv = cv;
+    this.glowTex = new THREE.CanvasTexture(cv);
+    this.glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.glowTex, transparent: true, depthWrite: false }));
+    this.glow.scale.set(3, 3, 1); this.glow.position.y = .3 + .475; this.panR.add(this.glow);
+    this.strG = new THREE.BufferGeometry(); this.strG.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12 * 3), 3));
+    this.mStr = new THREE.LineBasicMaterial({ transparent: true, opacity: .8 });
+    this.tStr = thick(this.strG, this.mStr, S, 1);
+    this.v = new THREE.Vector3();
+  }
+  resize(w, h) { this.cam.aspect = w / h; this.cam.updateProjectionMatrix(); this.tStr.set(this.persE(15)); }
+  theme() {
+    this.mPaper.color.set(tok('--card')); this.mDark.color.set(tok('--ai-cube')); this.mWarm.color.set(tok('--human-cube'));
+    this.eInk.color.set(tok('--ink')); this.eRust.color.set(tok('--rust')); this.mGear.color.set(tok('--ink-2'));
+    this.mNoise.color.set(tok('--ink-2')); this.mWire.color.set(tok('--ink-2')); this.mStr.color.set(tok('--ink-2'));
+    const c = new THREE.Color(tok('--rust')), x = this.glowCv.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    const rgb = `${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)}`;
+    gr.addColorStop(0, `rgba(${rgb},.55)`); gr.addColorStop(.45, `rgba(${rgb},.22)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    x.clearRect(0, 0, 128, 128); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); this.glowTex.needsUpdate = true;
+  }
+  frame(t) {
+    const m = MOTION ? 1 : 0, tt = MOTION ? t : 99, tau = Math.max(0, tt - .9);
+    const th = .19 * (1 - Math.exp(-2.1 * tau) * Math.cos(5 * tau)) + m * .008 * Math.sin(t * 1.3);
+    this.beam.rotation.z = th; this.gear.rotation.z = th * 5 + m * t * .08;
+    const c = Math.cos(th), s = Math.sin(th), P = this.P;
+    const eL = [P.x - 3.3 * c, P.y - 3.3 * s, 0], eR = [P.x + 3.3 * c, P.y + 3.3 * s, 0];
+    this.panL.position.set(eL[0], eL[1] - 2.05, 0); this.panR.position.set(eR[0], eR[1] - 2.05, 0);
+    const a = this.strG.attributes.position.array; let k = 0;
+    [[eL, this.panL], [eR, this.panR]].forEach(([e, p]) => {
+      for (let i = 0; i < 3; i++) {
+        const ang = Math.PI / 2 + i * Math.PI * 2 / 3;
+        a.set(e, k); a.set([p.position.x + Math.cos(ang) * 1.18, p.position.y + .3, Math.sin(ang) * 1.18], k + 3); k += 6;
+      }
+    });
+    this.strG.attributes.position.needsUpdate = true;
+    if (MOTION) {
+      const np = this.noise.attributes.position.array, nb = this.noiseBase;
+      for (let i = 0; i < 70; i++) { const j = Math.floor(Math.random() * nb.length / 3) * 3; for (let q = 0; q < 3; q++) np[j + q] = nb[j + q] + (Math.random() - .5) * .25; }
+      this.noise.attributes.position.needsUpdate = true;
+    }
+    const pulse = 1 + m * .08 * Math.sin(t * 2.2);
+    this.glow.scale.set(3 * pulse, 3 * pulse, 1); this.hu.rotation.y = m * t * .35;
+    const az = m * (.22 * Math.sin(t * .16) + sm.x * .3), el = .2 + m * (-sm.y * .08);
+    this.cam.position.set(Math.sin(az) * Math.cos(el) * 15, 2.3 + Math.sin(el) * 15, Math.cos(az) * Math.cos(el) * 15);
+    this.cam.lookAt(0, 2.3, 0);
+    const place = (lab, obj, dy, below) => {
+      obj.getWorldPosition(this.v); this.v.y += dy; this.v.project(this.cam);
+      lab.style.transform = `translate(${(this.v.x + 1) / 2 * this.w}px,${(1 - this.v.y) / 2 * this.h}px) translate(-50%,${below ? '0' : '-100%'})`;
+    };
+    place(this.labs[0], this.ai, 1.75); place(this.labs[1], this.panR, -.35, true);
+  }
+}
+
+const SCENES = { cover: Cover, cloud: Cloud, funnel: Funnel, scale: Scale };
+function ensureScene(slide) {
+  const el = slide.querySelector('[data-gl]');
+  if (!el || !window.THREE) return null;
+  if (el._scene === undefined) {
+    try { const sc = new SCENES[el.dataset.gl](el); sc.slide = slide; sc.size(); sc.theme(); scenes.push(sc); el._scene = sc; }
+    catch (err) { console.warn('3D scene unavailable:', err); el._scene = null; }
+  }
+  return el._scene;
+}
+function retheme() { scenes.forEach(s => s.theme()); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
+new MutationObserver(retheme).observe(root, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+
+/* ---------- navigation ---------- */
+const dotsEl = document.getElementById('dots'), counter = document.getElementById('counter');
+const seen = new Set([0]);
+slides.forEach((s, i) => {
+  const b = document.createElement('button'); b.type = 'button';
+  b.setAttribute('aria-label', `第 ${i + 1} 頁：${s.dataset.title}`); b.title = `${pad(i + 1)} ${s.dataset.title}`;
+  b.innerHTML = '<i></i>'; b.addEventListener('click', () => go(i)); dotsEl.appendChild(b);
+});
+function enterSlide(s) {
+  s.querySelectorAll('[data-to]').forEach(countUp);
+  const sc = ensureScene(s); if (sc) { sc.size(); sc.enter(); }
+}
+function updateUI() {
+  counter.textContent = `${pad(cur + 1)} / ${pad(N)}`;
+  [...dotsEl.children].forEach((b, i) => { b.setAttribute('aria-current', i === cur ? 'true' : 'false'); b.classList.toggle('seen', seen.has(i)); });
+  slides.forEach((s, i) => s.setAttribute('aria-hidden', i === cur ? 'false' : 'true'));
+}
+function go(n, replay) {
+  n = Math.max(0, Math.min(N - 1, n));
+  if (n === cur && !replay) return;
+  const prev = slides[cur], next = slides[n], dir = n > cur ? 'f' : 'b';
+  if (n !== cur) {
+    prev.classList.remove('is-active'); prev.classList.add('is-leaving'); prev.dataset.dir = dir;
+    clearTimeout(prev._lt); prev._lt = setTimeout(() => prev.classList.remove('is-leaving'), 760);
+    next.classList.remove('is-leaving'); next.dataset.dir = dir;
+  } else {
+    next.classList.remove('is-active'); next.dataset.dir = 'none'; void next.offsetWidth;
+  }
+  next.classList.add('is-active');
+  cur = n; seen.add(n);
+  enterSlide(next); updateUI();
+  try { history.replaceState(null, '', '#s' + (n + 1)); } catch (e) {}
+}
+document.getElementById('prev').addEventListener('click', () => go(cur - 1));
+document.getElementById('next').addEventListener('click', () => go(cur + 1));
+document.getElementById('replay').addEventListener('click', () => go(cur, true));
+const fsBtn = document.getElementById('fs');
+function toggleFS() {
+  const d = document;
+  if (d.fullscreenElement) d.exitFullscreen?.().catch(() => {});
+  else root.requestFullscreen?.().catch(() => {});
+}
+fsBtn.addEventListener('click', toggleFS);
+document.addEventListener('fullscreenchange', fit);
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const onBtn = e.target.closest && e.target.closest('button');
+  if (onBtn && (e.key === ' ' || e.key === 'Enter')) return;
+  const k = e.key;
+  if (['ArrowRight', 'PageDown', ' ', 'Enter', 'ArrowDown'].includes(k)) { e.preventDefault(); go(cur + 1); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace', 'ArrowUp'].includes(k)) { e.preventDefault(); go(cur - 1); }
+  else if (k === 'Home') go(0);
+  else if (k === 'End') go(N - 1);
+  else if (k === 'f' || k === 'F') toggleFS();
+  else if (k === 'r' || k === 'R') go(cur, true);
+});
+let sx = null, sy = 0;
+const vp = document.getElementById('viewport');
+vp.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
+vp.addEventListener('pointerup', e => {
+  if (sx === null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) go(cur + (dx < 0 ? 1 : -1));
+});
+
+/* idle controls + pointer parallax */
+let idleT;
+const finePointer = matchMedia('(pointer: fine)').matches;
+function wake() { document.body.classList.remove('idle'); clearTimeout(idleT); if (finePointer) idleT = setTimeout(() => document.body.classList.add('idle'), 2600); }
+addEventListener('pointermove', e => {
+  wake();
+  if (e.pointerType === 'mouse') { sm.tx = (e.clientX / innerWidth) * 2 - 1; sm.ty = (e.clientY / innerHeight) * 2 - 1; sm.last = performance.now(); }
+});
+addEventListener('keydown', wake);
+document.getElementById('controls').addEventListener('focusin', wake);
+
+/* ---------- fit the 1920×1080 sheet to the window ---------- */
+function fit() {
+  const vw = innerWidth, vh = innerHeight, full = !!document.fullscreenElement;
+  const gx = full ? 0 : 16, gy = full ? 0 : 16;
+  stageScale = Math.max(.05, Math.min((vw - 2 * gx) / 1920, (vh - 2 * gy) / 1080));
+  const x = (vw - 1920 * stageScale) / 2, y = (vh - 1080 * stageScale) / 2;
+  stage.style.transform = `translate(${x}px,${y}px) scale(${stageScale})`;
+  scenes.forEach(s => s.size());
+}
+addEventListener('resize', fit);
+
+/* ---------- frame loop ---------- */
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  if (MOTION) {
+    const idle = clamp((now - sm.last - 2500) / 2500);
+    const ax = idle * .55 * Math.sin(now / 1000 * .35), ay = idle * .25 * Math.sin(now / 1000 * .27);
+    sm.x += ((1 - idle) * sm.tx + ax - sm.x) * Math.min(1, dt * 3);
+    sm.y += ((1 - idle) * sm.ty + ay - sm.y) * Math.min(1, dt * 3);
+    const s = slides[cur]; s.style.setProperty('--mx', sm.x.toFixed(3)); s.style.setProperty('--my', sm.y.toFixed(3));
+  }
+  for (const sc of scenes) {
+    if (!sc.slide.classList.contains('is-active') && !sc.slide.classList.contains('is-leaving')) continue;
+    sc.t += dt; sc.frame(sc.t, dt); sc.render();
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- start ---------- */
+fit();
+const m = /^#s(\d+)$/.exec(location.hash);
+cur = m ? Math.max(0, Math.min(N - 1, +m[1] - 1)) : 0;
+slides[cur].dataset.dir = 'none'; slides[cur].classList.add('is-active'); seen.add(cur);
+enterSlide(slides[cur]); updateUI(); wake();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
