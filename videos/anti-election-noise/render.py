@@ -7,7 +7,9 @@
 用法：
     pip install pillow numpy scipy
     python3 render.py            # 輸出 anti-election-noise.mp4
-    python3 render.py --stills   # 只輸出關鍵影格預覽 build/stills.png
+    python3 render.py --stills   # 只輸出關鍵影格預覽 build/9x16/stills.png
+    python3 render.py --landscape          # 16:9 版 anti-election-noise-16x9.mp4
+    python3 render.py --landscape --stills
 """
 import math
 import os
@@ -23,10 +25,20 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from scipy import signal
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BUILD = os.path.join(HERE, "build")
-OUT = os.path.join(HERE, "anti-election-noise.mp4")
+LAND = "--landscape" in sys.argv
+BUILD = os.path.join(HERE, "build", "16x9" if LAND else "9x16")
+OUT = os.path.join(HERE, "anti-election-noise-16x9.mp4" if LAND else "anti-election-noise.mp4")
 
-W, H, FPS = 1080, 1920, 30
+W, H = (1920, 1080) if LAND else (1080, 1920)
+FPS = 30
+CX, CY = W // 2, H // 2
+
+
+def L(portrait, landscape):
+    """直式／橫式各自的版面數值。"""
+    return landscape if LAND else portrait
+
+
 BPM = 128.0
 B = 60.0 / BPM  # 0.46875 s
 DUR = 30.0
@@ -231,11 +243,12 @@ BG_RED_TAGS = BG_RED.copy()
 _rng = np.random.default_rng(7)
 _tag_words = ["宣傳車", "擴音器", "鞭炮", "催票", "凍蒜", "拜票", "造勢", "遊行", "大聲公",
               "掃街", "07:00", "23:00", "鑼鼓", "最後衝刺", "懇請支持", "感謝鄉親"]
-for gy in range(5):
-    for gx in range(3):
-        word = _tag_words[(gy * 3 + gx) % len(_tag_words)]
-        cx = 190 + gx * 350 + int(_rng.integers(-30, 30))
-        cy = 230 + gy * 360 + int(_rng.integers(-40, 40))
+_rows, _cols = L((5, 3), (3, 5))
+for gy in range(_rows):
+    for gx in range(_cols):
+        word = _tag_words[(gy * _cols + gx) % len(_tag_words)]
+        cx = 190 + gx * (W - 380) // (_cols - 1) + int(_rng.integers(-30, 30))
+        cy = L(230, 170) + gy * L(360, 370) + int(_rng.integers(-40, 40))
         put(BG_RED_TAGS, pill(word, "d", 34), cx, cy, a=0.55)
 
 
@@ -243,14 +256,15 @@ def make_city():
     rng = np.random.default_rng(11)
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    for layer, (base, shade, top) in enumerate([(820, (28, 30, 50), 0.22), (1040, (20, 22, 38), 0.36)]):
+    street = L(1560, 900)
+    for layer, (base, shade, top) in enumerate([(L(820, 330), (28, 30, 50), 0.22), (L(1040, 470), (20, 22, 38), 0.36)]):
         x = -40
         while x < W + 40:
             bw = int(rng.integers(90, 210))
             bh = int(rng.integers(260, 720))
             y0 = base + int(rng.integers(-120, 160)) if layer == 0 else base + int(rng.integers(-60, 200))
             d.rectangle((x, y0, x + bw, H), fill=shade + (255,))
-            for wy in range(y0 + 26, H - 380, 44):
+            for wy in range(y0 + 26, street - 20, 44):
                 for wx in range(x + 16, x + bw - 22, 34):
                     if rng.random() < top:
                         c = (255, 206, 120, int(rng.integers(150, 235)))
@@ -259,17 +273,21 @@ def make_city():
                     d.rectangle((wx, wy, wx + 16, wy + 22), fill=c)
             x += bw + int(rng.integers(6, 26))
     # 街道
-    d.rectangle((0, 1560, W, H), fill=(18, 18, 26, 255))
+    d.rectangle((0, street, W, H), fill=(18, 18, 26, 255))
+    lane = street + L(140, 100)
     for i in range(0, W, 120):
-        d.rectangle((i + 20, 1700, i + 80, 1712), fill=(70, 70, 84, 255))
+        d.rectangle((i + 20, lane, i + 80, lane + 12), fill=(70, 70, 84, 255))
     # 競選旗幟（無特定政黨）
     flags = [(90, "凍蒜", RED), (300, "拜託", YEL), (520, "支持", WHT), (760, "衝刺", RED), (980, "凍蒜", YEL)]
+    if LAND:
+        words, cols = ["凍蒜", "拜託", "支持", "衝刺"], [RED, YEL, WHT]
+        flags = [(70 + k * 215, words[k % 4], cols[k % 3]) for k in range(9)]
     for fx, txt, col in flags:
-        d.rectangle((fx - 3, 1180, fx + 3, 1580), fill=(120, 120, 132, 255))
-        d.rectangle((fx + 3, 1200, fx + 83, 1440), fill=col + (255,))
+        d.rectangle((fx - 3, street - 380, fx + 3, street + 20), fill=(120, 120, 132, 255))
+        d.rectangle((fx + 3, street - 360, fx + 83, street - 120), fill=col + (255,))
         fg = WHT if col == RED else INK
         for k, ch in enumerate(txt):
-            d.text((fx + 43, 1268 + k * 96), ch, font=F("black", 70), fill=fg, anchor="mm")
+            d.text((fx + 43, street - 292 + k * 96), ch, font=F("black", 70), fill=fg, anchor="mm")
     return im
 
 
@@ -427,11 +445,13 @@ def draw_particles(canvas, P, dt, gravity=1400, drag=2.6, alpha=1.0):
         d.rectangle((x - s / 2, y - s / 2, x + s / 2, y + s / 2), fill=P["col"][i] + (a,))
 
 
-HIT_P = make_particles(44, 170, 540, 1180, (420, 120), 1900, [YEL, WHT, YEL, INK, WHT])
-HIT_P2 = make_particles(46, 70, 540, 1180, (420, 120), 1300, [YEL, WHT])
-DUST_P = make_particles(56, 90, 540, 1250, (380, 20), 900, [(150, 132, 108), (176, 160, 136), (120, 106, 88)])
-DUST_P2 = make_particles(58, 60, 540, 1540, (330, 10), 700, [(150, 132, 108), (176, 160, 136)])
-DROP_P = make_particles(32, 80, 540, 600, (460, 120), 1400, [YEL, WHT])
+HIT_Y = L(1180, 760)
+HIT_P = make_particles(44, 170, CX, HIT_Y, (420, 120), 1900, [YEL, WHT, YEL, INK, WHT])
+HIT_P2 = make_particles(46, 70, CX, HIT_Y, (420, 120), 1300, [YEL, WHT])
+DUST_P = make_particles(56, 90, CX, L(1250, 570), (L(380, 620), 20), 900,
+                        [(150, 132, 108), (176, 160, 136), (120, 106, 88)])
+DUST_P2 = make_particles(58, 60, CX, L(1540, 885), (330, 10), 700, [(150, 132, 108), (176, 160, 136)])
+DROP_P = make_particles(32, 80, L(540, 470), L(600, 390), (460, 120), 1400, [YEL, WHT])
 
 # ---------------------------------------------------------------- scenes
 FX0 = dict(cam=(1.0, 0, 0, 0), rgb=0, slices=0, flash=None, vig=False, fill=BLACK, shake=0)
@@ -444,7 +464,7 @@ def fx(**kw):
 
 
 def header(canvas, text, y=250, style="r"):
-    put(canvas, pill(text, style, 34, radius=14), 540, y)
+    put(canvas, pill(text, style, 34, radius=14), CX, y)
 
 
 # A — 隔絕噪音 ----------------------------------------------------------
@@ -456,6 +476,15 @@ A_STICKERS = [
     ("掃街拜票", "k", 400, 300, 6), ("鑼鼓", "w", 980, 640, -24), ("造勢晚會", "y", 140, 690, 18),
     ("一票都不能少", "w", 520, 1790, -3),
 ]
+A_STICKERS_L = [
+    ("凍蒜！", "y", 260, 200, -12), ("宣傳車", "w", 1660, 180, 9), ("拜託拜託", "r", 470, 420, -5),
+    ("07:00", "k", 150, 560, 14), ("擴音器", "w", 1500, 420, -16), ("鞭炮", "r", 380, 900, 10),
+    ("懇請支持", "w", 1560, 880, -8), ("23:00", "y", 130, 780, -20), ("最後衝刺", "k", 1780, 660, 12),
+    ("大聲公", "y", 960, 960, 4), ("催票", "w", 720, 1000, -6), ("感謝鄉親", "r", 1250, 990, 7),
+    ("掃街拜票", "k", 760, 130, 6), ("鑼鼓", "w", 1820, 380, -24), ("造勢晚會", "y", 1180, 120, 18),
+    ("一票都不能少", "w", 420, 1010, -3),
+]
+A_Y = L(965, 540)
 
 
 def wave_line(canvas, t, y, amp, col, width=6, seed=0):
@@ -472,11 +501,11 @@ def wave_line(canvas, t, y, amp, col, width=6, seed=0):
 def scene_A(t, i):
     c = BG_BLACK.copy()
     beat_env = sum(pulse(t, bt(k), 0.12) for k in range(0, 8))
-    wave_line(c, t, 1560, 40 + 150 * beat_env, YEL, 6)
-    wave_line(c, t, 360, 20 + 90 * beat_env, (90, 90, 98), 4, seed=3)
+    wave_line(c, t, L(1560, 975), 40 + L(150, 110) * beat_env, YEL, 6)
+    wave_line(c, t, L(360, 110), 20 + L(90, 60) * beat_env, (90, 90, 98), 4, seed=3)
     rng = np.random.default_rng(i)
     quake = 1.5 + 5.0 * lin(t, 0, SEC_B)
-    for k, (txt, sty, x, y, rot) in enumerate(A_STICKERS):
+    for k, (txt, sty, x, y, rot) in enumerate(L(A_STICKERS, A_STICKERS_L)):
         t0 = bt(k * 0.5)
         if t < t0:
             continue
@@ -489,8 +518,9 @@ def scene_A(t, i):
     ImageDraw.Draw(box).rounded_rectangle((3, 3, 697, 617), radius=46, fill=(9, 9, 11, 250),
                                          outline=(70, 70, 78), width=4)
     bs = e_back(lin(t, 0, 0.25), 1.4)
-    put(c, box, 540, 965, s=max(0.02, bs))
-    chars = [("隔", WHT, 410, 845), ("絕", WHT, 670, 845), ("噪", YEL, 410, 1085), ("音", YEL, 670, 1085)]
+    put(c, box, CX, A_Y, s=max(0.02, bs))
+    chars = [("隔", WHT, CX - 130, A_Y - 120), ("絕", WHT, CX + 130, A_Y - 120),
+             ("噪", YEL, CX - 130, A_Y + 120), ("音", YEL, CX + 130, A_Y + 120)]
     rgb = 0
     for k, (ch, col, x, y) in enumerate(chars):
         t0 = bt(k)
@@ -508,7 +538,7 @@ def scene_A(t, i):
     d = ImageDraw.Draw(c)
     lw = 520 * e_out(lin(t, bt(4), bt(4) + 0.3))
     if lw > 2:
-        d.rectangle((540 - lw / 2, 1215, 540 + lw / 2, 1223), fill=RED)
+        d.rectangle((CX - lw / 2, A_Y + 250, CX + lw / 2, A_Y + 258), fill=RED)
     zoom = 1.0 + 0.025 * pulse(t, last_beat(t, range(0, 8)) or 0, 0.12)
     gl = t > SEC_B - 0.1
     return c, fx(cam=(zoom, 0, 0, 0), rgb=rgb + (20 if gl else 0), slices=6 if gl else 0, shake=quake * 0.6)
@@ -538,23 +568,25 @@ def scene_B(t, i):
         c = Image.new("RGBA", (W, H), bg + (255,))
     if kind == "slide":
         p = e_out(lin(t, t0, t0 + 0.14))
-        x = -520 + (540 + 520) * p
+        x = -520 + (CX + 520) * p
         for g in range(3, 0, -1):
-            put_text(c, txt, "black", 880, col, x - g * 70 * (1 - p), 960, a=0.18 * (1 - p))
-        put_text(c, txt, "black", 880, col, x, 960)
+            put_text(c, txt, "black", 880, col, x - g * 70 * (1 - p), CY, a=0.18 * (1 - p))
+        put_text(c, txt, "black", 880, col, x, CY)
         rgb = 18 * (1 - p)
     elif kind == "big":
         s = 1.0 + 0.3 * (1 - e_out(lin(t, t0, t0 + 0.1)))
-        put_text(c, txt, "black", 880, col, 540, 960, s=s)
+        put_text(c, txt, "black", 880, col, CX, CY, s=s)
         rgb = 16 if dt < 0.06 else 0
     elif kind == "two":
         s = 1.0 + 0.25 * (1 - e_out(lin(t, t0, t0 + 0.1)))
-        put_text(c, txt, "black", 470, col, 540, 960, s=s, track=10)
+        put_text(c, txt, "black", 470, col, CX, CY, s=s, track=10)
         rgb = 12 if dt < 0.06 else 0
     else:
         ms = e_back(lin(t, bt(11.5), bt(11.5) + 0.25), 1.8)
         wob = 4 * math.sin(t * 9)
-        put(c, MEGA, 520, 500, s=0.82 * max(0.02, ms), rot=12 + wob)
+        mx, my = L((520, 500), (560, 500))
+        tx, ty1, ty2, sy_ = L((540, 905, 1195, 1395), (1230, 360, 640, 835))
+        put(c, MEGA, mx, my, s=L(0.82, 0.95) * max(0.02, ms), rot=12 + wob)
         lb = last_beat(t, [k * 0.5 for k in range(23, 32)])
         d = ImageDraw.Draw(c)
         if lb is not None and t > bt(12):
@@ -564,18 +596,19 @@ def scene_B(t, i):
                 r = 70 + 52 * k
                 if a > 0.02:
                     col_a = WHT + (int(255 * a),)
-                    d.arc((660 - r, 455 - r, 660 + r, 455 + r), -50, 30, fill=col_a, width=16)
+                    ax, ay = mx + L(140, 165), my - 45
+                    d.arc((ax - r, ay - r, ax + r, ay + r), -50, 30, fill=col_a, width=16)
         s1 = 1.0 + 0.3 * (1 - e_out(lin(t, bt(11.5), bt(11.5) + 0.1)))
-        put_text(c, "選舉", "black", 270, WHT, 540, 905, s=s1, track=16)
+        put_text(c, "選舉", "black", 270, WHT, tx, ty1, s=s1, track=16)
         if t >= bt(12):
             s2 = 1.0 + 0.3 * (1 - e_out(lin(t, bt(12), bt(12) + 0.1)))
-            put_text(c, "污染", "black", 270, WHT, 540, 1195, s=s2, track=16)
+            put_text(c, "污染", "black", 270, WHT, tx, ty2, s=s2, track=16)
         if t >= bt(13):
             n = int(clamp((t - bt(13)) / 0.35) * 24)
-            put_text(c, "ELECTION NOISE POLLUTION"[:n], "bold", 46, YEL, 540, 1395, track=5)
+            put_text(c, "ELECTION NOISE POLLUTION"[:n], "bold", 46, YEL, tx, sy_, track=5)
             if n >= 24:
                 lw = 300 * e_out(lin(t, bt(13) + 0.35, bt(13) + 0.6))
-                d.rectangle((540 - lw, 1452, 540 + lw, 1458), fill=YEL)
+                d.rectangle((tx - lw, sy_ + 57, tx + lw, sy_ + 63), fill=YEL)
         rgb = 14 if (t - bt(11.5) < 0.06 or 0 <= t - bt(12) < 0.06) else 0
     if dt < 0.035:
         flash = (WHT, 0.25)
@@ -610,16 +643,25 @@ def arrow(d, x0, y0, x1, y1, p, col=YEL, w=8):
     xe, ye = x0 + (x1 - x0) * p, y0 + (y1 - y0) * p
     d.line([(x0, y0), (xe, ye)], fill=col, width=w)
     ang = math.atan2(ye - y0, xe - x0)
-    L = 26
+    hl = 26
     pts = [(xe + math.cos(ang) * 6, ye + math.sin(ang) * 6),
-           (xe - L * math.cos(ang - 0.5), ye - L * math.sin(ang - 0.5)),
-           (xe - L * math.cos(ang + 0.5), ye - L * math.sin(ang + 0.5))]
+           (xe - hl * math.cos(ang - 0.5), ye - hl * math.sin(ang - 0.5)),
+           (xe - hl * math.cos(ang + 0.5), ye - hl * math.sin(ang + 0.5))]
     d.polygon(pts, fill=col)
 
 
 C_ARROWS = [((492, 732), (590, 732)), ((780, 828), (780, 905)), ((588, 1022), (492, 1022)),
             ((300, 1118), (300, 1195)), ((492, 1312), (590, 1312))]
 LOOP = [(780, 1408), (780, 1500), (60, 1500), (60, 732), (88, 732)]
+if LAND:  # 3 欄 × 2 列的蛇形行程
+    NODES = [
+        ("07:00", "宣傳車廣播", 400, 430), ("09:00", "掃街拜票", 960, 430),
+        ("12:00", "鞭炮炸街", 1520, 430), ("15:00", "大聲公", 1520, 760),
+        ("19:00", "造勢晚會", 960, 760), ("23:00", "深夜催票", 400, 760),
+    ]
+    C_ARROWS = [((592, 442), (746, 442)), ((1152, 442), (1306, 442)), ((1520, 538), (1520, 655)),
+                ((1328, 772), (1174, 772)), ((768, 772), (614, 772))]
+    LOOP = [(208, 772), (110, 772), (110, 442), (186, 442)]
 
 
 def scene_C(t, i):
@@ -634,15 +676,15 @@ def scene_C(t, i):
         segs = list(zip(LOOP[:-1], LOOP[1:]))
         lens = [math.dist(a, b) for a, b in segs]
         total = sum(lens) * lp
-        for (a, b), L in zip(segs, lens):
+        for (a, b), seg_len in zip(segs, lens):
             if total <= 0:
                 break
-            q = min(1.0, total / L)
+            q = min(1.0, total / seg_len)
             if q >= 1.0 and (a, b) != segs[-1]:
                 d.line([a, b], fill=RED, width=8)
             else:
                 arrow(d, *a, *b, q, col=RED, w=8)
-            total -= L
+            total -= seg_len
     for k, (ts, label, x, y) in enumerate(NODES):
         if t < times[k]:
             continue
@@ -657,8 +699,7 @@ def scene_C(t, i):
         bob = 6 * math.sin(t * 14)
         put(c, pill("NEXT", "y", 28), nx + 150, ny + 112 + bob)
     if lp > 0.6:
-        put(c, pill("每天重播", "r", 38), 540, 1500, s=e_back(lin(t, bt(22.55), bt(22.8)), 2))
-    put(c, pill("選舉期間｜每一天", "r", 34, radius=14), 540, 520)
+        put(c, pill("每天重播", "r", 38), *L((540, 1500), (110, 607)), s=e_back(lin(t, bt(22.55), bt(22.8)), 2))
     # 鏡頭：先貼近最新節點，最後拉遠看全貌
     def cam_target(k):
         return NODES[k][2], NODES[k][3]
@@ -667,12 +708,19 @@ def scene_C(t, i):
         q = e_io(lin(t, times[k] - 0.02, times[k] + 0.26))
         tx, ty = cam_target(k)
         cx, cy = cx + (tx - cx) * q, cy + (ty - cy) * q
-    s = 1.55 - 0.2 * lin(t, times[0], times[5])
+    s = L(1.55, 1.45) - L(0.2, 0.15) * lin(t, times[0], times[5])
     zq = e_io(lin(t, bt(21.6), bt(22.3)))
     s = s + (1.0 - s) * zq
-    cx = cx + (540 - cx) * zq
-    cy = cy + (1080 - cy) * zq
-    cam = (s, (540 - cx) * s, (960 - cy) * s, 0)
+    fx_, fy_ = L((540, 1080), (960, 560))
+    cx = cx + (fx_ - cx) * zq
+    cy = cy + (fy_ - cy) * zq
+    cam = (s, (CX - cx) * s, (CY - cy) * s, 0)
+    hx, hy = L((540, 520), (960, 230))
+    ha = 1.0
+    if LAND:  # 標籤還在畫面外時先不出現
+        sx_, sy_ = CX + (hx - CX) * s + cam[1], CY + (hy - CY) * s + cam[2]
+        ha = (1 - lin(abs(sx_ - CX), 560, 700)) * (1 - lin(-sy_, -60, 0))
+    put(c, pill("選舉期間｜每一天", "r", 34, radius=14), hx, hy, a=ha)
     lb = last_beat(t, range(16, 24)) or 0
     rgb = 10 if t - lb < 0.05 else 0
     gl = t > SEC_D - 0.1
@@ -686,7 +734,7 @@ SLOGANS = ["為了你好", "服務鄉親", "公平正義", "清廉", "改革", "
 
 def scene_D(t, i):
     c = BG_RED.copy()
-    cx, cy = 540, 1010
+    cx, cy = L((540, 1010), (960, 560))
     collapse = e_in(lin(t, bt(30.5), bt(31.5)))
     grow = e_in(lin(t, bt(31.5), bt(31.95)))
     tags = []
@@ -696,8 +744,8 @@ def scene_D(t, i):
             continue
         th = -math.pi / 2 + k * 2.39996 + 0.32 * (t - SEC_D)
         rr = 1 - collapse
-        x = cx + 420 * math.cos(th) * rr
-        y = cy + 610 * math.sin(th) * rr
+        x = cx + L(420, 720) * math.cos(th) * rr
+        y = cy + L(610, 385) * math.sin(th) * rr
         depth = 0.86 + 0.22 * (math.sin(th) + 1) / 2
         p = lin(t, t0, t0 + 0.22)
         s = e_back(p, 2.2) * depth * (1 - 0.6 * collapse)
@@ -728,23 +776,27 @@ def scene_D(t, i):
 @lru_cache(None)
 def card_tile(kind):
     if kind == 1:
-        im = Image.new("RGBA", (960, 330), (0, 0, 0, 0))
-        ImageDraw.Draw(im).rounded_rectangle((0, 0, 959, 329), radius=34, fill=RED)
+        w = L(960, 860)
+        im = Image.new("RGBA", (w, 330), (0, 0, 0, 0))
+        ImageDraw.Draw(im).rounded_rectangle((0, 0, w - 1, 329), radius=34, fill=RED)
     elif kind in (2, 3):
         im = Image.new("RGBA", (460, 380), (0, 0, 0, 0))
         ImageDraw.Draw(im).rounded_rectangle((0, 0, 459, 379), radius=34, fill=WHT)
     else:
-        im = Image.new("RGBA", (960, 290), (0, 0, 0, 0))
-        ImageDraw.Draw(im).rounded_rectangle((0, 0, 959, 289), radius=34, fill=YEL)
+        w = L(960, 1840)
+        im = Image.new("RGBA", (w, 290), (0, 0, 0, 0))
+        ImageDraw.Draw(im).rounded_rectangle((0, 0, w - 1, 289), radius=34, fill=YEL)
     return im
 
 
 def scene_E(t, i):
     c = BG_BLACK.copy()
     T = [bt(32), bt(33), bt(34), bt(35)]
-    cards = [
+    cards = L([
         (1, 540, 600, (0, -900)), (2, 302, 1000, (-900, 0)), (3, 778, 1000, (900, 0)), (4, 540, 1370, (0, 900)),
-    ]
+    ], [
+        (1, 470, 390, (-1200, 0)), (2, 1160, 390, (0, -800)), (3, 1650, 390, (1200, 0)), (4, 960, 790, (0, 700)),
+    ])
     for (kind, x, y, (ox, oy)), t0 in zip(cards, T):
         if t < t0:
             continue
@@ -758,8 +810,9 @@ def scene_E(t, i):
             v = int(round(90 * cnt))
             put_text(c, f"{v}", "black", 190, WHT, X - 60, Y + 20)
             put_text(c, "dB", "black", 80, YEL, X + 150, Y + 50)
-            lw = 760 * cnt
-            d.rounded_rectangle((X - 380, Y + 130, X - 380 + lw, Y + 142), radius=6, fill=YEL)
+            half = L(380, 340)
+            lw = 2 * half * cnt
+            d.rounded_rectangle((X - half, Y + 130, X - half + lw, Y + 142), radius=6, fill=YEL)
         elif kind in (2, 3):
             label, target = ("鞭炮", 120) if kind == 2 else ("大聲公", 100)
             put_text(c, label, "bold", 40, RED, X, Y - 128)
@@ -772,39 +825,41 @@ def scene_E(t, i):
                 bx = X - 150 + j * 40
                 d.rounded_rectangle((bx, Y + 148, bx + 28, Y + 168), radius=4, fill=col)
         else:
-            put_text(c, "從早到晚", "black", 52, INK, X - 300, Y - 70)
+            w4 = L(960, 1840)
+            put_text(c, "從早到晚", "black", 52, INK, X - w4 / 2 + 180, Y - 70)
             env = 0.35 + 0.65 * pulse(t, last_beat(t, [k * 0.5 for k in range(64, 80)]) or t0, 0.14)
-            for j in range(26):
+            nb = L(26, 54)
+            for j in range(nb):
                 h = 30 + 140 * env * abs(math.sin(t * (5 + j * 0.7) + j * 1.7)) * (0.5 + 0.5 * math.sin(j * 0.9) ** 2)
-                bx = X - 420 + j * 33
+                bx = X - nb * 33 / 2 + 9 + j * 33
                 d.rounded_rectangle((bx, Y + 70 - h / 2, bx + 18, Y + 70 + h / 2), radius=9, fill=INK)
-    put(c, pill("分貝｜噪音值", "r", 34, radius=14), 540, 330)
+    put(c, pill("分貝｜噪音值", "r", 34, radius=14), *L((540, 330), (960, 110)))
     if t < T[0] + 1.6:
         draw_particles(c, DROP_P, t - T[0])
     # 鏡頭：推近鞭炮卡、搖到宣傳車、再拉遠
-    s, cx, cy = 1.0, 540, 960
+    (c2x, c2y), (c1x, c1y) = L(((302, 1000), (540, 600)), ((1160, 390), (470, 390)))
     z1 = e_io(lin(t, bt(36), bt(36) + 0.18))
     z2 = e_io(lin(t, bt(37), bt(37) + 0.18))
     z3 = e_io(lin(t, bt(38), bt(38) + 0.2))
     s = 1.0 + 0.55 * z1
-    cx, cy = 540 + (302 - 540) * z1, 960 + (1000 - 960) * z1
+    cx, cy = CX + (c2x - CX) * z1, CY + (c2y - CY) * z1
     s += (1.4 - s) * z2
-    cx, cy = cx + (540 - cx) * z2, cy + (600 - cy) * z2
+    cx, cy = cx + (c1x - cx) * z2, cy + (c1y - cy) * z2
     s += (1.0 - s) * z3
-    cx, cy = cx + (540 - cx) * z3, cy + (960 - cy) * z3
+    cx, cy = cx + (CX - cx) * z3, cy + (CY - cy) * z3
     s *= 1 + 0.03 * pulse(t, last_beat(t, range(32, 40)) or 0, 0.1)
     lb = last_beat(t, range(32, 40)) or 0
     rgb = 16 if t - lb < 0.06 else 0
     gl = any(0 <= t - bt(b) < 0.1 for b in (36, 39)) or t > SEC_F - 0.08
     flash = (WHT, 0.6 * pulse(t, T[0], 0.06)) if t < T[0] + 0.2 else None
-    return c, fx(cam=(s, (540 - cx) * s, (960 - cy) * s, 0), rgb=rgb + (26 if gl else 0),
+    return c, fx(cam=(s, (CX - cx) * s, (CY - cy) * s, 0), rgb=rgb + (26 if gl else 0),
                  slices=7 if gl else 0, flash=flash, shake=10 * pulse(t, bt(38), 0.15))
 
 
 # F — 羊皮下的狼 --------------------------------------------------------
 def scene_F(t, i):
     c = BG_BLACK.copy()
-    cx, cy = 540, 960
+    cx, cy = CX, CY
     pop = e_back(lin(t, SEC_F, SEC_F + 0.25), 2.0)
     hop_t = last_beat(t, [40, 40.5, 41, 41.5])
     hop = 0.0
@@ -825,7 +880,7 @@ def scene_F(t, i):
         put(c, EYES, cx, cy + hop, s=max(0.02, pop), a=glow)
     if bt(41) <= t < bt(42):
         bp = e_back(lin(t, bt(41), bt(41) + 0.2), 2.2)
-        put(c, pill("咩～", "w", 54, tail=True), 800, 600, s=max(0.02, bp), rot=-8)
+        put(c, pill("咩～", "w", 54, tail=True), CX + 260, CY - 360, s=max(0.02, bp), rot=-8)
     rgb = 30 if wolf and t < bt(43) + 0.1 else 0
     return c, fx(cam=(zoom, 0, 0, 0), rgb=rgb, slices=8 if wolf and t < bt(43) + 0.1 else 0,
                  vig=t > bt(43), shake=6 if t > bt(43) and dark < 1 else 0)
@@ -835,15 +890,16 @@ def scene_hit(t, i):
     c = BG_RED.copy()
     dt = t - HIT
     s = e_back(lin(t, HIT, HIT + 0.3), 1.5)
-    put(c, WOLF, 540, 640, s=max(0.02, 0.62 * s))
-    put(c, EYES, 540, 640, s=max(0.02, 0.62 * s), a=0.8 + 0.2 * math.sin(t * 24))
+    wy, ws = L((640, 0.62), (300, 0.55))
+    put(c, WOLF, CX, wy, s=max(0.02, ws * s))
+    put(c, EYES, CX, wy, s=max(0.02, ws * s), a=0.8 + 0.2 * math.sin(t * 24))
     d = ImageDraw.Draw(c)
     wp = e_out(lin(t, HIT, HIT + 0.12))
     if wp > 0:
-        d.rectangle((70, 1040, 70 + 940 * wp, 1320), fill=WHT)
+        d.rectangle((CX - 470, HIT_Y - 140, CX - 470 + 940 * wp, HIT_Y + 140), fill=WHT)
     tp = 1 + 0.08 * pulse(t, bt(46), 0.12)
     if dt > 0.04:
-        put_text(c, "狼披羊皮", "black", 214, RED, 540, 1180, s=tp, track=8)
+        put_text(c, "狼披羊皮", "black", 214, RED, CX, HIT_Y, s=tp, track=8)
     draw_particles(c, HIT_P, dt)
     draw_particles(c, HIT_P2, t - bt(46))
     rgb = int(40 * pulse(t, HIT, 0.12)) + int(14 * pulse(t, bt(46), 0.06))
@@ -862,6 +918,13 @@ BUBBLES = [
     ("感謝鄉親！", "r", 790, 1150, -4), ("催票中…", "k", 560, 640, 8), ("全力衝刺！", "w", 860, 690, -10),
     ("凍蒜！凍蒜！", "y", 260, 780, 3),
 ]
+if LAND:
+    BUBBLES = [
+        ("凍蒜！", "y", 330, 300, -6), ("拜託拜託！", "w", 1500, 260, 5), ("砰！砰！砰！", "r", 900, 420, -3),
+        ("嗶——叭叭！", "k", 260, 560, 4), ("最後一票！", "y", 1620, 520, -7), ("懇請支持！", "w", 620, 690, 6),
+        ("感謝鄉親！", "r", 1280, 700, -4), ("催票中…", "k", 1150, 300, 8), ("全力衝刺！", "w", 1780, 380, -10),
+        ("凍蒜！凍蒜！", "y", 560, 450, 3),
+    ]
 
 
 def scene_G(t, i):
@@ -870,7 +933,7 @@ def scene_G(t, i):
     rng = np.random.default_rng(i * 3 + 1)
     p = e_io(lin(t, bt(52), bt(55) - 0.08))
     R = 1180 * p
-    cx, cy = 540, 960
+    cx, cy = CX, CY
     shakeamt = 4 * (1 - p)
     for k, (txt, sty, x, y, rot) in enumerate(BUBBLES):
         t0 = bt(48 + 0.5 * k)
@@ -894,11 +957,15 @@ def scene_G(t, i):
     # 分貝讀數
     if t < bt(55):
         db = 118 + rng.integers(-3, 4) if p == 0 else int(round(118 - 88 * p))
-        on_cream = R > 660
+        on_cream = R > L(660, 440)
         col = INK if on_cream else (RED if db > 85 else WHT)
         a = 1 - lin(t, bt(54.5), bt(55))
-        put_text(c, f"{db}", "black", 150, col, 500, 300, a=a)
-        put_text(c, "dB", "black", 60, col if on_cream else YEL, 660, 330, a=a)
+        if LAND:
+            plate = (CREAM if on_cream else (12, 14, 28)) + (int(235 * a),)
+            edge = None if on_cream else (78, 82, 112, int(255 * a))
+            d.rounded_rectangle((CX - 240, 30, CX + 240, 215), radius=36, fill=plate, outline=edge, width=3)
+        put_text(c, f"{db}", "black", 150, col, CX - 40, L(300, 120), a=a)
+        put_text(c, "dB", "black", 60, col if on_cream else YEL, CX + 120, L(330, 150), a=a)
     lb = last_beat(t, range(48, 52))
     zoom = 1.0 + (0.025 * pulse(t, lb, 0.1) if lb is not None and t < bt(52) else 0)
     return c, fx(cam=(zoom, 0, 0, 0), shake=shakeamt if t < bt(52) else 0,
@@ -915,12 +982,12 @@ def scene_H(t, i):
     d = ImageDraw.Draw(c)
     T1, T2 = FINAL, bt(58)
     # 衝擊波
-    for t0, y0, mx in ((T1, 1262, 760), (T2, 1548, 520)):
+    for t0, y0, mx in ((T1, L(1262, 570), L(760, 900)), (T2, L(1548, 888), 520)):
         q = lin(t, t0, t0 + 0.8)
         if 0 < q < 1:
             r = 300 + mx * e_out(q)
             a = int(70 * (1 - q) ** 1.5)
-            d.ellipse((540 - r, y0 - r * 0.12, 540 + r, y0 + r * 0.12), outline=(150, 132, 108, a),
+            d.ellipse((CX - r, y0 - r * 0.12, CX + r, y0 + r * 0.12), outline=(150, 132, 108, a),
                       width=max(2, int(16 * (1 - q))))
     # 歲月靜好：從高處重重落下
     q1 = lin(t, T1 - 0.16, T1)
@@ -929,10 +996,11 @@ def scene_H(t, i):
     squash = 1 - 0.05 * pulse(t, T1, 0.07)
     breathe = 1 + 0.012 * lin(t, T1 + 0.5, DUR)
     if a1 > 0:
-        for txt, y in (("歲月", 700), ("靜好", 1080)):
-            sz = 360 * s1 * breathe
+        lines, pivot, size = L(((("歲月", 700), ("靜好", 1080)), 890, 360), ((("歲月靜好", 400),), 400, 330))
+        for txt, y in lines:
+            sz = size * s1 * breathe
             tile = ctile(txt, "serif", int(round(sz / 2) * 2), INK, int(30 * s1))
-            put(c, tile, 540, 890 + (y - 890) * s1 * squash, a=a1, sx=1 / squash ** 0.5, sy=squash)
+            put(c, tile, CX, pivot + (y - pivot) * s1 * squash, a=a1, sx=1 / squash ** 0.5, sy=squash)
     draw_particles(c, DUST_P, t - T1, gravity=500, drag=3.2, alpha=0.75)
     # 我的自由：印章蓋下
     q2 = lin(t, T2 - 0.12, T2)
@@ -940,7 +1008,7 @@ def scene_H(t, i):
         s2 = 1 + 0.9 * (1 - e_in(q2))
         a2 = lin(t, T2 - 0.12, T2 - 0.05)
         seal = seal_tile()
-        put(c, seal, 540, 1430, s=s2 * breathe, rot=-1.5, a=a2)
+        put(c, seal, CX, L(1430, 770), s=s2 * breathe, rot=-1.5, a=a2)
     draw_particles(c, DUST_P2, t - T2, gravity=500, drag=3.4, alpha=0.6)
     # 緩慢上飄的微塵
     rng = np.random.default_rng(99)
@@ -1018,7 +1086,7 @@ def post(img, f, i):
         rot += rng.normal(0, f["shake"] * 0.02)
     img = apply_cam(img, s, dx, dy, rot, f["fill"])
     for kind, text in f.get("hud", []):
-        put(img, pill(text, "w", 34, radius=14), 540, 250)
+        put(img, pill(text, "w", 34, radius=14), CX, L(250, 80))
     arr = np.asarray(img.convert("RGB")).copy()
     if f["rgb"]:
         k = int(f["rgb"])
@@ -1203,10 +1271,10 @@ def firecrackers(dur, density=38):
     tt = 0.0
     while tt < dur:
         i = int(tt * SR)
-        L = int(SR * 0.025)
-        bang = noise(L) * np.exp(-np.arange(L) / SR * 260) * ARNG.uniform(0.4, 1.0)
-        bang += np.sin(2 * np.pi * 90 * np.arange(L) / SR) * np.exp(-np.arange(L) / SR * 90) * 0.6
-        m = min(L, n - i)
+        blen = int(SR * 0.025)
+        bang = noise(blen) * np.exp(-np.arange(blen) / SR * 260) * ARNG.uniform(0.4, 1.0)
+        bang += np.sin(2 * np.pi * 90 * np.arange(blen) / SR) * np.exp(-np.arange(blen) / SR * 90) * 0.6
+        m = min(blen, n - i)
         out[i:i + m] += bang[:m]
         tt += ARNG.exponential(1 / density)
     return np.tanh(out * 1.2) * 0.45
@@ -1338,7 +1406,7 @@ def make_audio(path):
     sfx.add(SEC_C - 0.1, glitch(0.1), 0.8)
     # C：行程表
     for k in range(6):
-        sfx.add(bt(16 + k), pluck(penta[k] , 0.6), 1.0, pan=-0.3 if NODES[k][2] < 540 else 0.3)
+        sfx.add(bt(16 + k), pluck(penta[k] , 0.6), 1.0, pan=-0.3 if NODES[k][2] < CX else 0.3)
         sfx.add(bt(16 + k) + 0.12, whoosh(0.18), 0.35)
     sfx.add(bt(16) + 0.05, horn(), 0.9, pan=-0.4)
     sfx.add(bt(16) + 0.32, horn(), 0.9, pan=-0.4)
@@ -1460,13 +1528,14 @@ def stills(times=None):
     for t in times:
         i = int(round(t * FPS))
         arr = np.frombuffer(render_frame(i), np.uint8).reshape(H, W, 3)
-        im = Image.fromarray(arr).resize((216, 384))
+        im = Image.fromarray(arr).resize(L((216, 384), (384, 216)))
         ImageDraw.Draw(im).text((6, 4), f"{t:.2f}s", fill=(255, 0, 255), font=F("bold", 22))
         tiles.append(im)
     cols = min(10, len(tiles))
-    sheet = Image.new("RGB", (216 * cols, 384 * math.ceil(len(tiles) / cols)), (0, 0, 0))
+    tw, th = tiles[0].size
+    sheet = Image.new("RGB", (tw * cols, th * math.ceil(len(tiles) / cols)), (0, 0, 0))
     for k, im in enumerate(tiles):
-        sheet.paste(im, ((k % cols) * 216, (k // cols) * 384))
+        sheet.paste(im, ((k % cols) * tw, (k // cols) * th))
     sheet.save(os.path.join(BUILD, "stills.png"))
     print("wrote", os.path.join(BUILD, "stills.png"))
 
@@ -1493,7 +1562,7 @@ def main():
 
 if __name__ == "__main__":
     if "--stills" in sys.argv:
-        extra = [float(a) for a in sys.argv[2:]]
+        extra = [float(a) for a in sys.argv[1:] if not a.startswith("--")]
         stills(extra or None)
     elif "--audio" in sys.argv:
         os.makedirs(BUILD, exist_ok=True)

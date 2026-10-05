@@ -1,6 +1,11 @@
 # 反選舉噪音污染｜9:16 短影音
 
-`anti-election-noise.mp4`：1080×1920、30 fps、30 秒，含配樂。
+| 檔案 | 比例 | 解析度 |
+| --- | --- | --- |
+| `anti-election-noise.mp4` | 9:16（Reels／Shorts／TikTok） | 1080×1920 |
+| `anti-election-noise-16x9.mp4` | 16:9（YouTube、簡報、橫式播放） | 1920×1080 |
+
+兩版都是 30 fps、30 秒、含配樂，時間軸與配樂相同，只有版面依比例重新排列。
 
 節奏沿用參考影片：128 BPM（每拍 0.469 秒）、每拍一個切點、第 4–6 秒八分音符快切、
 11–15 秒 breakdown、15 秒 drop、20.6 秒重擊，最後一拍全靜音後以重量級字幕收尾。
@@ -24,7 +29,9 @@
 ```bash
 pip install pillow numpy scipy
 python3 render.py            # 第一次執行會下載 Noto Sans/Serif TC 字型到 fonts/
-python3 render.py --stills   # 只輸出關鍵影格預覽 build/stills.png
+python3 render.py --landscape            # 16:9 版
+python3 render.py --stills               # 只輸出關鍵影格預覽 build/9x16/stills.png
+python3 render.py --landscape --stills   # 16:9 預覽 build/16x9/stills.png
 ```
 
 需要 `ffmpeg`。字型為 Noto CJK（SIL Open Font License）。
