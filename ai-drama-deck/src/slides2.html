@@ -1,0 +1,633 @@
+<style>
+/* ---------- S16 Part 2 opener ---------- */
+.p2big{left:96px;top:96px;font-size:330px;color:transparent;-webkit-text-stroke:3px rgba(245,240,229,.42);letter-spacing:.02em}
+.chap{left:110px;top:760px;width:1200px;display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.chap li{padding:18px 20px 20px;border-top:4px solid var(--red);background:rgba(255,240,220,.05)}
+.chap small{display:block;font-family:var(--f-mono);font-size:18px;letter-spacing:.08em;color:var(--on-night-2)}
+.chap b{display:block;margin-top:8px;font-size:29px;line-height:1.3}
+.phone{position:absolute;left:1400px;top:120px;width:400px;height:820px;perspective:1600px}
+.phone .rig{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(calc(-20deg + var(--mx,0) * 14deg)) rotateX(calc(6deg - var(--my,0) * 8deg))}
+.phone .body{position:absolute;inset:0;border-radius:54px;background:#0B0A0E;border:4px solid #3A3542;box-shadow:0 40px 80px rgba(0,0,0,.6),inset 0 0 0 10px #000}
+.phone .scr{position:absolute;left:18px;right:18px;top:18px;bottom:18px;border-radius:40px;overflow:hidden;background:#17141C}
+.phone .notch{position:absolute;left:50%;top:24px;width:120px;height:30px;margin-left:-60px;border-radius:20px;background:#000;z-index:3}
+.feed>div{display:flex;flex-direction:column;gap:14px;padding:70px 16px 16px}
+.slide.is-active .feed>div{animation:feed 18s linear infinite}
+@keyframes feed{to{transform:translateY(-50%)}}
+.ep{position:relative;height:250px;border-radius:18px;overflow:hidden;padding:16px 18px;color:#fff;background:linear-gradient(160deg,var(--a),var(--b))}
+.ep::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,.55))}
+.ep small{position:relative;z-index:1;display:inline-block;padding:2px 10px;border-radius:6px;background:rgba(0,0,0,.35);font-family:var(--f-mono);font-size:16px}
+.ep b{position:absolute;left:18px;right:18px;bottom:44px;z-index:1;font-size:27px;line-height:1.3}
+.ep span{position:absolute;left:18px;bottom:14px;z-index:1;font-size:19px;color:rgba(255,255,255,.8)}
+.ep i{position:absolute;right:16px;top:14px;z-index:1;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-style:normal}
+.hearts{position:absolute;right:28px;bottom:90px;width:60px;height:300px;transform:translateZ(40px)}
+.hearts i{position:absolute;left:10px;bottom:0;width:30px;height:30px;color:#FF5A6E;font-style:normal;font-size:30px;opacity:0}
+.slide.is-active .hearts i{animation:heart 3s ease-out infinite;animation-delay:calc(var(--k) * .6s)}
+@keyframes heart{0%{opacity:0;transform:translate(0,0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(calc(var(--x) * 1px),-280px) scale(1.2)}}
+/* ---------- S17 cycle ---------- */
+.stage{position:absolute;width:520px;height:330px;padding:24px 28px;background:var(--card);border:2.5px solid var(--rule);display:grid;grid-template-columns:200px 1fr;column-gap:20px;align-content:start}
+.stage .fig{position:relative;width:200px;height:150px;grid-row:span 3}
+.stage h3{font-size:36px;font-weight:900}
+.stage .big{font-size:64px;color:var(--red)}
+.stage .big small{font-size:34px}
+.stage p{grid-column:1/-1;margin-top:14px;font-size:27px;line-height:1.5}
+.slide.is-active .stage{animation:rv .9s var(--ease) both,stageOn 8s ease-in-out infinite;animation-delay:calc(var(--base) + .5s + var(--k) * .15s),calc(2.6s + var(--k) * 2s)}
+@keyframes stageOn{0%,28%,100%{transform:none;border-color:var(--rule);box-shadow:none}6%,22%{transform:translateY(-10px);border-color:var(--red);box-shadow:10px 12px 0 var(--red-soft)}}
+.loopw{position:absolute;left:640px;top:300px;width:640px;height:620px;perspective:1500px}
+.loopw .plane{position:absolute;left:40px;top:40px;width:560px;height:560px;transform-style:preserve-3d;transform:rotateX(calc(54deg - var(--my,0) * 8deg)) rotateZ(calc(var(--mx,0) * 10deg))}
+.loopw svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.loopw .core{position:absolute;left:50%;top:50%;width:300px;margin:-70px 0 0 -150px;text-align:center;font-size:54px;font-weight:900;line-height:1.25}
+.loopw .dotr{transform-origin:280px 280px}
+.slide.is-active .loopw .dotr{animation:orbit 8s linear infinite;animation-delay:2.6s}
+@keyframes orbit{from{transform:rotate(225deg)}to{transform:rotate(585deg)}}
+/* ---------- S18 ---------- */
+.negs{left:880px;top:820px;width:930px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.negs .lbl{font-family:var(--f-hand);font-size:32px;font-weight:700;color:var(--ink-2);margin-right:6px}
+.negs span{padding:8px 20px;border:3px solid var(--red);color:var(--red);font-size:30px;font-weight:900;background:var(--card);transform:rotate(var(--r,0deg))}
+/* ---------- S19 ---------- */
+.sys{position:absolute;left:0;top:0;width:560px;height:300px;padding:22px 28px;background:linear-gradient(160deg,rgba(225,255,215,.92),rgba(200,245,190,.86));border:3px solid #2E7D32;clip-path:polygon(26px 0,calc(100% - 26px) 0,100% 26px,100% calc(100% - 26px),calc(100% - 26px) 100%,26px 100%,0 calc(100% - 26px),0 26px);box-shadow:0 0 40px rgba(123,227,106,.8)}
+.sys .h{font-family:var(--f-mono);font-size:19px;letter-spacing:.12em;color:#1E5E24}
+.sys .ab{display:flex;flex-wrap:wrap;gap:16px;margin-top:20px}
+.sys .ab span{padding:6px 22px;background:var(--glow);border:2.5px solid #1E5E24;font-size:50px;font-weight:900;color:#11331A;box-shadow:0 0 22px rgba(123,227,106,.9)}
+.sys .up{position:relative;margin-top:22px;height:30px;border:2.5px solid #1E5E24;background:#fff}
+.sys .up i{position:absolute;left:0;top:0;bottom:0;width:100%;background:repeating-linear-gradient(-45deg,#3A8F3E 0 10px,#58B85C 10px 20px)}
+.slide.is-active .sys .up i{animation:upg 3s ease-in-out infinite;animation-delay:1.8s}
+@keyframes upg{0%{width:0}70%,100%{width:100%}}
+.sys .up b{position:absolute;right:10px;top:-34px;font-family:var(--f-mono);font-size:18px;color:#1E5E24}
+.rays{position:absolute;left:80px;top:250px;width:400px;height:360px;background:linear-gradient(to top,rgba(123,227,106,.65),rgba(123,227,106,0));clip-path:polygon(20% 100%,80% 100%,100% 0,0 0);filter:blur(6px);transform:translateZ(20px)}
+.slide.is-active .rays{animation:rays 2.4s ease-in-out infinite}
+@keyframes rays{50%{opacity:.45}}
+.brk{position:absolute;left:820px;top:240px;width:990px;padding:30px 60px}
+.brk::before,.brk::after{content:"";position:absolute;top:0;bottom:0;width:30px;border:5px solid var(--red)}
+.brk::before{left:0;border-right:0}
+.brk::after{right:0;border-left:0}
+.slide.is-active .brk::before,.slide.is-active .brk::after{animation:wipeD 1s var(--ease) both;animation-delay:1.2s}
+@keyframes wipeD{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+.brk p{font-size:32px;line-height:1.6;font-weight:500}
+.brk p+p,.brk .sets+p{margin-top:28px}
+.sets{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
+.sets span{padding:6px 18px;border:2px solid var(--ink);border-radius:8px;background:var(--card);font-size:27px;font-weight:700;box-shadow:3px 3px 0 var(--lime)}
+/* ---------- S20 ---------- */
+.chain{display:flex;align-items:center;gap:6px;margin-top:16px}
+.chain span:not(.arrow){padding:10px 20px;border:2.5px solid var(--ink);background:var(--card);font-size:28px;font-weight:900}
+.slide.is-active .chain span:not(.arrow){animation:chainOn 3s ease-in-out infinite;animation-delay:calc(2s + var(--k) * 1s)}
+@keyframes chainOn{0%,40%,100%{background:var(--card);color:var(--ink)}8%,30%{background:var(--red);color:#fff}}
+.chain .rep{font-family:var(--f-hand);font-size:36px;font-weight:700;color:var(--red);margin-left:10px}
+.mbar{display:grid;grid-template-columns:300px 1fr 110px;gap:18px;align-items:center;margin-top:16px;font-size:27px;font-weight:700}
+.mbar .tr{position:relative;height:34px;border:2.5px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--line) calc(10% - 2px) 10%)}
+.mbar .tr i{position:absolute;left:0;top:0;bottom:0;width:calc(var(--w) * 1%);background:var(--c)}
+.mbar b{font-family:var(--f-num);font-size:46px;color:var(--c)}
+/* ---------- S21 ---------- */
+.case{position:absolute;top:240px;width:820px;height:716px;padding:30px 36px}
+.case h3{text-align:center;font-size:44px;font-weight:900}
+.case .fig{position:relative;margin:14px auto 0;height:250px}
+.case .lb{display:inline-block;margin-top:12px;font-size:28px;font-weight:900;color:var(--red);border-bottom:3px solid var(--red)}
+.steps{display:flex;flex-wrap:wrap;align-items:center;gap:8px 4px;margin-top:12px}
+.steps span{padding:6px 14px;background:var(--paper);border:2px solid var(--ink);font-size:26px;font-weight:700}
+.steps span.end{border-color:var(--red);border-width:3px;border-radius:30px;color:var(--red)}
+.steps em{font-style:normal;color:var(--red);font-weight:900;font-size:28px}
+.joys{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.joys span{padding:5px 14px;font-size:25px;font-weight:700;background:var(--c,var(--hl))}
+.spark{position:absolute;width:26px;height:26px;color:#E7B416;font-size:26px;line-height:1;transform:translateZ(80px)}
+.slide.is-active .spark{animation:twinkle 1.8s ease-in-out infinite;animation-delay:calc(var(--k) * .35s)}
+@keyframes twinkle{0%,100%{opacity:.15;scale:.6}50%{opacity:1;scale:1.25}}
+/* ---------- S22 corkboard ---------- */
+.cork{position:absolute;left:110px;top:226px;width:1700px;height:610px;border:14px solid #8A5E33;border-radius:10px;background:radial-gradient(circle at 20% 30%,rgba(0,0,0,.08) 2px,transparent 3px) 0 0/22px 22px,radial-gradient(circle at 70% 60%,rgba(255,255,255,.12) 2px,transparent 3px) 0 0/18px 18px,#C99A64;box-shadow:inset 0 0 30px rgba(60,30,0,.35),0 20px 40px rgba(60,40,10,.25)}
+.cork .cc{position:absolute;display:grid;place-items:center;text-align:center;padding:12px 16px;background:var(--card);box-shadow:0 8px 14px rgba(40,20,0,.25);font-size:28px;font-weight:700;line-height:1.4}
+.cork .cc.h{background:#FFFDF6;font-weight:900;font-size:29px}
+.cork .cc.h small{display:block;font-weight:500;font-size:24px;color:var(--ink-2)}
+.cork .cc.rowl{background:#FFFDF6;font-size:36px;font-weight:900}
+.cork .cc .pin{left:50%;top:-12px;width:22px;height:22px;margin-left:-11px}
+.cork svg.str{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.cork svg.str path{fill:none;stroke:#C42B1F;stroke-width:4;stroke-linecap:round}
+.verdict{left:110px;top:868px;width:1700px;padding:18px 30px;background:rgba(221,203,154,.6);text-align:center;transform:rotate(-.4deg)}
+.verdict p{font-size:33px;font-weight:900}
+/* ---------- S23 ---------- */
+.batt{position:absolute;left:120px;top:420px;width:96px;height:190px;border:5px solid var(--ink);border-radius:12px;padding:8px;display:flex;flex-direction:column-reverse;gap:6px;background:var(--card)}
+.batt::before{content:"";position:absolute;left:28px;top:-18px;width:30px;height:12px;border-radius:4px 4px 0 0;background:var(--ink)}
+.batt i{flex:1;border-radius:3px;background:var(--c);opacity:.18}
+.slide.is-active .batt i{animation:charge 3.2s steps(1) infinite;animation-delay:calc(1.4s + var(--k) * .5s)}
+@keyframes charge{0%,62%{opacity:1}63%,100%{opacity:.18}}
+.slide.is-active .beat{animation:beat 1.4s ease-in-out infinite;animation-delay:1.6s}
+@keyframes beat{0%,100%{scale:1}12%{scale:1.05}24%{scale:.99}36%{scale:1.035}}
+.bolt{position:absolute;width:80px;height:80px;overflow:visible}
+.slide.is-active .bolt{animation:flick 1.6s steps(2) infinite;animation-delay:calc(var(--k) * .27s)}
+@keyframes flick{50%{opacity:.15}}
+.ynote{position:absolute;left:880px;width:930px;padding:24px 34px;background:#FBEB9A;box-shadow:0 12px 24px rgba(60,45,20,.15)}
+.ynote h3{font-size:33px;font-weight:900}
+.ynote p{margin-top:8px;font-size:28px;line-height:1.55}
+/* ---------- S24 survival ---------- */
+.surv{position:absolute;left:100px;top:248px;width:1000px;height:600px;perspective:1700px}
+.surv .pl{position:absolute;left:116px;top:-40px;padding:14px;background:rgba(255,240,220,.04);outline:2px dashed rgba(255,240,220,.22);outline-offset:6px;display:grid;grid-template-columns:repeat(16,40px);gap:8px;transform-style:preserve-3d;transform:rotateX(calc(54deg - var(--my,0) * 6deg)) rotateZ(calc(-12deg + var(--mx,0) * 8deg))}
+.surv i{width:40px;height:40px;border-radius:4px;background:#5C5568;box-shadow:0 6px 0 #2B2733}
+.surv i.s{background:#E2493A;box-shadow:0 8px 0 #7E1C12}
+.slide.is-active .surv i{animation:fallOut 1.2s cubic-bezier(.55,0,.85,.4) both;animation-delay:var(--dl)}
+@keyframes fallOut{to{transform:translateZ(-760px) rotateX(80deg);opacity:0}}
+.slide.is-active .surv i.s{animation:riseS .9s var(--ease) both,glowS 2s ease-in-out infinite;animation-delay:4.6s,5.5s}
+@keyframes riseS{to{transform:translateZ(54px)}}
+@keyframes glowS{0%,100%{box-shadow:0 8px 0 #7E1C12,0 0 0 rgba(242,80,60,0)}50%{box-shadow:0 8px 0 #7E1C12,0 0 34px rgba(242,80,60,.9)}}
+.wk{position:absolute;left:150px;top:806px;width:860px}
+.wk .tl{position:relative;height:6px;background:rgba(255,240,220,.18);border-radius:3px}
+.wk .tl i{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--red);border-radius:3px;transform-origin:0 50%}
+.slide.is-active .wk .tl i{animation:growX 3.2s linear both;animation-delay:1.3s}
+.wk .d{position:absolute;top:18px;font-family:var(--f-mono);font-size:20px;color:var(--on-night-2);transform:translateX(-50%)}
+.cnt{position:absolute;left:120px;top:880px;display:flex;align-items:baseline;gap:18px}
+.cnt .big{font-size:84px;color:var(--gold)}
+.cnt p{font-size:28px;font-weight:700}
+.dnote{position:absolute;left:1170px;width:640px;padding:24px 30px;background:#211E28;border:1.5px solid rgba(255,240,220,.2)}
+.dnote h3{font-size:32px;font-weight:900;color:var(--gold)}
+.dnote p{margin-top:8px;font-size:27px;line-height:1.55;color:var(--on-night)}
+.dnote .big{font-size:110px;color:#FF6A55}
+.dnote.alert{border:3px solid #E2493A;box-shadow:0 0 0 6px rgba(226,73,58,.18)}
+/* ---------- S25 ---------- */
+.slide.is-active .shake{animation:shake 3.2s ease-in-out infinite;animation-delay:1.6s}
+@keyframes shake{0%,40%,100%{rotate:0deg}44%{rotate:-2deg}48%{rotate:2deg}52%{rotate:-1.6deg}56%{rotate:1.4deg}60%{rotate:-.8deg}64%{rotate:0deg}}
+.qm{position:absolute;font-family:var(--f-hand);font-weight:700;color:var(--ink);opacity:0}
+.slide.is-active .qm{animation:qm 4s ease-in-out infinite;animation-delay:calc(1.4s + var(--k) * .8s)}
+@keyframes qm{0%{opacity:0;transform:translateY(20px) rotate(-10deg)}20%{opacity:.9}80%{opacity:.6}100%{opacity:0;transform:translateY(-90px) rotate(12deg)}}
+.spiral{position:absolute;left:860px;top:236px;width:950px;padding:84px 50px 34px}
+.spiral::after{content:"";position:absolute;left:30px;right:30px;top:-18px;height:44px;background:radial-gradient(ellipse 9px 20px at 50% 50%,transparent 6px,#55504A 7px,#55504A 9px,transparent 10px) 0 0/46px 44px}
+.spiral .stripe{position:absolute;right:120px;top:22px;width:200px;height:30px;background:repeating-linear-gradient(-45deg,#1F1D1A 0 14px,#F2CF4A 14px 28px,#C9372A 28px 42px)}
+.bbox{position:absolute;left:1090px;top:770px;width:220px;height:220px;perspective:900px}
+.bbox .cube{position:absolute;left:30px;top:30px;width:160px;height:160px;transform-style:preserve-3d;transform:rotateX(-22deg) rotateY(30deg)}
+.slide.is-active .bbox .cube{animation:cubeSpin 14s linear infinite}
+@keyframes cubeSpin{from{transform:rotateX(-22deg) rotateY(30deg)}to{transform:rotateX(-22deg) rotateY(390deg)}}
+.bbox i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-family:var(--f-hand);font-weight:700;font-size:30px;color:#F2CF4A;background:radial-gradient(circle at 30% 25%,#3A3540,#141219 75%);border:3px solid #000;box-shadow:inset 0 0 0 6px rgba(242,207,74,.2)}
+.bbox i:nth-child(1){transform:translateZ(80px)}.bbox i:nth-child(2){transform:rotateY(90deg) translateZ(80px)}.bbox i:nth-child(3){transform:rotateY(180deg) translateZ(80px)}.bbox i:nth-child(4){transform:rotateY(-90deg) translateZ(80px);font-size:26px}.bbox i:nth-child(5){transform:rotateX(90deg) translateZ(80px)}.bbox i:nth-child(6){transform:rotateX(-90deg) translateZ(80px);font-size:60px}
+.circled{position:relative;display:inline-block;padding:0 8px}
+.circled::after{content:"";position:absolute;inset:-6px -4px;border:3px solid var(--red);border-radius:12px;transform:rotate(-1.5deg)}
+/* ---------- S26 ---------- */
+.papers i{position:absolute;width:46px;height:58px;background:var(--card);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--paper-2);opacity:0}
+.slide.is-active .papers i{animation:paperIn 3.4s linear infinite;animation-delay:calc(1.2s + var(--k) * .85s)}
+@keyframes paperIn{0%{opacity:0;transform:translate(0,0) rotate(-14deg)}10%{opacity:1}75%{opacity:1;transform:translate(300px,40px) rotate(8deg)}90%,100%{opacity:0;transform:translate(360px,52px) rotate(0)}}
+.shine{position:absolute;left:600px;top:470px;width:1100px;height:60px;overflow:hidden;transform:translateZ(30px)}
+.shine::after{content:"";position:absolute;top:0;bottom:0;width:160px;left:-200px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg)}
+.slide.is-active .shine::after{animation:shine 2.6s ease-in-out infinite;animation-delay:1.6s}
+@keyframes shine{to{left:110%}}
+.ycard{position:absolute;top:716px;padding:24px 28px;background:#FBEB9A;box-shadow:0 12px 24px rgba(60,45,20,.15)}
+.ycard h3{display:inline-block;font-size:33px;font-weight:900;background:linear-gradient(transparent 55%,rgba(255,255,255,.7) 55%)}
+.ycard p{margin-top:10px;font-size:27px;line-height:1.55}
+/* ---------- S27 gears ---------- */
+.gearw{position:absolute;left:360px;top:200px;width:1200px;height:500px;perspective:1600px}
+.gearp{position:absolute;left:250px;top:-30px;width:700px;height:560px;transform-style:preserve-3d;transform:rotateX(calc(50deg - var(--my,0) * 8deg)) rotateZ(calc(var(--mx,0) * 10deg))}
+.gear{position:absolute;transform-style:preserve-3d}
+.gear svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.gear svg path{fill:var(--gc,#D8D1C1);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.gear svg.l1{transform:translateZ(-8px)}.gear svg.l2{transform:translateZ(-16px)}
+.gear svg.l1 path,.gear svg.l2 path{fill:#9F9888}
+.gear .ax{position:absolute;left:50%;top:50%;width:26%;height:26%;margin:-13% 0 0 -13%;border-radius:50%;background:var(--paper);border:3px solid var(--ink);transform:translateZ(4px)}
+.gl-lab{position:absolute;padding:8px 22px;font-size:36px;font-weight:900;background:var(--lime)}
+.slide.is-active .gl-lab{animation:pop .7s cubic-bezier(.3,1.5,.5,1) both,labOn 8s ease-in-out infinite;animation-delay:calc(var(--base) + .8s + var(--k) * .15s),calc(2.6s + var(--k) * 2s)}
+@keyframes labOn{0%,28%,100%{box-shadow:none;transform:none}6%,22%{box-shadow:0 0 0 4px var(--ink),8px 8px 0 4px var(--red);transform:translateY(-6px)}}
+.orbit{position:absolute;left:0;top:0;width:1200px;height:500px;overflow:visible;pointer-events:none}
+.orbit path{fill:none;stroke-width:9;stroke-linecap:round;stroke-dasharray:46 26}
+.slide.is-active .orbit path{animation:flowO 2.2s linear infinite}
+@keyframes flowO{to{stroke-dashoffset:-72}}
+.pnote{position:absolute;top:716px;padding:26px 28px 24px;background:var(--card);border:1.5px solid var(--rule);box-shadow:0 14px 28px rgba(60,45,20,.13)}
+.pnote p{font-size:27px;line-height:1.55}
+/* ---------- S28 equation ---------- */
+.eqc{position:absolute;top:244px;width:310px;height:390px;padding:18px 18px 22px;background:var(--card);border:2px solid var(--rule);box-shadow:0 18px 34px rgba(60,45,20,.13);text-align:center}
+.eqc .fig{position:relative;width:270px;height:250px;margin:0 auto}
+.eqc p{margin-top:16px;font-size:31px;font-weight:900}
+.eqc p span{padding:0 8px;background:linear-gradient(transparent 50%,var(--c) 50%,var(--c) 92%,transparent 92%)}
+.eqs{position:absolute;top:376px;width:110px;height:110px;overflow:visible}
+.eqs path{fill:none;stroke:var(--red);stroke-width:14;stroke-linecap:round}
+.eqc.win{border:3px solid var(--ink)}
+.slide.is-active .eqc.win{animation:flipY 1s var(--ease) both,winGlow 2.6s ease-in-out infinite;animation-delay:calc(var(--base) + 1.4s),3s}
+@keyframes winGlow{0%,100%{box-shadow:0 18px 34px rgba(60,45,20,.13),0 0 0 0 rgba(242,207,74,0)}50%{box-shadow:0 18px 34px rgba(60,45,20,.13),0 0 60px 18px rgba(242,207,74,.75)}}
+/* ---------- S29 ---------- */
+.burst{position:relative;z-index:0;isolation:isolate;display:inline-block;padding:0 6px;color:var(--red);font-weight:900}
+.burst svg{position:absolute;left:-7%;top:-30%;width:114%;height:160%;z-index:-1;overflow:visible}
+.slide.is-active .burst svg{animation:burst 1.6s ease-in-out infinite;animation-delay:2.6s}
+@keyframes burst{50%{transform:scale(1.08) rotate(3deg)}}
+/* ---------- S30 ---------- */
+.rcard{position:absolute;top:580px;width:640px;padding:30px 36px 32px;background:#EFE4CC;box-shadow:0 14px 28px rgba(60,45,20,.16);clip-path:polygon(0 3%,4% 0,30% 2%,55% 0,80% 2%,100% 0,99% 30%,100% 60%,98% 100%,70% 98%,40% 100%,10% 98%,0 100%,1% 60%)}
+.rcard small{display:inline-block;padding:4px 14px;background:var(--ink);color:var(--paper);font-size:22px;font-weight:700}
+.rcard h3{margin-top:12px;font-size:38px;font-weight:900}
+.rcard p{margin-top:10px;font-size:27px;line-height:1.6}
+.stamp{position:absolute;left:680px;top:900px;padding:10px 30px;border:6px solid #B3261A;outline:2.5px solid #B3261A;outline-offset:5px;color:#B3261A;font-size:44px;font-weight:900;letter-spacing:.04em;transform:rotate(-8deg);background:rgba(252,250,244,.55);mix-blend-mode:multiply}
+.stamp span{font-family:var(--f-num);letter-spacing:.06em}
+.slide.is-active .stamp{animation:slam .55s cubic-bezier(.5,1.6,.6,1) both;animation-delay:2.6s}
+@keyframes slam{from{opacity:0;transform:rotate(-8deg) scale(2.6)}}
+.waves{position:absolute;overflow:visible}
+.waves path{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;opacity:0}
+.slide.is-active .waves path{animation:wave 1.8s ease-out infinite;animation-delay:calc(1.4s + var(--k) * .3s)}
+@keyframes wave{0%{opacity:0;transform:translateX(-10px)}30%{opacity:1}100%{opacity:0;transform:translateX(18px)}}
+</style>
+
+<!-- ===================== 16 · Part 2 opener ===================== -->
+<section class="slide dark" data-title="PART 2" data-part="PART 2">
+  <p class="abs big p2big fade" style="--d:.1s" aria-hidden="true">PART 2</p>
+  <p class="abs rv mono" style="left:110px;top:430px;font-size:24px;letter-spacing:.14em;color:var(--gold);--d:.3s">EP 17 – 30 · 敘事公式與平台邏輯</p>
+  <h1 class="abs split" style="left:110px;top:480px;font-size:132px;line-height:1.1;font-weight:900;--d:.4s">爆紅的深層句法</h1>
+  <p class="abs rv hand" style="left:110px;top:650px;font-size:44px;color:var(--on-night-2);--d:1s">從四階段反轉公式，到推薦榜的洗榜黑箱</p>
+  <ol class="abs chap">
+    <li class="rv" style="--d:1.3s"><small>EP 17–20</small><b>四階段反轉公式</b></li>
+    <li class="rv" style="--d:1.45s"><small>EP 21–23</small><b>爆款案例與情感代償</b></li>
+    <li class="rv" style="--d:1.6s"><small>EP 24–25</small><b>洗榜與演算法黑箱</b></li>
+    <li class="rv" style="--d:1.75s"><small>EP 26–30</small><b>結論與研究建議</b></li>
+  </ol>
+  <div class="phone in3d" style="--d:.5s">
+    <div class="rig">
+      <div class="body"></div>
+      <div class="scr feed" aria-hidden="true"><div>
+        <div class="ep" style="--a:#7A2E2A;--b:#1E1A2A"><small>EP.1 · 現實匱乏</small><i>▶</i><b>《分家只給枯井？我挖出靈泉》</b><span>惡意分家，僅得破屋枯井</span></div>
+        <div class="ep" style="--a:#2D5A3A;--b:#151F2A"><small>EP.2 · 非對稱優勢</small><i>▶</i><b>挖出靈泉，廢物變寶</b><span>金手指降臨</span></div>
+        <div class="ep" style="--a:#7B5A16;--b:#211A12"><small>EP.1 · 現實匱乏</small><i>▶</i><b>《彩運照人心》</b><span>女友背叛分手</span></div>
+        <div class="ep" style="--a:#5B2E7A;--b:#17142A"><small>EP.3 · 行動逆轉</small><i>▶</i><b>隱藏財富裝窮，測試人心</b><span>反派阻撓 → 打臉逆轉</span></div>
+        <div class="ep" style="--a:#1F4E7A;--b:#121A26"><small>EP.4 · 補償實現</small><i>▶</i><b>《80 分家只給牛棚》</b><span>收穫奇觀、債務清零</span></div>
+        <div class="ep" style="--a:#7A2E2A;--b:#1E1A2A"><small>EP.1 · 現實匱乏</small><i>▶</i><b>《分家只給枯井？我挖出靈泉》</b><span>惡意分家，僅得破屋枯井</span></div>
+        <div class="ep" style="--a:#2D5A3A;--b:#151F2A"><small>EP.2 · 非對稱優勢</small><i>▶</i><b>挖出靈泉，廢物變寶</b><span>金手指降臨</span></div>
+        <div class="ep" style="--a:#7B5A16;--b:#211A12"><small>EP.1 · 現實匱乏</small><i>▶</i><b>《彩運照人心》</b><span>女友背叛分手</span></div>
+        <div class="ep" style="--a:#5B2E7A;--b:#17142A"><small>EP.3 · 行動逆轉</small><i>▶</i><b>隱藏財富裝窮，測試人心</b><span>反派阻撓 → 打臉逆轉</span></div>
+        <div class="ep" style="--a:#1F4E7A;--b:#121A26"><small>EP.4 · 補償實現</small><i>▶</i><b>《80 分家只給牛棚》</b><span>收穫奇觀、債務清零</span></div>
+      </div></div>
+      <div class="notch"></div>
+      <div class="hearts" aria-hidden="true"><i style="--k:0;--x:-20">♥</i><i style="--k:1;--x:14">♥</i><i style="--k:2;--x:-6">♥</i><i style="--k:3;--x:22">♥</i><i style="--k:4;--x:-16">♥</i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 17 · Four-stage formula ===================== -->
+<section class="slide" data-title="四階段反轉公式" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">爆紅深層句法</p>
+    <h2 class="split">四階段的<span class="mk" style="--mkd:1.1s">高頻反轉公式</span></h2>
+  </header>
+  <div class="loopw fade" style="--d:.3s">
+    <div class="plane">
+      <svg class="spin" style="--sp:30s" viewBox="0 0 560 560" aria-hidden="true">
+        <g fill="none" stroke-linecap="butt">
+          <path d="M280 40A240 240 0 0 1 505 198" stroke="#3B3833" stroke-width="56"/>
+          <path d="M520 280A240 240 0 0 1 362 505" stroke="#3B3833" stroke-width="56"/>
+          <path d="M280 520A240 240 0 0 1 55 362" stroke="#3B3833" stroke-width="56"/>
+          <path d="M40 280A240 240 0 0 1 198 55" stroke="#3B3833" stroke-width="56"/>
+          <path d="M280 40A240 240 0 0 1 505 198M520 280A240 240 0 0 1 362 505M280 520A240 240 0 0 1 55 362M40 280A240 240 0 0 1 198 55" stroke="rgba(255,255,255,.18)" stroke-width="20" stroke-dasharray="3 9"/>
+        </g>
+        <g fill="#3B3833"><polygon points="490,160 548,214 470,232"/><polygon points="398,496 340,548 324,470"/><polygon points="70,400 12,346 90,328"/><polygon points="162,64 220,12 236,90"/></g>
+      </svg>
+      <svg viewBox="0 0 560 560" aria-hidden="true"><g class="dotr"><circle cx="520" cy="280" r="22" fill="#C9372A"/><circle cx="520" cy="280" r="36" fill="rgba(201,55,42,.3)"/></g></svg>
+    </div>
+    <p class="core"><span class="mk" style="--mkc:rgba(201,55,42,.42);--mkd:1s">微型<br>劇情循環</span></p>
+  </div>
+  <div class="stage" style="left:110px;top:236px;--k:0">
+    <div class="fig"><div class="rig"><img class="z bob" src="@c-wallet" alt="空錢包與哭泣的人" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px"></div></div>
+    <h3>1. 現實匱乏</h3><p class="big" style="grid-column:2"><span class="num" data-to="63.6" data-dec="1" data-delay="1400">63.6</span><small>%</small></p>
+    <p>極速展現家庭剝奪、生計困境或背叛。</p>
+  </div>
+  <div class="stage" style="left:1290px;top:236px;--k:1">
+    <div class="fig"><div class="rig"><img class="z bob" src="@c-potion" alt="藥水與升級視窗" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px;--k:1"></div></div>
+    <h3>2. 非對稱優勢</h3><p class="big" style="grid-column:2"><span class="num" data-to="59.1" data-dec="1" data-delay="1600">59.1</span><small>%</small></p>
+    <p>獲得系統、靈泉、重生，瞬間改變弱勢。</p>
+  </div>
+  <div class="stage" style="left:1290px;top:616px;--k:2">
+    <div class="fig"><div class="rig"><img class="z bob" src="@c-hoe" alt="揮動鋤頭的人" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px;--k:2"></div></div>
+    <h3>3. 行動逆轉</h3><p style="grid-column:2;margin-top:6px;font-family:var(--f-hand);font-size:30px;color:var(--ink-3)">反制阻撓</p>
+    <p>進入種田、趕海、經商等勞動場域，反制阻撓。</p>
+  </div>
+  <div class="stage" style="left:110px;top:616px;--k:3">
+    <div class="fig"><div class="rig"><img class="z bob" src="@c-crown" alt="王冠與錢幣" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px;--k:3"></div></div>
+    <h3>4. 補償實現</h3>
+    <p style="grid-column:2;margin-top:8px;font-size:26px;font-weight:700">財富 <b class="big" style="font-size:52px;color:var(--red)"><span class="num" data-to="54.5" data-dec="1" data-delay="1800">54.5</span>%</b><br>親緣 <b class="big" style="font-size:52px;color:var(--blue)"><span class="num" data-to="31.8" data-dec="1" data-delay="2000">31.8</span>%</b></p>
+    <p>完成財富生計或親緣尊嚴的逆轉回報。</p>
+  </div>
+</section>
+
+<!-- ===================== 18 · Step 1 ===================== -->
+<section class="slide" data-title="步驟一：社會焦慮" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">步驟一</p>
+    <h2 class="split">精準打擊<span class="mk" style="--mkd:1.1s">「當代社會焦慮」</span></h2>
+  </header>
+  <div class="fig in3d" style="left:120px;top:236px;width:680px;height:700px;--ry:12deg;--d:.3s">
+    <div class="rig"><img class="z bob" src="@rock" alt="被寫著經濟剝削、分家不公、中年失業、婚姻背叛的巨石壓住的人" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px;--bt:4.5s"><div class="shd"></div></div>
+  </div>
+  <div class="note lined tape rr" style="left:880px;top:250px;width:930px;padding:0 44px 36px 86px;--lh:54px;--d:.6s">
+    <ul class="bul">
+      <li>作品皆以<span class="mk" style="--mkd:1.8s">「可在數秒內辨識的負面狀態」</span>開場。</li>
+      <li>沒有冗長的鋪陳，主角一出場就是<b>失戀、離婚、背債、無天賦或遭受霸凌</b>。</li>
+      <li><b>核心功能：</b>讓觀眾瞬間產生情緒共感。這不是憑空捏造的悲劇，而是中國現代社會結構與<span class="mk" style="--mkd:2.4s">生存壓力的直接投射</span>。</li>
+    </ul>
+  </div>
+  <div class="negs abs">
+    <span class="lbl rv" style="--d:1.6s">開場即是 →</span>
+    <span class="drop" style="--d:1.8s;--r:-3deg">失戀</span><span class="drop" style="--d:1.95s;--r:2deg">離婚</span><span class="drop" style="--d:2.1s;--r:-2deg">背債</span><span class="drop" style="--d:2.25s;--r:3deg">無天賦</span><span class="drop" style="--d:2.4s;--r:-2deg">遭受霸凌</span>
+  </div>
+</section>
+
+<!-- ===================== 19 · Step 2 ===================== -->
+<section class="slide" data-title="步驟二：金手指" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">步驟二</p>
+    <h2 class="split">降下「非對稱優勢」的<span class="mk lm" style="--mkd:1.1s">金手指</span></h2>
+  </header>
+  <div class="fig" style="left:150px;top:268px;width:600px;height:700px;--ry:12deg">
+    <div class="rig">
+      <div class="rays" aria-hidden="true"></div>
+      <div class="z in3d" style="left:20px;top:0;--z:50px;--d:1s;width:560px;height:300px">
+        <div class="sys">
+          <p class="h">SYSTEM UI PANEL · 能力已解鎖</p>
+          <div class="ab"><span class="pop" style="--d:1.6s">靈泉</span><span class="pop" style="--d:1.85s">透視</span><span class="pop" style="--d:2.1s">重生</span></div>
+          <div class="up"><i></i><b>UPGRADE</b></div>
+        </div>
+      </div>
+      <img class="z rv" src="@bucket" alt="冒出綠光的破木桶" style="left:40px;top:340px;width:500px;height:375px;object-fit:contain;--z:0px;--d:.4s">
+      <div class="shd" style="bottom:-1%"></div>
+    </div>
+  </div>
+  <div class="brk rr" style="--d:.6s">
+    <p>多數作品透過<span class="mk lm" style="--mkd:1.8s">「超越日常規則的額外能力」</span>，迅速打破階級固化。</p>
+    <p><b>常見設定：</b></p>
+    <div class="sets"><span class="pop" style="--d:2.2s">綁定系統</span><span class="pop" style="--d:2.35s">挖出靈泉</span><span class="pop" style="--d:2.5s">重生自帶未來記憶</span><span class="pop" style="--d:2.65s">覺醒異能</span></div>
+    <p><b>敘事魔法：</b>在現實生活中無法解決的結構性貧窮，透過<span class="mk lm" style="--mkd:3s">「一次可視化的奇蹟回報」</span>瞬間迎刃而解。</p>
+  </div>
+</section>
+
+<!-- ===================== 20 · Steps 3 & 4 ===================== -->
+<section class="slide" data-title="步驟三＆四" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">步驟三＆四</p>
+    <h2 class="split">從「高頻反轉」到<span class="mk" style="--mkd:1.1s">「秩序修復」</span></h2>
+  </header>
+  <div class="fig drop" style="left:100px;top:240px;width:680px;height:650px;--ry:10deg;--d:.3s">
+    <div class="rig"><img class="z sway" src="@polaroids" alt="兩張拍立得：被打臉的反派（行動），與錢袋和團圓家庭（補償）" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px"><div class="shd"></div></div>
+  </div>
+  <div class="abs rr" style="left:830px;top:244px;width:980px;--d:.6s">
+    <h3>微型劇情循環</h3>
+    <div class="chain"><span style="--k:0">反派阻撓</span><span class="arrow"></span><span style="--k:1">打臉逆轉</span><span class="arrow"></span><span style="--k:2">升級</span><b class="rep">↻ 無限連載</b></div>
+    <p style="margin-top:16px;font-size:28px;line-height:1.55">財富與能力的回報不是一次給完，而是被拆解成無數個<span class="mk" style="--mkd:2s">連載短影音單位</span>。</p>
+  </div>
+  <div class="abs rr" style="left:830px;top:536px;width:980px;--d:.9s">
+    <h3>補償指向</h3>
+    <div class="mbar" style="--c:var(--red);--w:54.5"><span>財富與生計改善</span><div class="tr"><i class="grow-x" style="--d:1.4s"></i></div><b><span class="num" data-to="54.5" data-dec="1" data-delay="1800">54.5</span>%</b></div>
+    <div class="mbar" style="--c:var(--blue);--w:31.8"><span>家庭修復與親緣承認</span><div class="tr"><i class="grow-x" style="--d:1.6s"></i></div><b><span class="num" data-to="31.8" data-dec="1" data-delay="2000">31.8</span>%</b></div>
+  </div>
+  <div class="note tape rv" style="left:830px;top:790px;width:980px;padding:22px 32px;--d:1.4s">
+    <p style="font-size:29px;line-height:1.55"><b>洞察：</b>高排名 AI 劇提供的不是純粹的致富幻想，而是<span class="mk" style="--mkd:2.6s">「經濟翻身與家庭秩序修復」</span>的雙重滿足。</p>
+  </div>
+</section>
+
+<!-- ===================== 21 · Case files ===================== -->
+<section class="slide" data-title="案發現場" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">案發現場</p>
+    <h2 class="split">爆款劇本的<span class="mk" style="--mkd:1.1s">「微型循環」</span>拆解</h2>
+  </header>
+  <div class="note case in3d" style="left:110px;transform:rotate(-1.2deg);--d:.3s">
+    <span class="pin" style="left:50%;top:-12px"></span>
+    <h3>《彩運照人心》</h3>
+    <div class="fig" style="width:440px"><div class="rig"><img class="z bob" src="@lottery" alt="中獎彩券與放大鏡下的心臟" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px"></div></div>
+    <p class="lb">公式</p>
+    <div class="steps"><span class="rl" style="--d:1.2s">巨額中獎</span><em class="fade" style="--d:1.3s">→</em><span class="rl" style="--d:1.4s">隱藏財富裝窮</span><em class="fade" style="--d:1.5s">→</em><span class="rl" style="--d:1.6s">測試前女友與親友勢利</span><em class="fade" style="--d:1.7s">→</em><span class="end pop" style="--d:1.9s">公開翻轉</span></div>
+    <p class="lb">爽感來源</p>
+    <div class="joys"><span class="pop" style="--d:2.2s">資訊不對稱</span><span class="pop" style="--d:2.3s;--c:var(--pink)">人性試金石</span><span class="pop" style="--d:2.4s">真假情感辨識</span><span class="pop" style="--d:2.5s;--c:var(--pink)">財富自主權補償</span></div>
+  </div>
+  <div class="note case in3d" style="left:990px;transform:rotate(1deg);--d:.5s">
+    <span class="pin" style="left:50%;top:-12px"></span>
+    <h3>《分家只給枯井？我挖出靈泉》</h3>
+    <div class="fig" style="width:400px"><div class="rig">
+      <img class="z bob" src="@well" alt="噴出光芒的石井" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px">
+      <span class="spark" style="left:120px;top:20px;--k:0">✦</span><span class="spark" style="left:250px;top:6px;--k:1">✦</span><span class="spark" style="left:320px;top:60px;--k:2">✦</span><span class="spark" style="left:60px;top:80px;--k:3">✦</span>
+    </div></div>
+    <p class="lb">公式</p>
+    <div class="steps"><span class="rl" style="--d:1.4s">惡意分家僅得破屋枯井</span><em class="fade" style="--d:1.5s">→</em><span class="rl" style="--d:1.6s">挖出靈泉廢物變寶</span><em class="fade" style="--d:1.7s">→</em><span class="end pop" style="--d:1.9s">養家致富，反制親族後悔打臉</span></div>
+    <p class="lb">爽感來源</p>
+    <div class="joys"><span class="pop" style="--d:2.4s">弱者受辱</span><span class="pop" style="--d:2.5s;--c:var(--lime)">種田奇觀回報</span><span class="pop" style="--d:2.6s;--c:var(--pink)">親族後悔打臉</span></div>
+  </div>
+</section>
+
+<!-- ===================== 22 · Same script ===================== -->
+<section class="slide" data-title="同一套劇本" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">拆解公式</p>
+    <h2 class="split">不同語意包裝下的<span class="mk" style="--mkd:1.1s">同一套劇本</span></h2>
+  </header>
+  <div class="cork fade" style="--d:.2s">
+    <div class="cc h flipX" style="left:300px;top:24px;width:420px;height:116px;--d:.5s"><span class="pin"></span>《彩運照人心》<small>（都市腦洞）</small></div>
+    <div class="cc h flipX" style="left:745px;top:24px;width:420px;height:116px;--d:.7s"><span class="pin"></span>《分家只給枯井？》<small>（玄幻種田）</small></div>
+    <div class="cc h flipX" style="left:1190px;top:24px;width:420px;height:116px;--d:.9s"><span class="pin"></span>《80 分家只給牛棚》<small>（年代種田）</small></div>
+    <div class="cc rowl flipY" style="left:30px;top:170px;width:240px;height:116px;--d:.6s"><span class="pin"></span><span class="mk" style="--mkd:1.4s">起始匱乏</span></div>
+    <div class="cc rowl flipY" style="left:30px;top:310px;width:240px;height:116px;--d:.75s"><span class="pin"></span><span class="mk" style="--mkd:1.6s">非對稱優勢</span></div>
+    <div class="cc rowl flipY" style="left:30px;top:450px;width:240px;height:116px;--d:.9s"><span class="pin"></span><span class="mk" style="--mkd:1.8s">補償實現</span></div>
+    <div class="cc flipX" style="left:300px;top:170px;width:420px;height:116px;--d:1s"><span class="pin"></span>女友背叛分手<br>關係不確定</div>
+    <div class="cc flipX" style="left:745px;top:170px;width:420px;height:116px;--d:1.2s"><span class="pin"></span>父逝惡意分家<br>僅得破屋枯井</div>
+    <div class="cc flipX" style="left:1190px;top:170px;width:420px;height:116px;--d:1.4s"><span class="pin"></span>年代匱乏<br>分家得牛棚兼背債</div>
+    <div class="cc flipX" style="left:300px;top:310px;width:420px;height:116px;--d:1.1s"><span class="pin"></span>巨額中獎彩金</div>
+    <div class="cc flipX" style="left:745px;top:310px;width:420px;height:116px;--d:1.3s"><span class="pin"></span>挖出隱藏靈泉</div>
+    <div class="cc flipX" style="left:1190px;top:310px;width:420px;height:116px;--d:1.5s"><span class="pin"></span>神祕靈田空間</div>
+    <div class="cc flipX" style="left:300px;top:450px;width:420px;height:116px;--d:1.2s"><span class="pin"></span>辨識真情、善惡回報</div>
+    <div class="cc flipX" style="left:745px;top:450px;width:420px;height:116px;--d:1.4s"><span class="pin"></span>養家致富、親族打臉</div>
+    <div class="cc flipX" style="left:1190px;top:450px;width:420px;height:116px;--d:1.6s"><span class="pin"></span>收穫奇觀、債務清零</div>
+    <svg class="str" viewBox="0 0 1672 582" aria-hidden="true">
+      <path class="draw" pathLength="1" style="--d:2.2s" d="M510 160C620 186 840 186 955 160C1070 186 1290 186 1400 160"/>
+      <path class="draw" pathLength="1" style="--d:2.5s" d="M510 300C620 326 840 326 955 300C1070 326 1290 326 1400 300"/>
+      <path class="draw" pathLength="1" style="--d:2.8s" d="M510 440C620 466 840 466 955 440C1070 466 1290 466 1400 440"/>
+    </svg>
+  </div>
+  <div class="verdict abs rv" style="--d:2.4s"><p>分析結論：表層（年代、場域與外掛）大量置換，但<span class="mk" style="--mkc:rgba(201,55,42,.35);--mkd:3.2s">深層句法結構完全一致</span>。</p></div>
+</section>
+
+<!-- ===================== 23 · Emotional compensation ===================== -->
+<section class="slide" data-title="情感代償" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">情感代償</p>
+    <h2 class="split">精準點穴的<span class="mk pk" style="--mkd:1.1s">「電子心理按摩」</span></h2>
+  </header>
+  <div class="batt rl" style="--d:.5s" aria-hidden="true"><i style="--c:#E0574A;--k:0"></i><i style="--c:#E0574A;--k:1"></i><i style="--c:#5B9BE0;--k:2"></i><i style="--c:#5B9BE0;--k:3"></i></div>
+  <div class="fig in3d" style="left:250px;top:226px;width:480px;height:690px;--ry:14deg;--d:.3s">
+    <div class="rig">
+      <img class="z beat" src="@brainheart" alt="大腦連著心臟，四周有閃電" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px">
+      <svg class="bolt z" style="left:-30px;top:200px;--z:70px;--k:0" viewBox="0 0 80 80" aria-hidden="true"><path d="M44 4L14 44h22l-8 32 38-46H42z" fill="#E0574A" stroke="#1F1D1A" stroke-width="3" stroke-linejoin="round"/></svg>
+      <svg class="bolt z" style="left:420px;top:320px;--z:70px;--k:1" viewBox="0 0 80 80" aria-hidden="true"><path d="M44 4L14 44h22l-8 32 38-46H42z" fill="#5B9BE0" stroke="#1F1D1A" stroke-width="3" stroke-linejoin="round"/></svg>
+      <svg class="bolt z" style="left:400px;top:120px;--z:50px;--k:2;width:60px;height:60px" viewBox="0 0 80 80" aria-hidden="true"><path d="M44 4L14 44h22l-8 32 38-46H42z" fill="#E0574A" stroke="#1F1D1A" stroke-width="3" stroke-linejoin="round"/></svg>
+      <div class="shd"></div>
+    </div>
+  </div>
+  <svg class="abs" style="left:700px;top:260px;width:180px;height:640px;overflow:visible" viewBox="0 0 180 640" aria-hidden="true">
+    <g fill="none" stroke="#1F1D1A" stroke-width="4" stroke-linecap="round">
+      <path class="draw" pathLength="1" style="--d:1s" d="M10 200C60 90 110 80 168 86"/>
+      <path class="draw" pathLength="1" style="--d:1.2s" d="M20 320C80 320 120 320 168 320"/>
+      <path class="draw" pathLength="1" style="--d:1.4s" d="M10 440C60 560 110 560 168 556"/>
+    </g>
+  </svg>
+  <div class="ynote tape rr" style="top:236px;--d:1s;transform:rotate(-.6deg)">
+    <h3>痛點共鳴</h3>
+    <p>不只賣科幻爽感，而是精準觸擊現代社會的<span class="mk pk" style="--mkd:2s">生存焦慮、權力不對等與階層壓迫</span>。</p>
+  </div>
+  <div class="ynote tape rr" style="top:476px;--d:1.2s;transform:rotate(.5deg);--tr:2deg">
+    <h3>高頻反轉</h3>
+    <div class="chain" style="margin-top:10px"><span style="--k:0;font-size:25px;padding:6px 14px">壓迫</span><span class="arrow" style="width:34px"></span><span style="--k:1;font-size:25px;padding:6px 14px">反抗</span><span class="arrow" style="width:34px"></span><span style="--k:2;font-size:25px;padding:6px 14px">優勢</span><span class="arrow" style="width:34px"></span><span style="--k:3;font-size:25px;padding:6px 14px">重生</span></div>
+    <p>短平快的節奏，提供快速壓縮的多巴胺回饋。</p>
+  </div>
+  <div class="ynote tape rr" style="top:716px;--d:1.4s;transform:rotate(-.4deg)">
+    <h3>多層次回補</h3>
+    <p>生存安全、家庭歸屬、社會尊重被壓縮在同一條敘事路徑，形成完美的<span class="mk pk" style="--mkd:2.6s">「補償性逆襲」</span>。</p>
+  </div>
+</section>
+
+<!-- ===================== 24 · Chart churn ===================== -->
+<section class="slide dark" data-title="洗榜與黑箱" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">洗榜與黑箱</p>
+    <h2 class="split">高度流動的推薦榜生存戰</h2>
+  </header>
+  <div class="surv" role="img" aria-label="224 部作品中，只有 12 部連續三週留在推薦榜上">
+    <div class="pl" data-survive="224,12"></div>
+  </div>
+  <div class="wk" aria-hidden="true"><div class="tl"><i></i></div><span class="d" style="left:0">8/3</span><span class="d" style="left:50%">8/10</span><span class="d" style="left:100%">8/17</span></div>
+  <div class="cnt">
+    <p class="big"><span class="num" data-from="224" data-to="12" data-delay="1300" data-dur="3200">12</span></p>
+    <p>部作品連續三週留榜<br><span style="color:var(--on-night-2);font-weight:500">224 部中僅 <span class="hl">5.4%</span>，極低長尾率</span></p>
+  </div>
+  <div class="dnote rr" style="top:250px;--d:.8s">
+    <h3>大洗牌現象</h3>
+    <p>至第三週發生大規模洗牌，前期留榜作品排名中位數暴跌</p>
+    <p class="big" style="margin-top:4px">↓<span class="num" data-to="19.5" data-dec="1" data-delay="1500" data-dur="1800">19.5</span><small style="font-family:var(--f-head);font-size:40px;font-weight:900;margin-left:6px">名</small></p>
+  </div>
+  <div class="dnote rr" style="top:550px;--d:1s">
+    <h3>可見性斷裂</h3>
+    <p>「持續留榜」不等於「維持高可見性」。</p>
+  </div>
+  <div class="dnote alert rr" style="top:716px;--d:1.2s">
+    <h3 style="color:#FF7A66">演算法黑箱</h3>
+    <p>平台宣稱依觀看、互動排序，卻未公開權重。排名反映的是<span class="mk" style="--mkd:2.4s">「平台建構的可見性」</span>，而非純粹口碑。</p>
+  </div>
+</section>
+
+<!-- ===================== 25 · Algorithmic black box ===================== -->
+<section class="slide" data-title="演算法黑箱" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">演算法黑箱</p>
+    <h2><span class="split">推薦可見性</span><span class="pop" style="display:inline-block;margin:0 22px;color:var(--red);--d:.6s">≠</span><span class="split" style="--d:.5s">絕對人氣</span></h2>
+  </header>
+  <div class="fig in3d" style="left:110px;top:226px;width:700px;height:690px;--ry:12deg;--d:.3s">
+    <div class="rig">
+      <img class="z shake" src="@blender" alt="攪拌機裡寫著觀看？互動？人工介入？旁邊是快速洗榜的墓碑" style="inset:0;width:100%;height:100%;object-fit:contain;--z:30px;transform-origin:50% 80%">
+      <span class="qm z" style="left:120px;top:300px;font-size:70px;--z:90px;--k:0">?</span>
+      <span class="qm z" style="left:470px;top:260px;font-size:56px;--z:110px;--k:1">?</span>
+      <span class="qm z" style="left:300px;top:200px;font-size:84px;--z:70px;--k:2">?</span>
+      <div class="shd"></div>
+    </div>
+  </div>
+  <div class="bbox rv" style="--d:1.6s" aria-hidden="true">
+    <div class="cube"><i>觀看？</i><i>互動？</i><i>興趣？</i><i>人工介入？</i><i>權重？</i><i>？</i></div>
+  </div>
+  <p class="abs rv hand" style="left:1380px;top:800px;width:430px;font-size:36px;font-weight:700;line-height:1.4;--d:2s">排序權重＝<span class="hl">未公開</span><br><span style="font-size:28px;color:var(--ink-3)">推薦榜本身就是一個黑箱</span></p>
+  <div class="note spiral rr" style="--d:.6s">
+    <span class="stripe" aria-hidden="true"></span>
+    <ul class="bul" style="gap:26px">
+      <li><b>殘酷的流動性：</b>8 月 10 日至 17 日發生大規模榜單洗牌。<b class="hl"><span class="num" data-to="224" data-delay="1500">224</span></b> 部作品中，<span class="mk" style="--mkd:2.2s">僅有 <span class="num" data-to="12" data-delay="1700">12</span> 部能連續三週留榜</span>。</li>
+      <li><b>不透明的權重：</b>紅果宣稱依「觀看／互動／興趣」排序，但指標定義與人工介入程度完全未知。</li>
+      <li><b>結論：</b>榜單排名不能直接等同於觀眾真實口碑，而是平台為了商業推廣與治理，刻意建構出的<span class="circled">「動態推薦可見性」</span>。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== 26 · Conclusion 1 ===================== -->
+<section class="slide" data-title="結論一" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">結論一</p>
+    <h2 class="split">技術創新成為<span class="mk" style="--mkd:1.1s">「敘事重複」</span>的加速器</h2>
+  </header>
+  <div class="fig in3d" style="left:110px;top:214px;width:1700px;height:476px;--rx:6deg;--px:6deg;--py:4deg;--d:.3s">
+    <div class="rig">
+      <img class="z" src="@factory" alt="市場訊號送進機器，機械手臂蓋上 AI 印章，輸出換了不同外皮的劇本盒" style="inset:0;width:100%;height:100%;object-fit:contain;--z:0px">
+      <div class="papers z" style="left:60px;top:150px;--z:40px" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i></div>
+      <div class="shine" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="ycard tape rv" style="left:110px;width:540px;--d:1s;transform:rotate(-1deg)"><h3>降低試錯成本</h3><p>AI 允許製作方用極短週期測試劇名、封面與敘事鉤子。</p></div>
+  <div class="ycard tape rv" style="left:690px;width:540px;--d:1.2s;transform:rotate(.6deg);--tr:2deg"><h3>範本化生產循環</h3><p>演算法推薦高互動內容 → 製作方依訊號複製情節 → AI 快速生成不同表皮的變奏。</p></div>
+  <div class="ycard tape rv" style="left:1270px;width:540px;--d:1.4s;transform:rotate(-.6deg)"><h3>制度性結果</h3><p>公式化並非創作者缺乏創意，而是<span class="mk pk" style="--mkd:2.4s">「低成本 ＋ 演算法 ＋ 注意力」</span>共同塑造的必然。</p></div>
+</section>
+
+<!-- ===================== 27 · Flywheel ===================== -->
+<section class="slide" data-title="AI 生產飛輪" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">結論一 · 延伸</p>
+    <h2><span class="split">AI 生產飛輪</span><span class="rv hand" style="display:inline-block;margin-left:26px;font-size:40px;font-weight:700;color:var(--ink-2);--d:.8s">技術創新成了「敘事重複」的加速器</span></h2>
+  </header>
+  <div class="gearw fade" style="--d:.2s">
+    <svg class="orbit" viewBox="0 0 1200 500" aria-hidden="true">
+      <path d="M300 253A300 170 0 1 1 900 253A300 170 0 1 1 300 253" stroke="#7BE36A" opacity=".9"/>
+      <path d="M268 253A332 150 0 1 0 932 253A332 150 0 1 0 268 253" stroke="#F17CB0" opacity=".75"/>
+    </svg>
+    <div class="gearp">
+      <div class="gear" style="left:250px;top:50px;width:200px;height:200px;--gc:#E4DDCC" data-gear="14"></div>
+      <div class="gear" style="left:375px;top:160px;width:250px;height:250px;--gc:#D8D1C1;--ccw:1" data-gear="18"></div>
+      <div class="gear" style="left:250px;top:320px;width:200px;height:200px;--gc:#E4DDCC" data-gear="14"></div>
+      <div class="gear" style="left:75px;top:160px;width:250px;height:250px;--gc:#D8D1C1;--ccw:1" data-gear="18"></div>
+    </div>
+    <p class="gl-lab" style="left:488px;top:20px;--k:0">低成本生成</p>
+    <p class="gl-lab" style="left:900px;top:222px;--k:1">高頻率測試</p>
+    <p class="gl-lab" style="left:488px;top:424px;--k:2">演算法推薦</p>
+    <p class="gl-lab" style="left:76px;top:222px;--k:3">範本化量產</p>
+  </div>
+  <div class="pnote rv" style="left:110px;width:520px;--d:1.2s;transform:rotate(-1deg)"><span class="pin" style="left:50%;top:-12px"></span><p><b>反直覺洞察：</b>AI 短劇的核心矛盾不是「技術創新 vs. 內容保守」，而是<span class="mk" style="--mkd:2.4s">技術正在加速公式的固化</span>。</p></div>
+  <div class="pnote rv" style="left:670px;width:480px;--d:1.4s;transform:rotate(.8deg)"><span class="pin" style="left:50%;top:-12px"></span><p>生成式 AI 降低了試錯成本，平台推薦系統提供<span class="mk lm" style="--mkd:2.6s">即時市場訊號</span>。</p></div>
+  <div class="pnote rv" style="left:1190px;width:620px;--d:1.6s;transform:rotate(-.6deg)"><span class="pin" style="left:50%;top:-12px"></span><p>一旦某種「敘事鉤子」被驗證有效，成功範本立刻成為下一批作品的生產依據。AI 製造了千變萬化的角色與外觀，深層句法卻趨於<span class="mk lm" style="--mkd:2.8s">絕對的一致</span>。</p></div>
+</section>
+
+<!-- ===================== 28 · Conclusion 2 ===================== -->
+<section class="slide" data-title="結論二" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">結論二</p>
+    <h2 class="split">動態的<span class="mk" style="--mkd:1.1s">「推薦可見性」</span>結構</h2>
+  </header>
+  <div class="eqc flipY" style="left:150px;--d:.4s;--c:var(--hl)"><div class="fig"><div class="rig"><img class="z bob" src="@eq-script" alt="劇本與羽毛筆" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px;--k:0"></div></div><p><span>內容供給</span></p></div>
+  <svg class="eqs" style="left:470px" viewBox="0 0 110 110" aria-hidden="true"><path class="draw" pathLength="1" style="--d:.8s" d="M55 16V94"/><path class="draw" pathLength="1" style="--d:.9s" d="M16 55H94"/></svg>
+  <div class="eqc flipY" style="left:590px;--d:.7s;--c:rgba(140,180,240,.6)"><div class="fig"><div class="rig"><img class="z bob" src="@eq-brain" alt="裝著齒輪的大腦" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px;--k:1"></div></div><p><span>平台分類與黑箱機制</span></p></div>
+  <svg class="eqs" style="left:910px" viewBox="0 0 110 110" aria-hidden="true"><path class="draw" pathLength="1" style="--d:1.1s" d="M55 16V94"/><path class="draw" pathLength="1" style="--d:1.2s" d="M16 55H94"/></svg>
+  <div class="eqc flipY" style="left:1030px;--d:1s;--c:var(--hl)"><div class="fig"><div class="rig"><img class="z bob" src="@eq-eye" alt="睜大的眼睛" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px;--k:2"></div></div><p><span>使用者行為</span></p></div>
+  <svg class="eqs" style="left:1350px" viewBox="0 0 110 110" aria-hidden="true"><path class="draw" pathLength="1" style="--d:1.4s" d="M14 38H96"/><path class="draw" pathLength="1" style="--d:1.5s" d="M14 74H96"/></svg>
+  <div class="eqc win" style="left:1470px;--c:rgba(140,180,240,.6)"><div class="fig"><div class="rig"><img class="z bob" src="@eq-crown" alt="發光的王冠" style="inset:0;width:100%;height:100%;object-fit:contain;--z:60px;--k:3"></div></div><p><span>動態可見性結構</span></p></div>
+  <div class="note tape rv" style="left:150px;top:690px;width:1620px;padding:30px 44px;--d:1.8s">
+    <p style="font-size:33px;line-height:1.6;font-weight:700">紅果推薦榜絕非單純的人氣或口碑清單。<br>AI 技術與平台排序機制，共同促成了<span class="mk" style="--mkd:2.6s">「技術快速創新，但敘事深層重複」</span>的奇特文化生產邏輯。</p>
+  </div>
+</section>
+
+<!-- ===================== 29 · Summary ===================== -->
+<section class="slide" data-title="總結" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">總結</p>
+    <h2><span class="split">工業化的</span><span class="split hl" style="--d:.3s">「共鳴」</span><span class="split" style="--d:.45s">製造廠</span></h2>
+  </header>
+  <div class="fig in3d" style="left:100px;top:230px;width:730px;height:620px;--ry:14deg;--d:.3s">
+    <div class="rig"><img class="z bob" src="@addict" alt="從手機伸出的機械手按摩著疲憊的大腦，一旁是瞪大的眼睛" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px;--bt:6s"><div class="shd"></div></div>
+  </div>
+  <div class="note lined tape rr" style="left:880px;top:250px;width:930px;padding:0 44px 40px 86px;--lh:58px;--d:.6s">
+    <ul class="bul" style="font-size:33px">
+      <li>AI 短劇的成功，是<span class="mk" style="--mkd:1.8s">「低成本生產」</span>、<span class="mk" style="--mkd:2s">「使用者注意力」</span>與<span class="mk" style="--mkd:2.2s">「演算法推薦」</span>共同塑造的制度性結果。</li>
+      <li>它並非創作者缺乏創意的產物，而是完美適配當代<span class="mk lm" style="--mkd:2.5s">平台資本主義的文化商品</span>。</li>
+      <li>只要社會結構性的焦慮與匱乏依然存在，這台利用 AI 驅動的<span class="burst">「電子心理按摩機」<svg viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true"><path d="M100 4l12 22 26-14-4 26 32-4-20 20 30 14-32 6 12 24-28-12-6 26-16-22-16 22-6-26-28 12 12-24-32-6 30-14-20-20 32 4-4-26 26 14z" fill="rgba(247,222,62,.6)" stroke="#C9372A" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg></span>就會繼續在排行榜上<span class="hl">高速運轉</span>。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== 30 · Recommendations ===================== -->
+<section class="slide" data-title="研究建議" data-part="PART 2">
+  <header class="head">
+    <p class="tag rd">研究建議</p>
+    <h2 class="split">打開黑箱與<span class="mk" style="--mkd:1.1s">邁向效果驗證</span></h2>
+  </header>
+  <div class="fig in3d" style="left:640px;top:196px;width:640px;height:540px;--d:.3s">
+    <div class="rig"><img class="z sway" src="@signpost" alt="木頭路標：對平台的建議、對未來研究的建議" style="inset:0;width:100%;height:100%;object-fit:contain;--z:20px"><div class="shd" style="bottom:-1%"></div></div>
+  </div>
+  <div class="fig rl" style="left:120px;top:300px;width:250px;height:215px;--d:.6s;--ry:14deg">
+    <div class="rig"><img class="z bob" src="@megaphone" alt="擴音器" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px"></div>
+  </div>
+  <svg class="waves" style="left:376px;top:330px;width:120px;height:160px" viewBox="0 0 120 160" aria-hidden="true"><path style="--k:0" d="M10 40c20 20 20 60 0 80"/><path style="--k:1" d="M40 20c34 34 34 86 0 120"/><path style="--k:2" d="M70 4c46 46 46 106 0 152"/></svg>
+  <div class="fig rr" style="left:1480px;top:256px;width:330px;height:272px;--d:.6s;--ry:-14deg">
+    <div class="rig"><img class="z bob" src="@detective" alt="放大鏡下的觀眾與訪談" style="inset:0;width:100%;height:100%;object-fit:contain;--z:40px;--k:1"></div>
+  </div>
+  <div class="rcard rv" style="left:110px;--d:1s;transform:rotate(-1deg)">
+    <small>對平台的建議</small>
+    <h3>呼籲演算法透明化</h3>
+    <p>平台應具體說明推薦邏輯、權重，並強化 AI 生成標示。避免以「演算法」為藉口概括所有的不透明資訊。</p>
+  </div>
+  <div class="rcard rv" style="left:1170px;--d:1.2s;transform:rotate(.8deg)">
+    <small>對未來研究的建議</small>
+    <h3>邁向閱聽效果驗證</h3>
+    <p>超越純文本解讀，實際調查觀眾，驗證「電子心理按摩」是否真能舒緩焦慮；並探究製作成本與平台 ROI 的真實關聯。</p>
+  </div>
+  <p class="stamp">建議行動 <span>(ACTION REQUIRED)</span></p>
+</section>
