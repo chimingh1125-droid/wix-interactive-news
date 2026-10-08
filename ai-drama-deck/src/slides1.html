@@ -1,31 +1,71 @@
 <style>
-/* ---------- S1 cover ---------- */
-.cv-eyebrow{font-family:var(--f-mono);font-size:22px;font-weight:500;letter-spacing:.14em;color:var(--red)}
-.cv-h1{margin-top:26px;font-size:196px;line-height:1;font-weight:900;letter-spacing:.03em}
-.cv-h1 .ring-hand svg{left:-2%;top:-14%;width:110%;height:128%}
-.cv-h1 .ring-hand path{stroke-width:7}
-.cv-sub{margin-top:30px;font-size:60px;line-height:1.25;font-weight:900}
-.cv-hand{margin-top:26px;font-family:var(--f-hand);font-size:46px;font-weight:700;color:var(--ink-2)}
-.cv-hand b{font-family:var(--f-num);font-size:64px;color:var(--red);margin:0 6px}
-.byline{left:110px;top:792px;width:620px;padding:24px 34px 26px;transform:rotate(-1.5deg)}
-.byline b{display:block;font-size:42px;font-weight:900}
-.byline span{display:block;margin-top:6px;font-size:28px;color:var(--ink-2)}
-.clap .board{left:0;top:132px;width:640px;height:420px;background:#22201E;border-radius:12px;box-shadow:0 30px 60px rgba(30,20,5,.35);transform:translateZ(0)}
-.clap .band,.clap .stick{left:0;width:640px;height:70px;border:5px solid #22201E;background:repeating-linear-gradient(-56deg,#F4F0E6 0 46px,#22201E 46px 92px)}
-.clap .band{top:132px;border-radius:12px 12px 0 0;transform:translateZ(1px)}
-.clap .stick{top:56px;border-radius:10px;transform-origin:30px 64px;transform:translateZ(3px) rotate(-17deg);box-shadow:0 10px 18px rgba(0,0,0,.25)}
-.slide.is-active .clap .stick{animation:clap 6.5s var(--ease) infinite;animation-delay:1.3s}
-@keyframes clap{0%{transform:translateZ(3px) rotate(-17deg)}9%{transform:translateZ(3px) rotate(0)}11%{transform:translateZ(3px) rotate(-3deg)}13%,62%{transform:translateZ(3px) rotate(0)}82%,100%{transform:translateZ(3px) rotate(-17deg)}}
-.clap .hinge{left:14px;top:110px;width:34px;height:34px;border-radius:50%;background:#C9C3B6;border:5px solid #22201E;transform:translateZ(5px)}
-.clap .fields{left:0;top:214px;width:640px;height:338px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;transform:translateZ(2px);font-family:var(--f-hand);color:#F1EADB}
-.clap .fields>div{padding:14px 22px;border-top:2px solid rgba(241,234,219,.55)}
-.clap .fields>div:nth-child(odd){border-right:2px solid rgba(241,234,219,.55)}
-.clap .fields .w{grid-column:span 2;border-right:0!important}
-.clap .fields small{display:block;font-family:var(--f-mono);font-size:17px;letter-spacing:.14em;color:#A9A293}
-.clap .fields span{display:block;font-size:38px;font-weight:700;line-height:1.25}
-.action{left:390px;top:-40px;font-family:var(--f-hand);font-size:66px;font-weight:700;color:var(--red);transform:translateZ(60px) rotate(-8deg);opacity:0}
-.slide.is-active .action{animation:action 6.5s ease both infinite;animation-delay:1.3s}
-@keyframes action{0%,7%{opacity:0;scale:.4}10%{opacity:1;scale:1.12}14%{scale:1}40%{opacity:1}52%,100%{opacity:0}}
+/* ---------- S1 cover: the uploaded poster, assembled piece by piece, then kept alive ---------- */
+@property --r{syntax:'<length>';inherits:false;initial-value:2400px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.s-cover{background:#FCFCFB}
+.cv-stage{position:absolute;inset:0;overflow:hidden;perspective:1800px;background:#FCFCFB}
+.cv-rig{position:absolute;left:0;top:0;width:1920px;height:1080px;transform:rotateY(calc(var(--mx,0) * 2deg)) rotateX(calc(var(--my,0) * -1.5deg))}
+.cv-kb{position:absolute;inset:0;transform:scale(1.04);perspective:1600px}
+.slide.is-active .cv-kb{animation:cvKb 22s ease-in-out infinite alternate;animation-delay:4s}
+@keyframes cvKb{from{transform:scale(1.04)}to{transform:scale(1.075) translate(-10px,-6px)}}
+.cv-base{position:absolute;left:0;top:0;width:1920px;height:1080px;
+  -webkit-mask:radial-gradient(circle at 16% 26%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 86% 18%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 52% 58%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 18% 88%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 88% 86%,#000 var(--r),transparent calc(var(--r) + 70px));
+  mask:radial-gradient(circle at 16% 26%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 86% 18%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 52% 58%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 18% 88%,#000 var(--r),transparent calc(var(--r) + 70px)),radial-gradient(circle at 88% 86%,#000 var(--r),transparent calc(var(--r) + 70px))}
+.slide.is-active .cv-base{animation:splat 1.3s cubic-bezier(.5,0,.75,0) both;animation-delay:calc(var(--base) + 2.75s)}
+@keyframes splat{from{--r:-90px}to{--r:1500px}}
+/* pieces: same pixels as the poster, cut by data-box and feathered */
+.cp{position:absolute;background-repeat:no-repeat;background-size:1920px 1080px;--f:14px;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 var(--f),#000 calc(100% - var(--f)),transparent),linear-gradient(transparent,#000 var(--f),#000 calc(100% - var(--f)),transparent);-webkit-mask-composite:source-in;
+  mask:linear-gradient(90deg,transparent,#000 var(--f),#000 calc(100% - var(--f)),transparent),linear-gradient(transparent,#000 var(--f),#000 calc(100% - var(--f)),transparent);mask-composite:intersect}
+.cp.in{will-change:transform}
+.slide.is-active .cp.in{animation:var(--a) 1s var(--e,cubic-bezier(.2,.75,.15,1)) both,gone .01s linear forwards;animation-delay:calc(var(--base) + var(--d)),calc(var(--base) + 4.3s)}
+@keyframes gone{to{opacity:0;visibility:hidden}}
+@keyframes cvL{from{opacity:0;transform:translate3d(-520px,0,260px) rotateY(38deg)}}
+@keyframes cvR{from{opacity:0;transform:translate3d(560px,40px,200px) rotateY(-34deg)}}
+@keyframes cvUp{from{opacity:0;transform:translate3d(-60px,560px,120px) rotate(-8deg)}}
+@keyframes cvSwing{from{opacity:0;transform:rotate(-38deg) translate3d(-140px,-80px,0)}}
+@keyframes cvDrop{0%{opacity:0;transform:translate3d(0,-460px,360px)}60%{opacity:1;transform:translate3d(0,26px,0)}80%{transform:translate3d(0,-10px,0)}100%{transform:none}}
+@keyframes cvPop{0%{opacity:0;transform:scale(0) rotate(-28deg)}70%{opacity:1;transform:scale(1.12) rotate(5deg)}100%{transform:none}}
+@keyframes cvFlip{from{opacity:0;transform:perspective(1200px) rotateY(-95deg)}}
+@keyframes cvWipeU{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes cvWipeR{from{clip-path:inset(0 100% 0 0);transform:translate3d(0,0,140px) scale(1.04)}to{clip-path:inset(0 0 0 0);transform:none}}
+@keyframes cvRise{from{opacity:0;transform:translate3d(0,70px,0)}}
+/* living overlays (fade in once the poster is complete) */
+.lv{position:absolute;pointer-events:none}
+.slide.is-active .lv{animation:lvIn .01s linear both;animation-delay:calc(var(--base) + 4.1s)}
+@keyframes lvIn{from{visibility:hidden}}
+.lv>*{position:absolute}
+.lid{background:#030303;border-radius:12px;transform:scaleY(0);transform-origin:50% 0}
+.slide.is-active .lid{animation:blink 4.8s ease-in-out infinite;animation-delay:5s}
+@keyframes blink{0%,88%,100%{transform:scaleY(0)}91%,93%{transform:scaleY(1)}96%{transform:scaleY(0)}97.5%{transform:scaleY(1)}}
+.ping{border-radius:50%;border:var(--bw,4px) solid var(--c);opacity:0}
+.slide.is-active .ping{animation:ping var(--t,2s) ease-out infinite;animation-delay:calc(4.6s + var(--k,0) * var(--t,2s) / 2)}
+@keyframes ping{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(var(--s,1.8))}}
+.flick{transform-origin:50% 100%}
+.slide.is-active .flick{animation:flick .9s ease-in-out infinite;animation-delay:calc(var(--k) * -.3s)}
+@keyframes flick{0%,100%{transform:none}25%{transform:scale(.95,1.14) skewX(-3deg)}50%{transform:scale(1.03,.97)}75%{transform:scale(.97,1.09) skewX(3deg)}}
+.breathe{transform-origin:50% 100%}
+.slide.is-active .breathe{animation:breathe 2.6s ease-in-out infinite;animation-delay:calc(4.6s + var(--k) * .22s)}
+@keyframes breathe{0%,100%{transform:none}45%{transform:scaleY(1.12)}}
+.shine{overflow:hidden}
+.shine::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-30%;width:var(--sw,22%);background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--sa,.62)),transparent);transform:skewX(-18deg)}
+.slide.is-active .shine::after{animation:sweep var(--t,6s) ease-in-out infinite;animation-delay:calc(4.4s + var(--k,0) * 1s)}
+@keyframes sweep{0%{left:-30%}35%,100%{left:130%}}
+.glow{border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent);mix-blend-mode:var(--mb,multiply);opacity:.35}
+.slide.is-active .glow{animation:glow var(--t,2.4s) ease-in-out infinite;animation-delay:calc(var(--k,0) * -.8s)}
+@keyframes glow{50%{opacity:var(--hi,.85);transform:scale(1.08)}}
+.playhead{width:3px;background:#FF3B3B;box-shadow:0 0 8px 2px rgba(255,60,60,.8)}
+.slide.is-active .playhead{animation:playhead 5s linear infinite;animation-delay:4.4s}
+@keyframes playhead{to{transform:translateX(146px)}}
+.spk{width:var(--sz,38px);height:var(--sz,38px);margin:calc(var(--sz,38px) / -2) 0 0 calc(var(--sz,38px) / -2);opacity:.9}
+.spk path{fill:var(--c,#FFE14D);stroke:#141414;stroke-width:1.6;stroke-linejoin:round}
+.slide.is-active .spk{animation:twinkle var(--t,2.2s) ease-in-out infinite;animation-delay:calc(var(--k) * -.55s)}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.1) rotate(45deg)}}
+.dot{width:var(--sz);height:var(--sz);border-radius:50%;background:var(--c);opacity:0}
+.slide.is-active .dot{animation:drift var(--t,8s) ease-in-out infinite;animation-delay:calc(var(--k) * -1.3s)}
+@keyframes drift{0%{opacity:0;transform:translate3d(0,40px,0) scale(.6)}20%{opacity:.85}80%{opacity:.7}100%{opacity:0;transform:translate3d(var(--dx,20px),-120px,0) scale(1)}}
+.cv-glare{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;background:radial-gradient(760px 520px at calc(50% + var(--mx,0) * 38%) calc(42% + var(--my,0) * 30%),rgba(255,255,255,.55),transparent 70%);box-shadow:inset 0 0 160px rgba(20,10,30,.22)}
+.slide.is-active .cv-glare{animation:fade 1.2s ease both;animation-delay:calc(var(--base) + 3.6s)}
 /* ---------- S2 ---------- */
 .s2arrow{position:absolute;left:520px;top:250px;width:470px;height:300px;overflow:visible}
 .coins{position:absolute;left:1270px;top:430px;width:520px;height:200px}
@@ -261,30 +301,80 @@
 </style>
 
 <!-- ===================== 1 · Cover ===================== -->
-<section class="slide" data-title="封面" data-part="PART 1">
-  <div class="abs" style="left:110px;top:118px;width:1080px;z-index:3">
-    <p class="cv-eyebrow rv" style="--d:.1s">RESEARCH BRIEFING · CONTENT ANALYSIS · 2026</p>
-    <h1 class="cv-h1"><span class="split" style="--d:.2s">解剖</span><span class="ring-hand"><span class="split" style="--d:.35s">爆款</span><svg viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="1" style="--d:1.2s" d="M58 6C30 2 4 14 4 32c0 18 30 25 52 24 26-1 42-12 40-28C94 12 70 3 42 8"/></svg></span></h1>
-    <p class="cv-sub split" style="--d:.7s">高推薦 AI 劇的公式結構與敘事模式</p>
-    <p class="cv-hand rv" style="--d:1.3s">紅果推薦榜<b class="num" data-to="296" data-delay="1700" data-dur="1600">296</b>部作品之內容分析</p>
-  </div>
-  <div class="note byline tape rv" style="--d:1.7s"><b>研究者：許志明</b><span>世新大學新聞學系副教授</span></div>
-  <div class="fig clap in3d" style="left:1190px;top:270px;width:640px;height:560px;--ry:-18deg;--rx:6deg;--d:.4s">
-    <div class="rig">
-      <img class="z bob" src="@cover-arm" alt="伸向場記板的機械手臂" style="left:-300px;top:250px;width:300px;--z:-70px">
-      <div class="board"></div>
-      <div class="band"></div>
-      <div class="fields">
-        <div class="w"><small>PROD. 片名</small><span>解剖爆款：高推薦 AI 劇</span></div>
-        <div><small>SCENE 場景</small><span>紅果推薦榜</span></div>
-        <div><small>DATE 日期</small><span>2026.08</span></div>
-        <div class="w"><small>RESEARCHER 研究者</small><span>許志明｜世新大學新聞學系</span></div>
+<section class="slide s-cover" data-title="封面" data-part="PART 1" data-nochyron>
+  <h1 class="sr">高推薦 AI 劇的公式結構與敘事模式：紅果推薦榜三期榜單之內容分析｜世新大學新聞系副教授 許志明</h1>
+  <div class="cv-stage">
+    <div class="cv-rig">
+      <div class="cv-kb">
+        <img class="cv-base" src="@cover" width="1920" height="1080" alt="封面海報：高推薦 AI 劇的公式結構與敘事模式——紅果推薦榜三期榜單之內容分析，世新大學新聞系副教授許志明。四周有 AI 機器人、獎盃與排行榜、上升長條圖、場記板與影片膠卷、燈泡，以及坐在螢幕前剪輯的人。">
+        <!-- assembly pieces (hidden once the full poster is in) -->
+        <div class="cp in" data-box="0,0,382,264" style="--a:cvL;--d:.15s"></div>
+        <div class="cp in" data-box="0,480,392,1080" style="--a:cvUp;--d:.3s"></div>
+        <div class="cp in" data-box="0,178,412,518" style="--a:cvSwing;--d:.5s;transform-origin:0 100%"></div>
+        <div class="cp in" data-box="452,6,798,302" style="--a:cvDrop;--d:.7s;--e:linear"></div>
+        <div class="cp in" data-box="1236,0,1514,224" style="--a:cvPop;--d:.95s;--e:ease-out"></div>
+        <div class="cp in" data-box="1466,38,1774,314" style="--a:cvFlip;--d:1.05s;transform-origin:0 50%"></div>
+        <div class="cp in" data-box="1740,58,1920,302" style="--a:cvWipeU;--d:1.2s"></div>
+        <div class="cp in" data-box="1424,772,1920,1080" style="--a:cvR;--d:1.3s"></div>
+        <div class="cp in" data-box="370,138,1742,538" style="--a:cvWipeR;--d:1.35s;--e:cubic-bezier(.6,0,.25,1)"></div>
+        <div class="cp in" data-box="316,522,1768,732" style="--a:cvWipeR;--d:1.75s;--e:cubic-bezier(.6,0,.25,1)"></div>
+        <div class="cp in" data-box="352,710,1628,892" style="--a:cvWipeR;--d:2.15s;--e:cubic-bezier(.6,0,.25,1)"></div>
+        <div class="cp in" data-box="562,866,1408,1020" style="--a:cvRise;--d:2.45s"></div>
+        <div class="cp in" data-box="1698,512,1914,692" style="--a:cvPop;--d:2.55s;--e:ease-out"></div>
+        <!-- living overlays -->
+        <div class="lv" style="left:0;top:0;width:1920px;height:1080px" aria-hidden="true">
+          <!-- robot: blinking eyes, antenna signal -->
+          <i class="lid" style="left:573px;top:111px;width:26px;height:46px;transform-origin:50% 0;rotate:-6deg"></i>
+          <i class="lid" style="left:644px;top:91px;width:27px;height:44px;rotate:-6deg"></i>
+          <i class="ping" style="left:497px;top:26px;width:20px;height:20px;--c:#33DDFF;--bw:3px;--s:2.6;--t:1.8s"></i>
+          <i class="ping" style="left:497px;top:26px;width:20px;height:20px;--c:#33DDFF;--bw:3px;--s:2.6;--t:1.8s;--k:1"></i>
+          <!-- play button pulse -->
+          <i class="ping" style="left:186px;top:376px;width:132px;height:132px;--c:#FF2A3F;--bw:6px;--s:1.7;--t:2.2s"></i>
+          <i class="ping" style="left:186px;top:376px;width:132px;height:132px;--c:#FFFFFF;--bw:4px;--s:1.7;--t:2.2s;--k:1"></i>
+          <!-- trophy shine -->
+          <i class="shine" style="left:1330px;top:8px;width:182px;height:206px;--t:4.5s;--sw:30%"></i>
+          <!-- ranking flames (same pixels, flickering) -->
+          <div class="cp flick" data-box="1689,90,1734,148" style="--f:4px;--k:0"></div>
+          <div class="cp flick" data-box="1683,152,1727,208" style="--f:4px;--k:1"></div>
+          <div class="cp flick" data-box="1675,213,1719,270" style="--f:4px;--k:2"></div>
+          <i class="glow" style="left:1672px;top:76px;width:80px;height:80px;--c:rgba(255,140,40,.7);--t:1.1s;--hi:.7"></i>
+          <i class="glow" style="left:1665px;top:140px;width:80px;height:80px;--c:rgba(255,140,40,.7);--t:1.3s;--hi:.7;--k:1"></i>
+          <i class="glow" style="left:1657px;top:200px;width:80px;height:80px;--c:rgba(255,140,40,.7);--t:1.2s;--hi:.7;--k:2"></i>
+          <!-- chart bars breathing -->
+          <div class="cp breathe" data-box="1755,229,1793,285" style="--f:3px;--k:0"></div>
+          <div class="cp breathe" data-box="1795,210,1829,285" style="--f:3px;--k:1"></div>
+          <div class="cp breathe" data-box="1826,183,1862,285" style="--f:3px;--k:2"></div>
+          <div class="cp breathe" data-box="1861,155,1903,289" style="--f:3px;--k:3"></div>
+          <!-- title light sweep -->
+          <i class="shine" style="left:370px;top:220px;width:1372px;height:320px;--t:7s;--sw:12%;--k:1;--sa:.78"></i>
+          <i class="shine" style="left:316px;top:522px;width:1452px;height:210px;--t:7s;--sw:12%;--k:1.4;--sa:.78"></i>
+          <i class="shine" style="left:352px;top:716px;width:1276px;height:170px;--t:7s;--sw:12%;--k:1.8;--sa:.78"></i>
+          <!-- lightbulb glow -->
+          <i class="glow" style="left:1690px;top:450px;width:260px;height:260px;--c:rgba(255,226,60,.95);--t:2.2s;--hi:.9"></i>
+          <!-- editing monitor: glow + playhead -->
+          <i class="glow" style="left:1520px;top:850px;width:210px;height:150px;--c:rgba(110,190,255,.55);--mb:screen;--t:3s;--hi:.8"></i>
+          <i class="playhead" style="left:1552px;top:994px;height:42px"></i>
+          <!-- sparkles -->
+          <svg class="spk" style="left:1068px;top:150px;--k:0" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <svg class="spk" style="left:1318px;top:48px;--k:1;--sz:30px" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <svg class="spk" style="left:1896px;top:92px;--k:2" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <svg class="spk" style="left:1892px;top:520px;--k:3;--sz:44px" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <svg class="spk" style="left:1404px;top:872px;--k:4;--sz:30px" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <svg class="spk" style="left:790px;top:112px;--k:5;--sz:32px;--c:#7FE8FF" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <svg class="spk" style="left:1240px;top:470px;--k:6;--sz:30px;--c:#FFFFFF" viewBox="-20 -20 40 40"><path d="M0-18C2-5 5-2 18 0 5 2 2 5 0 18-2 5-5 2-18 0-5-2-2-5 0-18Z"/></svg>
+          <!-- drifting paint drops -->
+          <i class="dot" style="left:860px;top:150px;--sz:12px;--c:#2F6BFF;--k:0;--dx:-16px"></i>
+          <i class="dot" style="left:935px;top:70px;--sz:9px;--c:#F23C8C;--k:1;--t:9s"></i>
+          <i class="dot" style="left:1180px;top:120px;--sz:14px;--c:#FFD21F;--k:2;--t:7s;--dx:-24px"></i>
+          <i class="dot" style="left:1260px;top:640px;--sz:10px;--c:#F23C8C;--k:3;--t:8.5s"></i>
+          <i class="dot" style="left:470px;top:920px;--sz:13px;--c:#2F6BFF;--k:4;--t:9.5s;--dx:30px"></i>
+          <i class="dot" style="left:1600px;top:420px;--sz:11px;--c:#111111;--k:5;--t:8s;--dx:-30px"></i>
+          <i class="dot" style="left:420px;top:240px;--sz:9px;--c:#FFD21F;--k:6;--t:7.5s"></i>
+          <i class="dot" style="left:1450px;top:760px;--sz:12px;--c:#2F6BFF;--k:7;--t:9s;--dx:-20px"></i>
+        </div>
       </div>
-      <div class="stick"></div>
-      <div class="hinge"></div>
-      <p class="action" aria-hidden="true">ACTION!</p>
-      <div class="shd" style="bottom:-6%"></div>
     </div>
+    <div class="cv-glare" aria-hidden="true"></div>
   </div>
 </section>
 

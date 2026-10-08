@@ -39,11 +39,24 @@ document.querySelectorAll('.split,.type').forEach(el => { el.setAttribute('aria-
 
 /* ---------- episode chyron on every sheet ---------- */
 slides.forEach((s, i) => {
+  if (s.hasAttribute('data-nochyron')) return;
   const c = document.createElement('div');
   c.className = 'chyron'; c.setAttribute('aria-hidden', 'true');
   c.innerHTML = `<span class="rec"><i></i>REC</span><span>解剖爆款 · ${s.dataset.part || ''}</span><span>${s.dataset.title || ''}</span><b>EP ${pad(i + 1)} / ${pad(N)}</b>`;
   s.appendChild(c);
 });
+
+/* ---------- cover pieces: crops of the poster, positioned by data-box ---------- */
+const coverImg = document.querySelector('.cv-base');
+if (coverImg) {
+  const st = document.createElement('style');
+  st.textContent = `.cp{background-image:url("${coverImg.getAttribute('src')}")}`;
+  document.head.appendChild(st);
+  document.querySelectorAll('.cp[data-box]').forEach(p => {
+    const [x0, y0, x1, y1] = p.dataset.box.split(',').map(Number);
+    Object.assign(p.style, { left: x0 + 'px', top: y0 + 'px', width: (x1 - x0) + 'px', height: (y1 - y0) + 'px', backgroundPosition: `${-x0}px ${-y0}px` });
+  });
+}
 
 /* ---------- count-up ---------- */
 function fmt(v, dec, sep) {
