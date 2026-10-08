@@ -1,0 +1,1668 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="依已發表獸醫研究的致死比例，以 3D 動態長條圖比較人類食物對狗、貓、鳥類與兔鼠類的致命程度。">
+    <title>寵物誤食致命排行</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page: #f7f5ef;
+        --surface: #fcfcfb;
+        --surface-2: #f1efe8;
+        --ink: #172026;
+        --ink-2: #4f5963;
+        --muted: #7a817d;
+        --grid: #e1e0d9;
+        --axis: #c3c2b7;
+        --wall: #f4f2ec;
+        --floor: #efede6;
+        --border: rgba(11, 11, 11, 0.1);
+        --accent: #c6412d;
+        --s1: #2a78d6;
+        --s2: #eb6834;
+        --s3: #1baf7a;
+        --s4: #eda100;
+        --s5: #e87ba4;
+        --s6: #008300;
+        --s7: #4a3aa7;
+        --s8: #e34948;
+        --font: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --page: #0d0d0d;
+        --surface: #1a1a19;
+        --surface-2: #232321;
+        --ink: #ffffff;
+        --ink-2: #c3c2b7;
+        --muted: #898781;
+        --grid: #2c2c2a;
+        --axis: #4a4a46;
+        --wall: #20201e;
+        --floor: #242422;
+        --border: rgba(255, 255, 255, 0.1);
+        --accent: #e66767;
+        --s1: #3987e5;
+        --s2: #d95926;
+        --s3: #199e70;
+        --s4: #c98500;
+        --s5: #d55181;
+        --s6: #008300;
+        --s7: #9085e9;
+        --s8: #e66767;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: var(--page);
+      }
+
+      body {
+        color: var(--ink);
+        font-family: var(--font);
+        line-height: 1.6;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      .viz-root {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 28px 16px 40px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(26px, 4.6vw, 44px);
+        line-height: 1.15;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: clamp(20px, 2.6vw, 26px);
+        line-height: 1.25;
+      }
+
+      .dek {
+        max-width: 760px;
+        margin: 14px 0 0;
+        color: var(--ink-2);
+        font-size: clamp(15px, 1.8vw, 18px);
+      }
+
+      .context {
+        display: inline-block;
+        margin: 14px 0 0;
+        padding: 6px 12px;
+        border-left: 3px solid var(--accent);
+        background: var(--surface);
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .context strong {
+        color: var(--ink);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        align-items: center;
+        margin: 24px 0 12px;
+      }
+
+      .seg {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .seg button,
+      .text-btn {
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .seg button {
+        min-height: 36px;
+        padding: 6px 14px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--ink-2);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .seg button[aria-pressed="true"] {
+        background: var(--ink);
+        color: var(--surface);
+      }
+
+      .seg button:focus-visible,
+      .text-btn:focus-visible,
+      canvas:focus-visible {
+        outline: 2px solid var(--s1);
+        outline-offset: 2px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin: 0 0 10px;
+        padding: 0;
+        list-style: none;
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+
+      .legend li {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .sw {
+        display: inline-block;
+        flex: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      .sw.token {
+        border: 1.5px solid var(--ink-2);
+        background: transparent;
+      }
+
+      .legend .key-sep {
+        width: 1px;
+        height: 14px;
+        background: var(--border);
+      }
+
+      .stage {
+        position: relative;
+        margin: 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        touch-action: pan-y;
+        cursor: grab;
+      }
+
+      canvas.dragging {
+        cursor: grabbing;
+      }
+
+      .stage-foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 14px 10px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .text-btn {
+        padding: 2px 0;
+        border: 0;
+        background: none;
+        color: var(--ink-2);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .tooltip {
+        position: absolute;
+        z-index: 5;
+        width: min(300px, calc(100% - 16px));
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+        color: var(--ink-2);
+        font-size: 13px;
+        line-height: 1.5;
+        pointer-events: none;
+      }
+
+      .tooltip[hidden] {
+        display: none;
+      }
+
+      .tt-head {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--ink-2);
+        font-weight: 700;
+      }
+
+      .tt-key {
+        flex: none;
+        width: 14px;
+        height: 3px;
+        border-radius: 2px;
+      }
+
+      .tt-value {
+        margin: 2px 0 0;
+        color: var(--ink);
+        font-size: 26px;
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      .tt-value.none {
+        font-size: 17px;
+      }
+
+      .tt-count {
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .tt-row {
+        margin-top: 6px;
+      }
+
+      .tt-label {
+        color: var(--muted);
+      }
+
+      .note {
+        margin: 14px 0 0;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .note strong {
+        color: var(--ink);
+      }
+
+      section {
+        margin-top: 40px;
+      }
+
+      .section-sub {
+        margin: -4px 0 14px;
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+      }
+
+      table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--grid);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      td.num {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      td.pct {
+        color: var(--ink);
+        font-weight: 900;
+      }
+
+      .combo {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+      }
+
+      .card h3 {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+
+      .card h3 .sw {
+        width: 14px;
+        height: 14px;
+      }
+
+      .card .species {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .card h4 {
+        margin: 12px 0 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .card ol,
+      .card ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .card li {
+        padding: 6px 0;
+        border-top: 1px solid var(--grid);
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+
+      .card li:first-child {
+        border-top: 0;
+      }
+
+      .card li b {
+        color: var(--ink);
+      }
+
+      .chip {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        color: var(--ink-2);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .rate {
+        float: right;
+        margin-left: 8px;
+        color: var(--ink);
+        font-weight: 900;
+      }
+
+      details {
+        margin-top: 32px;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      summary {
+        color: var(--ink);
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      details ol {
+        padding-left: 20px;
+      }
+
+      details li {
+        margin: 4px 0;
+      }
+
+      details a {
+        color: var(--s1);
+        overflow-wrap: anywhere;
+      }
+
+      .disclaimer {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 599px) {
+        .tooltip {
+          position: static;
+          width: auto;
+          margin: 0 10px 10px;
+          box-shadow: none;
+          background: var(--surface-2);
+        }
+
+        .legend .key-sep {
+          display: none;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .viz-root {
+          padding-top: 20px;
+        }
+
+        .seg button {
+          padding: 6px 10px;
+          font-size: 13px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="viz-root">
+      <header>
+        <p class="eyebrow">互動數據｜寵物誤食</p>
+        <h1>哪些人類食物，餵給小動物最致命？</h1>
+        <p class="dek">
+          我們整理已發表的獸醫研究，把「吃下後死亡或安樂死的比例」做成 3D 長條圖：柱子越高，在該研究中越致命。
+          找不到可比較死亡率的組合，<strong>不硬算百分比</strong>，只在地面以方框標示「已知有毒」。
+        </p>
+        <p class="context">ASPCA 動物毒物控制中心 2023 年的案件中，<strong>食物與飲料占 16.2%</strong>，是第二大中毒來源。</p>
+      </header>
+
+      <div class="controls">
+        <div class="seg" role="group" aria-label="版面">
+          <button type="button" data-mode="rank" aria-pressed="true">致死比例排行</button>
+          <button type="button" data-mode="matrix" aria-pressed="false">動物 × 食物矩陣</button>
+        </div>
+        <div class="seg" role="group" aria-label="配色">
+          <button type="button" data-color="animal" aria-pressed="true">依動物配色</button>
+          <button type="button" data-color="food" aria-pressed="false">依食物配色</button>
+        </div>
+      </div>
+
+      <ul class="legend" id="legend" aria-label="圖例"></ul>
+
+      <figure class="stage" id="stage">
+        <canvas id="scene" tabindex="0" role="img" aria-describedby="rank-table-title"></canvas>
+        <div class="tooltip" id="tip" role="status" aria-live="polite" hidden></div>
+        <figcaption class="stage-foot">
+          <span id="hint">拖曳可旋轉視角・點選柱體看研究細節・方向鍵可逐一瀏覽</span>
+          <button type="button" class="text-btn" id="reset">重設視角</button>
+        </figcaption>
+      </figure>
+
+      <p class="note">
+        <strong>讀圖提醒：</strong>各比例來自不同研究、不同計算口徑——鸚鵡數據是實驗灌食；木糖醇與葡萄只計入已出現肝、腎衰竭的重症病例；巧克力、夏威夷豆則涵蓋一般求診或通報個案。
+        它反映的是「一旦中毒有多兇險」，不是「吃一口就會死的機率」。任何誤食都請立刻聯絡獸醫。
+      </p>
+
+      <section aria-labelledby="rank-table-title">
+        <h2 id="rank-table-title">致死比例排行：有研究數據的 7 組</h2>
+        <p class="section-sub">致死比例＝研究中死亡（含安樂死）數 ÷ 該研究納入的病例數。</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">排名</th>
+                <th scope="col">動物 × 食物</th>
+                <th scope="col">致死比例</th>
+                <th scope="col">死亡／病例</th>
+                <th scope="col">計算口徑</th>
+                <th scope="col">研究</th>
+              </tr>
+            </thead>
+            <tbody id="rank-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="cards-title">
+        <h2 id="cards-title">各種小動物要嚴防的食物</h2>
+        <p class="section-sub">有死亡率數據的依比例排序；其餘為獸醫文獻確認有毒、但缺乏可比死亡率的食物，不做排名。</p>
+        <div class="cards" id="cards"></div>
+      </section>
+
+      <details>
+        <summary>資料來源與方法</summary>
+        <p>
+          只採用有明確分母（病例數）與結局（存活、死亡、安樂死）的研究計算比例。樣本過小（例如貓吃洋蔥僅 4 例通報）或只有個案報告、毒性劑量資料者，不計算比例，只標示為「已知有毒」。
+          空白格代表該組合未列為主要風險或缺乏資料，不代表安全。資料整理至 2026 年 10 月。
+        </p>
+        <ol id="sources"></ol>
+      </details>
+
+      <p class="disclaimer">本圖表僅供衛教參考，不能取代獸醫診斷。若寵物誤食，請立即聯絡獸醫或動物急診。</p>
+    </main>
+
+    <noscript>
+      <p style="max-width:1080px;margin:0 auto;padding:0 16px 24px;">此互動圖表需要啟用 JavaScript。</p>
+    </noscript>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const root = document.documentElement;
+        try {
+          const theme = new URLSearchParams(location.search).get("theme");
+          if (theme === "dark" || (theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+            root.dataset.theme = "dark";
+          }
+        } catch (err) {
+          /* 嵌入環境不支援時維持淺色 */
+        }
+
+        const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // ---------- 資料 ----------
+        const SOURCES = {
+          hargis: {
+            short: "Hargis 等 1989",
+            full: "Hargis AM 等（1989）. Avocado (Persea americana) intoxication in caged birds. JAVMA 194(1):64–66.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/2914792/"
+          },
+          dunayer: {
+            short: "Dunayer & Gwaltney-Brant 2006",
+            full: "Dunayer EK、Gwaltney-Brant SM（2006）. Acute hepatic failure and coagulopathy associated with xylitol ingestion in eight dogs. JAVMA 229(7):1113–1117.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/?term=Acute+hepatic+failure+and+coagulopathy+associated+with+xylitol+ingestion+in+eight+dogs"
+          },
+          duhadway: {
+            short: "DuHadway 等 2015",
+            full: "DuHadway MR 等（2015）. Retrospective evaluation of xylitol ingestion in dogs: 192 cases (2007–2012). J Vet Emerg Crit Care 25(5):646–654.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/?term=Retrospective+evaluation+of+xylitol+ingestion+in+dogs+192+cases"
+          },
+          eubig: {
+            short: "Eubig 等 2005",
+            full: "Eubig PA 等（2005）. Acute renal failure in dogs after the ingestion of grapes or raisins: a retrospective evaluation of 43 dogs (1992–2002). J Vet Intern Med 19:663–674.",
+            url: "https://doi.org/10.1111/j.1939-1676.2005.tb02744.x"
+          },
+          schweighauser: {
+            short: "Schweighauser 等 2020",
+            full: "Schweighauser A 等（2020）. Toxicosis with grapes or raisins causing acute kidney injury and neurological signs in dogs. J Vet Intern Med.",
+            url: "https://boris.unibe.ch/147668"
+          },
+          cortinovis: {
+            short: "VPIS 資料，Cortinovis & Caloni 2016",
+            full: "Cortinovis C、Caloni F（2016）. Household Food Items Toxic to Dogs and Cats. Frontiers in Veterinary Science 3:26（彙整英國 VPIS 1994–2008 通報資料）.",
+            url: "https://doi.org/10.3389/fvets.2016.00026"
+          },
+          weingart: {
+            short: "Weingart 等 2021",
+            full: "Weingart C、Hartmann A、Kohn B（2021）. Chocolate ingestion in dogs: 156 events (2015–2019). J Small Anim Pract.",
+            url: "https://refubium.fu-berlin.de/handle/fub188/30469"
+          },
+          hansen: {
+            short: "Hansen 等 2000",
+            full: "Hansen SR 等（2000）. Weakness, tremors, and depression associated with macadamia nuts in dogs. Vet Hum Toxicol 42(1):18–21.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/10670081/"
+          },
+          msdAvocado: {
+            short: "MSD 獸醫手冊",
+            full: "MSD Veterinary Manual. Avocado Toxicosis in Animals.",
+            url: "https://www.msdvetmanual.com/toxicology/food-hazards/avocado-toxicosis-in-animals"
+          },
+          msdFood: {
+            short: "MSD 獸醫手冊",
+            full: "MSD Veterinary Manual. Food Hazards（寵物食物危害總覽）.",
+            url: "https://www.msdvetmanual.com/special-pet-topics/poisoning/food-hazards"
+          },
+          wismer: {
+            short: "Wismer, Today's Veterinary Practice",
+            full: "Wismer T. Practical Toxicology: Ethanol Toxicosis Review. Today's Veterinary Practice.",
+            url: "https://todaysveterinarypractice.com/toxicology/practical-toxicologyethanol-toxicosis-review/"
+          },
+          vcaCat: {
+            short: "VCA 動物醫院",
+            full: "VCA Animal Hospitals. Chocolate Poisoning in Cats.",
+            url: "https://vcahospitals.com/know-your-pet/chocolate-poisoning-in-cats"
+          },
+          agVic: {
+            short: "澳洲維州農業部",
+            full: "Agriculture Victoria. Human foods to avoid for cats.",
+            url: "https://agriculture.vic.gov.au/livestock-and-animals/animal-welfare-victoria/cats/health/human-foods-to-avoid-for-cats"
+          },
+          wpt: {
+            short: "World Parrot Trust",
+            full: "World Parrot Trust. Dangerous foods for parrots.",
+            url: "https://parrots.org/wp-content/uploads/2025/02/dangerous_foods_for_parrots.pdf"
+          },
+          illinois: {
+            short: "伊利諾大學獸醫學院",
+            full: "University of Illinois College of Veterinary Medicine. Bad for Birds: Prevent Poisoning in Avian Pets.",
+            url: "https://vetmed.illinois.edu/pet-health-columns/bad-for-birds-prevent-poisoning-in-avian-pets/"
+          },
+          ontario: {
+            short: "Ontario SPCA",
+            full: "Ontario SPCA and Humane Society. 小型寵物（pocket pets）應避免的食物.",
+            url: "https://ontariospca.ca/?p=153214"
+          },
+          aspca2023: {
+            short: "ASPCA 2023",
+            full: "ASPCA. The Official Top 10 Pet Toxins of 2023.",
+            url: "https://www.aspca.org/news/official-top-10-pet-toxins-2023"
+          }
+        };
+
+        const FOODS = [
+          { id: "avocado", name: "酪梨", short: "酪梨" },
+          { id: "xylitol", name: "木糖醇", short: "木糖醇" },
+          { id: "grape", name: "葡萄／葡萄乾", short: "葡萄" },
+          { id: "allium", name: "洋蔥／大蒜", short: "蔥蒜" },
+          { id: "chocolate", name: "巧克力", short: "巧克力" },
+          { id: "macadamia", name: "夏威夷豆", short: "夏威夷豆" },
+          { id: "alcohol", name: "酒精", short: "酒精" },
+          { id: "caffeine", name: "咖啡因", short: "咖啡因" }
+        ];
+
+        const ANIMALS = [
+          { id: "dog", name: "狗", short: "狗", species: "犬" },
+          { id: "cat", name: "貓", short: "貓", species: "貓" },
+          { id: "bird", name: "鳥類", short: "鳥類", species: "鸚鵡、金絲雀等籠養鳥" },
+          { id: "pocket", name: "兔・鼠類", short: "兔鼠", species: "兔、天竺鼠、倉鼠、大小鼠" }
+        ];
+
+        // 矩陣中由後往前的排列：數據柱較高的放後排，避免遮擋
+        const ROW_Z = { dog: 0, bird: 1, cat: 2, pocket: 3 };
+
+        const RATED = [
+          {
+            animal: "bird", food: "avocado", sub: "虎皮鸚鵡", split: -1,
+            ratio: 75, label: "75%", frac: "6／8", count: "8 隻中 6 隻死亡",
+            cohort: "實驗研究：以餵食管灌食酪梨泥", chip: "實驗灌食",
+            detail: "死亡發生在首次餵食後 24–47 小時，劑量越高死亡越多。屬實驗灌食，不等於自然誤食的機率。",
+            src: ["hargis"]
+          },
+          {
+            animal: "bird", food: "avocado", sub: "金絲雀", split: 1,
+            ratio: 12.5, label: "12.5%", frac: "1／8", count: "8 隻中 1 隻死亡",
+            cohort: "同一實驗：以餵食管灌食酪梨泥", chip: "實驗灌食",
+            detail: "同一實驗中金絲雀遠比虎皮鸚鵡耐受，鳥種之間敏感度差異很大。",
+            src: ["hargis"]
+          },
+          {
+            animal: "dog", food: "xylitol",
+            ratio: 62.5, label: "62.5%", frac: "5／8", count: "8 隻中 5 隻死亡或安樂死（2 死亡、3 安樂死）",
+            cohort: "已發生急性肝衰竭、凝血異常的病例（ASPCA 毒物中心）", chip: "肝衰竭病例",
+            detail: "對照：另一份多院回溯研究的 192 隻疑似誤食犬，及早處理後出院前無一死亡——拖到肝衰竭才是致命關鍵。",
+            src: ["dunayer", "duhadway"]
+          },
+          {
+            animal: "dog", food: "grape",
+            ratio: 46.5, label: "47%", frac: "20／43", count: "43 隻中 20 隻未存活（存活率 53%）",
+            cohort: "已出現腎損傷（氮血症）的病例，ASPCA 毒物中心 1992–2002", chip: "腎損傷病例",
+            detail: "瑞士研究中 15 隻嚴重急性腎損傷犬同樣有 7 隻未存活。毒性機制與安全劑量至今不明。",
+            src: ["eubig", "schweighauser"]
+          },
+          {
+            animal: "dog", food: "allium",
+            ratio: 5.8, label: "≥5.8%", frac: "4／69", count: "69 例通報中至少 4 隻（2 死亡、2 安樂死）",
+            cohort: "英國獸醫毒物資訊服務（VPIS）1994–2008 通報；結局追蹤不完整，視為下限", chip: "通報病例・下限",
+            detail: "洋蔥、大蒜會氧化紅血球造成溶血性貧血，常在數天後才最嚴重；煮熟、乾燥或粉末都不會去除毒性。",
+            src: ["cortinovis"]
+          },
+          {
+            animal: "dog", food: "chocolate",
+            ratio: 2.3, label: "2.3%", frac: "1／44", count: "44 隻有症狀犬中 1 隻死亡",
+            cohort: "出現中毒症狀的病例（德國單一醫院 2015–2019）", chip: "有症狀病例",
+            detail: "若以全部 156 起誤食計算為 0.6%（112 隻無症狀）。巧克力是最常見的食物中毒，但及早處理預後良好；黑巧克力風險最高。",
+            src: ["weingart"]
+          },
+          {
+            animal: "dog", food: "macadamia",
+            ratio: 0, label: "0%", frac: "0／29", count: "29 例全數康復",
+            cohort: "ASPCA 毒物中心 5 年間通報病例", chip: "通報病例",
+            detail: "會虛弱、後肢無力、嘔吐、顫抖、發燒，多數 24 小時內緩解，全部在 1–2 天內恢復。",
+            src: ["hansen"]
+          }
+        ];
+
+        const TOKENS = [
+          { animal: "dog", food: "alcohol", detail: "犬口服純酒精致死量約 5.5–7.9 g/kg；未烤的生麵糰會在胃中發酵產生酒精與氣體。多為個案報告，缺乏病例群死亡率。", src: ["wismer"] },
+          { animal: "dog", food: "caffeine", detail: "咖啡因與巧克力中的可可鹼同屬甲基黃嘌呤，會造成心跳過快、心律不整、顫抖與抽搐。", src: ["msdFood"] },
+          { animal: "cat", food: "allium", detail: "貓比狗敏感：約 5 g/kg 洋蔥即可造成具臨床意義的血液變化（狗約 15–30 g/kg）。VPIS 僅 4 例貓通報（1 例死亡），樣本太少，不計算比例。", src: ["cortinovis"] },
+          { animal: "cat", food: "chocolate", detail: "可可鹼對貓同樣有毒，可致心律不整、顫抖、抽搐；貓較少主動吃甜食，病例資料稀少。", src: ["vcaCat"] },
+          { animal: "cat", food: "alcohol", detail: "貓的酒精中毒劑量尚未確立，會造成嗜睡、運動失調與呼吸抑制。", src: ["cortinovis", "wismer"] },
+          { animal: "cat", food: "caffeine", detail: "足夠劑量的咖啡因可致命且沒有解毒劑；症狀包括躁動、呼吸急促、心律不整、顫抖。", src: ["agVic"] },
+          { animal: "bird", food: "chocolate", detail: "可可鹼與咖啡因會讓鳥類過度興奮、心跳加快、抽搐；曾有野生啄羊鸚鵡吃下約 20 公克黑巧克力後死亡。", src: ["wpt"] },
+          { animal: "bird", food: "caffeine", detail: "咖啡、茶、汽水中的咖啡因可致心律不整、過動，甚至心跳停止。", src: ["wpt"] },
+          { animal: "bird", food: "alcohol", detail: "鳥體型小，少量酒精就會抑制呼吸與器官功能，可能致死。", src: ["wpt"] },
+          { animal: "bird", food: "allium", detail: "洋蔥、大蒜會破壞紅血球，造成溶血性貧血；嚴重時需要輸血與氧氣治療。", src: ["illinois"] },
+          { animal: "pocket", food: "avocado", detail: "MSD 獸醫手冊將兔、天竺鼠、大鼠、小鼠列為對酪梨毒素 persin 敏感的物種；大量攝食可在 24–48 小時內造成心肌損傷與死亡。", src: ["msdAvocado"] },
+          { animal: "pocket", food: "chocolate", detail: "可可鹼與咖啡因對小型寵物有毒，會影響心臟與神經系統；兔與天竺鼠無法嘔吐，毒物停留更久。", src: ["ontario"] },
+          { animal: "pocket", food: "allium", detail: "會破壞紅血球造成貧血，天竺鼠約 3–5 天後才出現症狀；兔的研究證據較不一致，仍建議避免。", src: ["ontario"] }
+        ];
+
+        const foodIndex = (id) => FOODS.findIndex((f) => f.id === id);
+        const animalIndex = (id) => ANIMALS.findIndex((a) => a.id === id);
+
+        const items = [
+          ...RATED.map((d) => ({ ...d, rated: true })),
+          ...TOKENS.map((d) => ({ ...d, rated: false }))
+        ];
+        items.forEach((it, i) => {
+          it.uid = i;
+          it.foodObj = FOODS[foodIndex(it.food)];
+          it.animalObj = ANIMALS[animalIndex(it.animal)];
+          it.title = `${it.sub || it.animalObj.name} × ${it.foodObj.name}`;
+        });
+        const rankOrder = items.filter((it) => it.rated).sort((a, b) => b.ratio - a.ratio);
+        rankOrder.forEach((it, i) => {
+          it.rank = i;
+        });
+        const matrixOrder = items
+          .slice()
+          .sort((a, b) => foodIndex(a.food) - foodIndex(b.food) || ROW_Z[a.animal] - ROW_Z[b.animal] || (a.split || 0) - (b.split || 0));
+
+        // ---------- 3D 場景 ----------
+        const HMAX = 3.6;
+        const FLOOR = { x0: -0.5, x1: 7.5, z0: -0.5, z1: 3.5 };
+        const PITCH0 = 0.44;
+        const yaw0 = () => (window.innerWidth < 600 ? 0.26 : 0.42);
+
+        const stage = document.getElementById("stage");
+        const canvas = document.getElementById("scene");
+        const ctx = canvas.getContext("2d");
+        const tip = document.getElementById("tip");
+
+        const state = {
+          mode: "rank",
+          colorMode: "animal",
+          yaw: yaw0(),
+          pitch: PITCH0,
+          baseYaw: yaw0(),
+          sway: !reduceMotion,
+          swayT0: 0,
+          m: 0,
+          mAnim: null,
+          colorAnim: null,
+          hover: null,
+          selected: null,
+          focused: null,
+          started: false,
+          visible: true
+        };
+
+        let W = 0;
+        let H = 0;
+        let DPR = 1;
+        let tokens = null;
+        let rafId = 0;
+        let drawn = [];
+        let camCache = null;
+
+        const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+        const lerp = (a, b, t) => a + (b - a) * t;
+        const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+        const hexToRgb = (hex) => {
+          const h = hex.trim().replace("#", "");
+          const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+          return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+        };
+        const mixRgb = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+        const shade = (c, k) => (k >= 0 ? mixRgb(c, [255, 255, 255], k) : mixRgb(c, [0, 0, 0], -k));
+        const rgb = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${a})`;
+
+        function readTokens() {
+          const cs = getComputedStyle(root);
+          const v = (name) => cs.getPropertyValue(name).trim();
+          tokens = {
+            slots: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => hexToRgb(v(`--s${i}`))),
+            surface: hexToRgb(v("--surface")),
+            ink: v("--ink"),
+            ink2: v("--ink-2"),
+            muted: v("--muted"),
+            grid: v("--grid"),
+            axis: v("--axis"),
+            wall: v("--wall"),
+            floor: v("--floor"),
+            font: v("--font")
+          };
+        }
+
+        function slotColor(it, mode) {
+          const idx = mode === "food" ? foodIndex(it.food) : animalIndex(it.animal);
+          return tokens.slots[idx];
+        }
+
+        function target(it, mode) {
+          if (mode === "matrix" || !it.rated) {
+            let x = foodIndex(it.food);
+            let w = 0.56;
+            if (it.split) {
+              w = 0.26;
+              x += it.split * 0.145;
+            }
+            return {
+              x,
+              z: ROW_Z[it.animal],
+              w,
+              d: 0.56,
+              h: it.rated ? (it.ratio / 100) * HMAX : 0,
+              a: mode === "matrix" ? 1 : 0
+            };
+          }
+          const n = rankOrder.length;
+          return { x: 3.5 + (it.rank - (n - 1) / 2) * 1.1, z: 1.5, w: 0.6, d: 0.6, h: (it.ratio / 100) * HMAX, a: 1 };
+        }
+
+        function initGeometry() {
+          items.forEach((it) => {
+            const t = target(it, state.mode);
+            it.cur = { ...t, h: 0, a: it.rated ? t.a : 0 };
+            it.from = { ...it.cur };
+            it.to = { ...it.cur };
+            it.t0 = 0;
+            it.delay = 0;
+            it.dur = 0;
+            it.col = slotColor(it, state.colorMode);
+            it.colFrom = it.col;
+            it.colTo = it.col;
+          });
+        }
+
+        function startTransition(intro) {
+          const now = performance.now();
+          items.forEach((it) => {
+            it.from = { ...it.cur };
+            it.to = target(it, state.mode);
+            it.t0 = now;
+            if (reduceMotion) {
+              it.delay = 0;
+              it.dur = 0;
+              return;
+            }
+            const order = state.mode === "rank" && it.rated ? it.rank : foodIndex(it.food);
+            it.delay = intro ? (it.rated ? order * 110 : 500 + order * 50) : it.rated ? order * 40 : foodIndex(it.food) * 25;
+            it.dur = intro ? 1200 : 850;
+          });
+          state.mAnim = { from: state.m, to: state.mode === "matrix" ? 1 : 0, t0: now, dur: reduceMotion ? 0 : 700 };
+          requestRender();
+        }
+
+        function startColorTransition() {
+          const now = performance.now();
+          items.forEach((it) => {
+            it.colFrom = it.col;
+            it.colTo = slotColor(it, state.colorMode);
+          });
+          state.colorAnim = { t0: now, dur: reduceMotion ? 0 : 450 };
+          requestRender();
+        }
+
+        function update(now) {
+          let busy = false;
+          items.forEach((it) => {
+            const p = it.dur ? clamp((now - it.t0 - it.delay) / it.dur, 0, 1) : 1;
+            const e = ease(p);
+            for (const k of ["x", "z", "w", "d", "h", "a"]) it.cur[k] = lerp(it.from[k], it.to[k], e);
+            if (p < 1) busy = true;
+          });
+          if (state.mAnim) {
+            const a = state.mAnim;
+            const p = a.dur ? clamp((now - a.t0) / a.dur, 0, 1) : 1;
+            state.m = lerp(a.from, a.to, ease(p));
+            if (p < 1) busy = true;
+            else state.mAnim = null;
+          }
+          if (state.colorAnim) {
+            const a = state.colorAnim;
+            const p = a.dur ? clamp((now - a.t0) / a.dur, 0, 1) : 1;
+            items.forEach((it) => {
+              it.col = mixRgb(it.colFrom, it.colTo, ease(p));
+            });
+            if (p < 1) busy = true;
+            else state.colorAnim = null;
+          }
+          if (state.sway && state.visible) {
+            state.yaw = state.baseYaw + 0.16 * Math.sin(((now - state.swayT0) / 1000) * 0.45);
+            busy = true;
+          }
+          return busy;
+        }
+
+        const narrow = () => W < 600;
+        const fontSize = () => (W < 480 ? 11 : W < 760 ? 12 : 13);
+
+        function camera() {
+          const cp = Math.cos(state.pitch);
+          const tgt = [3.5, HMAX * 0.3, 1.6];
+          const D = 15;
+          const eye = [
+            tgt[0] + D * Math.sin(state.yaw) * cp,
+            tgt[1] + D * Math.sin(state.pitch),
+            tgt[2] + D * Math.cos(state.yaw) * cp
+          ];
+          let f = [tgt[0] - eye[0], tgt[1] - eye[1], tgt[2] - eye[2]];
+          const fl = Math.hypot(f[0], f[1], f[2]);
+          f = [f[0] / fl, f[1] / fl, f[2] / fl];
+          let r = [-f[2], 0, f[0]];
+          const rl = Math.hypot(r[0], r[2]);
+          r = [r[0] / rl, 0, r[2] / rl];
+          const u = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
+          const norm = (p) => {
+            const d0 = p[0] - eye[0];
+            const d1 = p[1] - eye[1];
+            const d2 = p[2] - eye[2];
+            const zc = d0 * f[0] + d1 * f[1] + d2 * f[2];
+            return [(d0 * r[0] + d1 * r[1] + d2 * r[2]) / zc, (d0 * u[0] + d1 * u[1] + d2 * u[2]) / zc];
+          };
+          // 只用實際繪出的幾何（地板、背牆、側牆）計算外框，標籤空間改用像素留白
+          const sideX = eye[0] > 3.5 ? FLOOR.x0 : FLOOR.x1;
+          const pts = [
+            [FLOOR.x0, 0, FLOOR.z0], [FLOOR.x1, 0, FLOOR.z0], [FLOOR.x1, 0, FLOOR.z1], [FLOOR.x0, 0, FLOOR.z1],
+            [FLOOR.x0, HMAX, FLOOR.z0], [FLOOR.x1, HMAX, FLOOR.z0], [sideX, HMAX, FLOOR.z1]
+          ];
+          let minX = Infinity;
+          let maxX = -Infinity;
+          let minY = Infinity;
+          let maxY = -Infinity;
+          pts.forEach((p) => {
+            const q = norm(p);
+            minX = Math.min(minX, q[0]);
+            maxX = Math.max(maxX, q[0]);
+            minY = Math.min(minY, q[1]);
+            maxY = Math.max(maxY, q[1]);
+          });
+          const fs = fontSize();
+          const tickPad = fs * 3.6;
+          const labelPad = 10 + state.m * fs * 3.6;
+          const padL = sideX === FLOOR.x0 ? tickPad : labelPad;
+          const padR = sideX === FLOOR.x0 ? labelPad : tickPad;
+          const padT = fs * 2.6;
+          const padB = 8 + state.m * (narrow() ? fs * 3.2 : fs * 2);
+          const s = Math.min((W - padL - padR) / (maxX - minX), (H - padT - padB) / (maxY - minY));
+          const ox = padL + (W - padL - padR) / 2 - (s * (minX + maxX)) / 2;
+          const oy = padT + (H - padT - padB) / 2 + (s * (minY + maxY)) / 2;
+          const P = (p) => {
+            const q = norm(p);
+            return [ox + s * q[0], oy - s * q[1]];
+          };
+          return { eye, P, sideX };
+        }
+
+        function path(pts) {
+          ctx.beginPath();
+          ctx.moveTo(pts[0][0], pts[0][1]);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+          ctx.closePath();
+        }
+
+        function line(P, a, b, color, width) {
+          const p = P(a);
+          const q = P(b);
+          ctx.beginPath();
+          ctx.moveTo(p[0], p[1]);
+          ctx.lineTo(q[0], q[1]);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = width;
+          ctx.stroke();
+        }
+
+        function activeItem() {
+          return state.hover || state.selected || state.focused;
+        }
+
+        function draw() {
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+          const cam = camera();
+          camCache = cam;
+          const { P, eye, sideX } = cam;
+          const fs = fontSize();
+          const stagger = narrow();
+          const font = (weight, size) => `${weight} ${size}px ${tokens.font}`;
+          const m = state.m;
+          const labelX = sideX === FLOOR.x0 ? FLOOR.x1 + 0.25 : FLOOR.x0 - 0.25;
+
+          // 地板
+          path([P([FLOOR.x0, 0, FLOOR.z0]), P([FLOOR.x1, 0, FLOOR.z0]), P([FLOOR.x1, 0, FLOOR.z1]), P([FLOOR.x0, 0, FLOOR.z1])]);
+          ctx.fillStyle = tokens.floor;
+          ctx.fill();
+          if (m > 0.01) {
+            ctx.globalAlpha = m;
+            for (let i = 1; i < 8; i++) line(P, [FLOOR.x0 + i, 0, FLOOR.z0], [FLOOR.x0 + i, 0, FLOOR.z1], tokens.grid, 1);
+            for (let j = 1; j < 4; j++) line(P, [FLOOR.x0, 0, FLOOR.z0 + j], [FLOOR.x1, 0, FLOOR.z0 + j], tokens.grid, 1);
+            ctx.globalAlpha = 1;
+          }
+
+          // 背牆與側牆
+          path([P([FLOOR.x0, 0, FLOOR.z0]), P([FLOOR.x1, 0, FLOOR.z0]), P([FLOOR.x1, HMAX, FLOOR.z0]), P([FLOOR.x0, HMAX, FLOOR.z0])]);
+          ctx.fillStyle = tokens.wall;
+          ctx.fill();
+          path([P([sideX, 0, FLOOR.z0]), P([sideX, 0, FLOOR.z1]), P([sideX, HMAX, FLOOR.z1]), P([sideX, HMAX, FLOOR.z0])]);
+          ctx.fill();
+          const ticks = [0.25, 0.5, 0.75, 1];
+          ticks.forEach((t) => {
+            const y = t * HMAX;
+            line(P, [FLOOR.x0, y, FLOOR.z0], [FLOOR.x1, y, FLOOR.z0], tokens.grid, 1);
+            line(P, [sideX, y, FLOOR.z0], [sideX, y, FLOOR.z1], tokens.grid, 1);
+          });
+          line(P, [FLOOR.x0, 0, FLOOR.z0], [FLOOR.x1, 0, FLOOR.z0], tokens.axis, 1);
+          line(P, [sideX, 0, FLOOR.z0], [sideX, 0, FLOOR.z1], tokens.axis, 1);
+          line(P, [sideX, 0, FLOOR.z1], [sideX, HMAX, FLOOR.z1], tokens.axis, 1);
+          line(P, [sideX, 0, FLOOR.z0], [sideX, HMAX, FLOOR.z0], tokens.axis, 1);
+
+          // 刻度標籤（在側牆最前緣，外側）
+          ctx.font = font(400, fs);
+          ctx.fillStyle = tokens.muted;
+          ctx.textBaseline = "middle";
+          const leftSide = sideX === FLOOR.x0;
+          ctx.textAlign = leftSide ? "right" : "left";
+          [0, ...ticks].forEach((t) => {
+            const p = P([sideX, t * HMAX, FLOOR.z1]);
+            ctx.fillText(`${Math.round(t * 100)}%`, p[0] + (leftSide ? -6 : 6), p[1]);
+          });
+          const axisTop = P([sideX, HMAX, FLOOR.z1]);
+          ctx.font = font(700, fs);
+          ctx.fillStyle = tokens.ink2;
+          ctx.textBaseline = "bottom";
+          const titleW = ctx.measureText("致死比例").width;
+          const titleX = leftSide ? Math.max(axisTop[0] - 6, titleW + 4) : Math.min(axisTop[0] + 6, W - titleW - 4);
+          ctx.fillText("致死比例", titleX, axisTop[1] - 10);
+
+          // 項目
+          const act = activeItem();
+          const visibleItems = items.filter((it) => it.cur.a > 0.02);
+          const flat = visibleItems.filter((it) => !it.rated || it.cur.h < 0.02);
+          const bars = visibleItems
+            .filter((it) => it.rated && it.cur.h >= 0.02)
+            .map((it) => ({ it, dist: (it.cur.x - eye[0]) ** 2 + (it.cur.z - eye[2]) ** 2 }))
+            .sort((a, b) => b.dist - a.dist)
+            .map((o) => o.it);
+          drawn = [];
+
+          const colorFor = (it) => (act && act !== it ? mixRgb(it.col, tokens.surface, 0.62) : it.col);
+
+          flat.forEach((it) => {
+            const g = it.cur;
+            const x0 = g.x - g.w / 2;
+            const x1 = g.x + g.w / 2;
+            const z0 = g.z - g.d / 2;
+            const z1 = g.z + g.d / 2;
+            const pts = [P([x0, 0.004, z0]), P([x1, 0.004, z0]), P([x1, 0.004, z1]), P([x0, 0.004, z1])];
+            const col = colorFor(it);
+            ctx.globalAlpha = g.a;
+            path(pts);
+            if (it.rated) {
+              ctx.fillStyle = rgb(col);
+              ctx.fill();
+            } else {
+              ctx.fillStyle = rgb(col, 0.2);
+              ctx.fill();
+              ctx.strokeStyle = rgb(col);
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+            }
+            if (act === it) {
+              ctx.strokeStyle = tokens.ink;
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+            it.anchor = P([g.x, 0, g.z]);
+            drawn.push({ it, polys: [pts] });
+          });
+
+          bars.forEach((it) => {
+            const g = it.cur;
+            const x0 = g.x - g.w / 2;
+            const x1 = g.x + g.w / 2;
+            const z0 = g.z - g.d / 2;
+            const z1 = g.z + g.d / 2;
+            const h = g.h;
+            const faces = [];
+            if (eye[2] > z1) faces.push({ pts: [[x0, 0, z1], [x1, 0, z1], [x1, h, z1], [x0, h, z1]], k: 0 });
+            if (eye[2] < z0) faces.push({ pts: [[x1, 0, z0], [x0, 0, z0], [x0, h, z0], [x1, h, z0]], k: -0.08 });
+            if (eye[0] > x1) faces.push({ pts: [[x1, 0, z1], [x1, 0, z0], [x1, h, z0], [x1, h, z1]], k: -0.22 });
+            if (eye[0] < x0) faces.push({ pts: [[x0, 0, z0], [x0, 0, z1], [x0, h, z1], [x0, h, z0]], k: -0.22 });
+            faces.push({ pts: [[x0, h, z0], [x1, h, z0], [x1, h, z1], [x0, h, z1]], k: 0.24 });
+            const col = colorFor(it);
+            const polys = [];
+            ctx.globalAlpha = g.a;
+            faces.forEach((f) => {
+              const sp = f.pts.map(P);
+              path(sp);
+              const c = rgb(shade(col, f.k));
+              ctx.fillStyle = c;
+              ctx.fill();
+              ctx.strokeStyle = c;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+              polys.push(sp);
+            });
+            if (act === it) {
+              ctx.strokeStyle = tokens.ink;
+              ctx.lineWidth = 1.6;
+              polys.forEach((sp) => {
+                path(sp);
+                ctx.stroke();
+              });
+            }
+            ctx.globalAlpha = 1;
+            it.anchor = P([g.x, h, g.z]);
+            drawn.push({ it, polys });
+          });
+
+          // 柱頂數值標籤
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          visibleItems
+            .filter((it) => it.rated)
+            .forEach((it) => {
+              const g = it.cur;
+              const p = P([g.x, g.h, g.z]);
+              ctx.globalAlpha = g.a * (act && act !== it ? 0.45 : 1);
+              ctx.font = font(800, fs + 1);
+              ctx.fillStyle = tokens.ink;
+              ctx.fillText(it.label, p[0], p[1] - 5);
+              ctx.globalAlpha = 1;
+            });
+
+          // 排行模式：柱前標籤
+          if (m < 0.99) {
+            ctx.textBaseline = "top";
+            rankOrder.forEach((it, i) => {
+              const g = it.cur;
+              const p = P([g.x, 0, g.z + g.d / 2 + 0.3]);
+              if (stagger && i % 2) p[1] += fs * 2 + 8;
+              ctx.globalAlpha = (1 - m) * (act && act !== it ? 0.45 : 1);
+              ctx.font = font(700, fs);
+              ctx.fillStyle = tokens.ink;
+              ctx.fillText(it.foodObj.short, p[0], p[1]);
+              ctx.font = font(400, fs - 1);
+              ctx.fillStyle = tokens.ink2;
+              ctx.fillText(it.sub || it.animalObj.short, p[0], p[1] + fs + 3);
+            });
+            ctx.globalAlpha = 1;
+          }
+
+          // 矩陣模式：食物與動物軸標籤
+          if (m > 0.01) {
+            ctx.globalAlpha = m;
+            ctx.textBaseline = "top";
+            ctx.textAlign = "center";
+            FOODS.forEach((f, i) => {
+              const p = P([i, 0, FLOOR.z1 + 0.28]);
+              if (stagger && i % 2) p[1] += fs + 10;
+              ctx.font = font(700, fs);
+              ctx.fillStyle = tokens.ink;
+              ctx.fillText(f.short, p[0], p[1]);
+              if (state.colorMode === "food") {
+                ctx.fillStyle = rgb(tokens.slots[i]);
+                ctx.fillRect(p[0] - 7, p[1] + fs + 5, 14, 3);
+              }
+            });
+            ctx.textBaseline = "middle";
+            ctx.textAlign = labelX > FLOOR.x1 ? "left" : "right";
+            ANIMALS.forEach((a, i) => {
+              const p = P([labelX, 0, ROW_Z[a.id]]);
+              ctx.font = font(700, fs);
+              ctx.fillStyle = tokens.ink;
+              const dir = labelX > FLOOR.x1 ? 1 : -1;
+              let tx = p[0];
+              if (state.colorMode === "animal") {
+                ctx.fillStyle = rgb(tokens.slots[i]);
+                ctx.beginPath();
+                ctx.arc(p[0] + dir * 4, p[1], 4, 0, Math.PI * 2);
+                ctx.fill();
+                tx += dir * 12;
+              }
+              ctx.fillStyle = tokens.ink;
+              ctx.fillText(a.short, tx, p[1]);
+            });
+            ctx.globalAlpha = 1;
+          }
+        }
+
+        function frame(now) {
+          rafId = 0;
+          const busy = update(now);
+          draw();
+          positionTip();
+          if (busy && state.visible) requestRender();
+        }
+
+        function requestRender() {
+          if (!rafId) rafId = requestAnimationFrame(frame);
+        }
+
+        // ---------- 互動 ----------
+        function pointInPoly(x, y, pts) {
+          let inside = false;
+          for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+            const xi = pts[i][0];
+            const yi = pts[i][1];
+            const xj = pts[j][0];
+            const yj = pts[j][1];
+            if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+          }
+          return inside;
+        }
+
+        function hitTest(x, y) {
+          for (let i = drawn.length - 1; i >= 0; i--) {
+            const d = drawn[i];
+            if (d.it.cur.a < 0.5) continue;
+            if (d.polys.some((p) => pointInPoly(x, y, p))) return d.it;
+          }
+          // 細柱、薄片的寬鬆命中：距離錨點 18px 內
+          let best = null;
+          let bestD = 18 * 18;
+          drawn.forEach((d) => {
+            if (!d.it.anchor || d.it.cur.a < 0.5) return;
+            const dx = d.it.anchor[0] - x;
+            const dy = d.it.anchor[1] - y;
+            const dd = dx * dx + dy * dy;
+            if (dd < bestD) {
+              bestD = dd;
+              best = d.it;
+            }
+          });
+          return best;
+        }
+
+        function localXY(e) {
+          const r = canvas.getBoundingClientRect();
+          return [e.clientX - r.left, e.clientY - r.top];
+        }
+
+        let drag = null;
+
+        canvas.addEventListener("pointerdown", (e) => {
+          const [x, y] = localXY(e);
+          drag = { id: e.pointerId, x, y, yaw: state.yaw, pitch: state.pitch, moved: false, type: e.pointerType };
+        });
+
+        canvas.addEventListener("pointermove", (e) => {
+          const [x, y] = localXY(e);
+          if (drag && drag.id === e.pointerId) {
+            const dx = x - drag.x;
+            const dy = y - drag.y;
+            if (!drag.moved && (Math.abs(dx) > 6 || (drag.type === "mouse" && Math.abs(dy) > 6))) {
+              drag.moved = true;
+              state.sway = false;
+              canvas.classList.add("dragging");
+              try {
+                canvas.setPointerCapture(e.pointerId);
+              } catch (err) {
+                /* 忽略 */
+              }
+            }
+            if (drag.moved) {
+              state.yaw = clamp(drag.yaw - dx * 0.008, -1.1, 1.1);
+              state.baseYaw = state.yaw;
+              if (drag.type === "mouse") state.pitch = clamp(drag.pitch + dy * 0.005, 0.18, 1.0);
+              requestRender();
+              return;
+            }
+          }
+          if (e.pointerType === "mouse" && !drag) {
+            const hit = hitTest(x, y);
+            if (hit !== state.hover) {
+              state.hover = hit;
+              renderTip();
+              requestRender();
+            }
+          }
+        });
+
+        function endDrag(e) {
+          if (!drag || drag.id !== e.pointerId) return;
+          const wasMoved = drag.moved;
+          drag = null;
+          canvas.classList.remove("dragging");
+          if (!wasMoved && e.type === "pointerup") {
+            const [x, y] = localXY(e);
+            const hit = hitTest(x, y);
+            state.selected = hit && hit !== state.selected ? hit : null;
+            state.focused = null;
+            renderTip();
+            requestRender();
+          }
+        }
+
+        canvas.addEventListener("pointerup", endDrag);
+        canvas.addEventListener("pointercancel", endDrag);
+        canvas.addEventListener("pointerleave", (e) => {
+          if (e.pointerType === "mouse" && state.hover) {
+            state.hover = null;
+            renderTip();
+            requestRender();
+          }
+        });
+
+        canvas.addEventListener("keydown", (e) => {
+          const list = (state.mode === "rank" ? rankOrder : matrixOrder).filter((it) => it.to.a > 0.5);
+          if (!list.length) return;
+          const cur = list.indexOf(state.focused || state.selected);
+          let next = null;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = list[(cur + 1) % list.length];
+          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = list[(cur - 1 + list.length) % list.length];
+          else if (e.key === "Home") next = list[0];
+          else if (e.key === "End") next = list[list.length - 1];
+          else if (e.key === "Escape") {
+            state.focused = null;
+            state.selected = null;
+            renderTip();
+            requestRender();
+            return;
+          } else return;
+          e.preventDefault();
+          state.focused = next;
+          state.selected = null;
+          renderTip();
+          requestRender();
+        });
+
+        canvas.addEventListener("blur", () => {
+          if (state.focused) {
+            state.focused = null;
+            renderTip();
+            requestRender();
+          }
+        });
+
+        document.getElementById("reset").addEventListener("click", () => {
+          state.yaw = yaw0();
+          state.baseYaw = state.yaw;
+          state.pitch = PITCH0;
+          state.sway = !reduceMotion;
+          state.swayT0 = performance.now();
+          requestRender();
+        });
+
+        document.querySelectorAll("[data-mode]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (state.mode === btn.dataset.mode) return;
+            state.mode = btn.dataset.mode;
+            document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+            if (state.selected && !state.selected.rated && state.mode === "rank") state.selected = null;
+            state.focused = null;
+            renderTip();
+            startTransition(false);
+            renderLegend();
+            updateAria();
+          });
+        });
+
+        document.querySelectorAll("[data-color]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (state.colorMode === btn.dataset.color) return;
+            state.colorMode = btn.dataset.color;
+            document.querySelectorAll("[data-color]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+            startColorTransition();
+            renderLegend();
+            renderTip();
+          });
+        });
+
+        // ---------- 提示框 ----------
+        function el(tag, cls, text) {
+          const node = document.createElement(tag);
+          if (cls) node.className = cls;
+          if (text != null) node.textContent = text;
+          return node;
+        }
+
+        function renderTip() {
+          const it = activeItem();
+          tip.replaceChildren();
+          if (!it) {
+            tip.hidden = true;
+            return;
+          }
+          const head = el("div", "tt-head");
+          const key = el("span", "tt-key");
+          key.style.background = rgb(slotColor(it, state.colorMode));
+          head.append(key, el("span", null, it.title));
+          tip.append(head);
+          if (it.rated) {
+            tip.append(el("div", "tt-value", it.label));
+            tip.append(el("div", "tt-count", it.count));
+            const c = el("div", "tt-row");
+            c.append(el("span", "tt-label", "計算口徑："), document.createTextNode(it.cohort));
+            tip.append(c);
+          } else {
+            tip.append(el("div", "tt-value none", "已知有毒・無可比死亡率"));
+          }
+          tip.append(el("div", "tt-row", it.detail));
+          const s = el("div", "tt-row");
+          s.append(el("span", "tt-label", "來源："), document.createTextNode(it.src.map((k) => SOURCES[k].short).join("；")));
+          tip.append(s);
+          tip.hidden = false;
+          positionTip();
+        }
+
+        function positionTip() {
+          const it = activeItem();
+          if (!it || tip.hidden || !it.anchor) return;
+          if (getComputedStyle(tip).position === "static") return;
+          const tw = tip.offsetWidth;
+          const th = tip.offsetHeight;
+          const [ax, ay] = it.anchor;
+          let left = clamp(ax - tw / 2, 8, W - tw - 8);
+          let top = ay - th - 28;
+          if (top < 8) {
+            // 上方放不下：改放在柱子側邊
+            top = clamp(ay - th / 2, 8, H - th - 8);
+            left = ax + 24 + tw < W - 8 ? ax + 24 : ax - 24 - tw;
+            left = clamp(left, 8, W - tw - 8);
+          }
+          tip.style.left = `${Math.round(left)}px`;
+          tip.style.top = `${Math.round(top)}px`;
+        }
+
+        // ---------- 圖例、表格、卡片、來源 ----------
+        function renderLegend() {
+          const legend = document.getElementById("legend");
+          legend.replaceChildren();
+          const list = state.colorMode === "food" ? FOODS : ANIMALS;
+          list.forEach((d, i) => {
+            const li = el("li");
+            const sw = el("span", "sw");
+            sw.style.background = rgb(tokens.slots[i]);
+            li.append(sw, document.createTextNode(d.name));
+            legend.append(li);
+          });
+          legend.append(el("li", "key-sep"));
+          const solid = el("li");
+          const sw1 = el("span", "sw");
+          sw1.style.background = tokens.ink2;
+          solid.append(sw1, document.createTextNode("柱高＝致死比例"));
+          legend.append(solid);
+          const token = el("li");
+          token.append(el("span", "sw token"), document.createTextNode(state.mode === "matrix" ? "地面方框＝有毒但無可比死亡率" : "（矩陣模式顯示無死亡率資料的有毒組合）"));
+          legend.append(token);
+        }
+
+        function renderTable() {
+          const body = document.getElementById("rank-body");
+          rankOrder.forEach((it, i) => {
+            const tr = el("tr");
+            tr.append(el("td", "num", String(i + 1)));
+            const combo = el("td");
+            const span = el("span", "combo");
+            const sw = el("span", "sw");
+            sw.style.background = rgb(tokens.slots[animalIndex(it.animal)]);
+            span.append(sw, document.createTextNode(it.title));
+            combo.append(span);
+            tr.append(combo);
+            tr.append(el("td", "num pct", it.label));
+            tr.append(el("td", "num", it.frac));
+            tr.append(el("td", null, it.cohort));
+            tr.append(el("td", null, it.src.map((k) => SOURCES[k].short).join("；")));
+            body.append(tr);
+          });
+        }
+
+        function renderCards() {
+          const wrap = document.getElementById("cards");
+          ANIMALS.forEach((a, i) => {
+            const card = el("article", "card");
+            const h3 = el("h3");
+            const sw = el("span", "sw");
+            sw.style.background = rgb(tokens.slots[i]);
+            h3.append(sw, document.createTextNode(a.name));
+            card.append(h3, el("p", "species", a.species));
+            const rated = rankOrder.filter((it) => it.animal === a.id);
+            if (rated.length) {
+              card.append(el("h4", null, "有研究致死比例（由高到低）"));
+              const ol = el("ol");
+              rated.forEach((it) => {
+                const li = el("li");
+                li.append(el("span", "rate", it.label), el("b", null, it.sub ? `${it.foodObj.name}（${it.sub}）` : it.foodObj.name), el("span", "chip", it.chip));
+                ol.append(li);
+              });
+              card.append(ol);
+            }
+            const known = items.filter((it) => !it.rated && it.animal === a.id);
+            if (known.length) {
+              card.append(el("h4", null, "已知有毒・無可比死亡率（不排名）"));
+              const ul = el("ul");
+              known.forEach((it) => {
+                const li = el("li");
+                li.append(el("b", null, it.foodObj.name), document.createTextNode(`：${it.detail}`));
+                ul.append(li);
+              });
+              card.append(ul);
+            }
+            wrap.append(card);
+          });
+        }
+
+        function renderSources() {
+          const ol = document.getElementById("sources");
+          Object.values(SOURCES).forEach((s) => {
+            const li = el("li");
+            const a = el("a", null, s.full);
+            a.href = s.url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            li.append(a);
+            ol.append(li);
+          });
+        }
+
+        function updateAria() {
+          const summary = rankOrder.map((it) => `${it.title} ${it.label}`).join("、");
+          canvas.setAttribute(
+            "aria-label",
+            `3D 長條圖，${state.mode === "rank" ? "致死比例排行" : "動物與食物矩陣"}。${summary}。完整數據見下方表格。`
+          );
+          document.getElementById("hint").textContent = matchMedia("(pointer: coarse)").matches
+            ? "左右滑動旋轉視角・點選柱體看研究細節"
+            : "拖曳可旋轉視角・點選柱體看研究細節・方向鍵可逐一瀏覽";
+        }
+
+        // ---------- 尺寸與啟動 ----------
+        function resize() {
+          const w = stage.clientWidth;
+          if (w === W) return;
+          const h = Math.round(clamp(w * 0.72, 280, 540));
+          DPR = Math.min(window.devicePixelRatio || 1, 2);
+          W = w;
+          H = h;
+          canvas.width = Math.round(w * DPR);
+          canvas.height = Math.round(h * DPR);
+          canvas.style.height = `${h}px`;
+          requestRender();
+        }
+
+        readTokens();
+        initGeometry();
+        renderLegend();
+        renderTable();
+        renderCards();
+        renderSources();
+        updateAria();
+        resize();
+
+        if ("ResizeObserver" in window) new ResizeObserver(resize).observe(stage);
+        else window.addEventListener("resize", resize);
+
+        function start() {
+          if (state.started) return;
+          state.started = true;
+          state.swayT0 = performance.now();
+          startTransition(true);
+        }
+
+        if ("IntersectionObserver" in window) {
+          new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                state.visible = entry.isIntersecting;
+                if (entry.isIntersecting) {
+                  start();
+                  requestRender();
+                }
+              });
+            },
+            { threshold: 0.25 }
+          ).observe(stage);
+        } else {
+          start();
+        }
+      })();
+    </script>
+  </body>
+</html>
