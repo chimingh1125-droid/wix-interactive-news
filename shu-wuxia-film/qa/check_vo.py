@@ -11,7 +11,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def main():
-    m = json.load(open(os.path.join(ROOT, "tts", "vo", "manifest.json")))
+    vo_dir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "tts", "vo")
+    m = json.load(open(os.path.join(vo_dir, "manifest.json")))
     print("voice", m["voice"], "speed", m["speed"])
     bad = 0
     for ln in m["lines"]:

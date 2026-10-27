@@ -1,0 +1,99 @@
+{
+  "title_zh": "世新新聞系武功秘笈",
+  "title_en": "The Secret Manual of SHU Journalism",
+  "voice": "zm_yunyang",
+  "note": "60-second promo cut. Seven segments at fixed times; each segment's two lines play inside it. 'tts' spells AI as 欸愛 (read ēi ài) and drops the book-title marks.",
+  "scenes": [
+    {
+      "id": "p60_open", "kind": "title", "palette": "day", "seg": [0, 5],
+      "wuxia": "白線畫出世新山洞與舍我樓，雲霧飄動；白鶴飛過，金色字卡【世新新聞系武功秘笈】邊繪邊現",
+      "sound": "墨水渲染音效＋古風琵琶輕快開場",
+      "lines": [
+        {"id": "P01", "zh": "仙山藏秘笈，世新傳絕學。",
+         "en": "The mountain hides a secret manual; Shih Hsin hands down its finest arts.",
+         "tts": "仙山藏秘笈，世新傳絕學。", "speed": 1.05},
+        {"id": "P02", "zh": "誰說新聞江湖，只能墨守成規？",
+         "en": "Who says the world of news must stick to the old rules?",
+         "tts": "誰說新聞江湖，只能墨守成規？", "speed": 1.05}
+      ]
+    },
+    {
+      "id": "p60_qiao", "kind": "plot", "palette": "day", "seg": [5, 14],
+      "wuxia": "喬峰雙掌推出降龍十八掌，金光掌氣化龍，把舊報紙與舊攝影機震飛碎裂，瞬間化為數位光點",
+      "sound": "強烈掌風聲＋重低音鼓點",
+      "lines": [
+        {"id": "P03", "zh": "喬峰一式降龍掌，掃盡傳統舊思維。",
+         "en": "One Dragon-Subduing Palm from Qiao Feng sweeps away old thinking.",
+         "tts": "喬峰一式降龍掌，掃盡傳統舊思維。"},
+        {"id": "P04", "zh": "傳媒大浪滔天，唯有創新才能立足！",
+         "en": "When media waves rise sky-high, only innovation keeps you standing!",
+         "tts": "傳媒大浪滔天，唯有創新才能立足！"}
+      ]
+    },
+    {
+      "id": "p60_yang", "kind": "plot", "palette": "day", "seg": [14, 23],
+      "wuxia": "楊過揮玄鐵重劍，劍尖在空中劃出金色「AI」光軌，光軌注入電腦介面，畫面自動生成動態影音圖層",
+      "sound": "拔劍清脆聲＋科技電子音效（Tech Pulse）",
+      "lines": [
+        {"id": "P05", "zh": "楊過重劍出鞘，解鎖《AI 與媒體產業》。",
+         "en": "Yang Guo draws his heavy sword and unlocks “AI and the Media Industry.”",
+         "tts": "楊過重劍出鞘，解鎖欸愛與媒體產業。"},
+        {"id": "P06", "zh": "用科技加持靈魂，AI 就是你的神兵利器！",
+         "en": "Tech that powers the soul: AI is your legendary weapon!",
+         "tts": "用科技加持靈魂，欸愛就是你的神兵利器！"}
+      ]
+    },
+    {
+      "id": "p60_linghu", "kind": "plot", "palette": "day", "seg": [23, 32],
+      "wuxia": "令狐沖空中連刺九劍（獨孤九劍），劍氣化為九個豎屏短影音框，框內是學生的創意迷因與動畫",
+      "sound": "快速劍氣聲＋快節奏節拍",
+      "lines": [
+        {"id": "P07", "zh": "令狐沖獨孤九劍，無招勝有招。",
+         "en": "Linghu Chong's Nine Swords of Dugu: no set moves beat every move.",
+         "tts": "令狐沖獨孤九劍，無招勝有招。"},
+        {"id": "P08", "zh": "玩轉 AI 短影音，讓你的創意無極限爆發！",
+         "en": "Master AI short videos and let your creativity explode without limits!",
+         "tts": "玩轉欸愛短影音，讓你的創意無極限爆發！"}
+      ]
+    },
+    {
+      "id": "p60_zhang", "kind": "plot", "palette": "day", "seg": [32, 41],
+      "wuxia": "張無忌雙手劃圓（乾坤大挪移），採訪、剪輯、AI 生成、社群營運四大功力繞身旋轉，匯聚成強大光球",
+      "sound": "氣功運轉迴旋音效＋澎湃交響樂",
+      "lines": [
+        {"id": "P09", "zh": "張無忌乾坤大挪移，融會貫通全媒體。",
+         "en": "Zhang Wuji's Great Shift blends every medium into one.",
+         "tts": "張無忌乾坤大挪移，融會貫通全媒體。"},
+        {"id": "P10", "zh": "扎實實作課程，讓你大一就練就一身即戰力！",
+         "en": "Solid hands-on courses make you job-ready from your first year!",
+         "tts": "扎實實作課程，讓你大一就練就一身即戰力！"}
+      ]
+    },
+    {
+      "id": "p60_pass", "kind": "plot", "palette": "day", "seg": [41, 50],
+      "wuxia": "四位俠客齊聚，把《武功秘笈》交給穿現代高中制服的學生；學生接過秘笈，眼神亮起金光，背後是世新校園",
+      "sound": "BGM 轉為溫暖高昂的弦樂",
+      "lines": [
+        {"id": "P11", "zh": "招式會變，但追求真實與影響力的心不變。",
+         "en": "The moves may change, but the drive for truth and impact never does.",
+         "tts": "招式會變，但追求真實與影響力的心不變。"},
+        {"id": "P12", "zh": "少年俠客，你準備好掌握這卷秘笈了嗎？",
+         "en": "Young hero, are you ready to master this manual?",
+         "tts": "少年俠客，你準備好掌握這卷秘笈了嗎？"}
+      ]
+    },
+    {
+      "id": "p60_end", "kind": "endcard", "palette": "night", "seg": [50, 60],
+      "wuxia": "深藍夜景，紅白線條描繪世新大學新聞學系系徽，燈火光暈與金色閃光，秀出「個人申請／志願填報熱烈招募中」",
+      "sound": "鐘聲迴響＋定音鼓收尾",
+      "lines": [
+        {"id": "P13", "zh": "來世新新聞，用你的創意與 AI 改變世界！",
+         "en": "Join SHU Journalism and change the world with your creativity and AI!",
+         "tts": "來世新新聞，用你的創意與欸愛改變世界！"},
+        {"id": "P14", "zh": "世新大學新聞學系，等你來試劍江湖！",
+         "en": "Shih Hsin University Journalism awaits. Come test your blade!",
+         "tts": "世新大學新聞學系，等你來試劍江湖！"}
+      ]
+    }
+  ]
+}

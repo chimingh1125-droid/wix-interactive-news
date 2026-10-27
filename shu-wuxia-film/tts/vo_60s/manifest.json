@@ -1,0 +1,119 @@
+{
+ "voice": "zm_yunyang",
+ "speed": 0.95,
+ "sr": 24000,
+ "lines": [
+  {
+   "id": "P01",
+   "scene": "p60_open",
+   "file": "tts/vo_60s/P01.wav",
+   "speed": 1.05,
+   "dur": 1.94,
+   "pinyin": "xian1shan1 cang2mi4ji2 , shi4xin1 chuan2 jue2xue2 ."
+  },
+  {
+   "id": "P02",
+   "scene": "p60_open",
+   "file": "tts/vo_60s/P02.wav",
+   "speed": 1.05,
+   "dur": 2.23,
+   "pinyin": "shei2shuo1 xin1wen2 jiang1hu2 , zhi3neng2 mo4shou3cheng2gui1 ?"
+  },
+  {
+   "id": "P03",
+   "scene": "p60_qiao",
+   "file": "tts/vo_60s/P03.wav",
+   "speed": 0.95,
+   "dur": 2.9,
+   "pinyin": "qiao2feng1 yi2shi4 xiang2long2zhang3 , sao3jin4 chuan2tong3 jiu4si1wei2 ."
+  },
+  {
+   "id": "P04",
+   "scene": "p60_qiao",
+   "file": "tts/vo_60s/P04.wav",
+   "speed": 0.95,
+   "dur": 2.74,
+   "pinyin": "chuan2mei2 da4lang4tao1tian1 , wei2you3 chuang4xin1 cai2neng2 li4zu2 !"
+  },
+  {
+   "id": "P05",
+   "scene": "p60_yang",
+   "file": "tts/vo_60s/P05.wav",
+   "speed": 0.95,
+   "dur": 2.89,
+   "pinyin": "yang2guo4 zhong4jian4 chu1qiao4 , jie3suo3 ei1ai4 yu3 mei2ti3chan3ye4 ."
+  },
+  {
+   "id": "P06",
+   "scene": "p60_yang",
+   "file": "tts/vo_60s/P06.wav",
+   "speed": 0.95,
+   "dur": 3.14,
+   "pinyin": "yong4 ke1ji4 jia1chi2 ling2hun2 , ei1ai4 jiu4shi4 ni3 de5 shen2bing1li4qi4 !"
+  },
+  {
+   "id": "P07",
+   "scene": "p60_linghu",
+   "file": "tts/vo_60s/P07.wav",
+   "speed": 0.95,
+   "dur": 2.36,
+   "pinyin": "ling4hu2chong1 du2gu1jiu3jian4 , wu2zhao1sheng4you3zhao1 ."
+  },
+  {
+   "id": "P08",
+   "scene": "p60_linghu",
+   "file": "tts/vo_60s/P08.wav",
+   "speed": 0.95,
+   "dur": 3.08,
+   "pinyin": "wan2zhuan3 ei1ai4 duan3ying3yin1 , rang4 ni3 de5 chuang4yi4 wu2ji2xian4 bao4fa1 !"
+  },
+  {
+   "id": "P09",
+   "scene": "p60_zhang",
+   "file": "tts/vo_60s/P09.wav",
+   "speed": 0.95,
+   "dur": 2.95,
+   "pinyin": "zhang1wu2ji4 qian2kun1da4nuo2yi2 , rong2hui4guan4tong1 quan2mei2ti3 ."
+  },
+  {
+   "id": "P10",
+   "scene": "p60_zhang",
+   "file": "tts/vo_60s/P10.wav",
+   "speed": 0.95,
+   "dur": 3.35,
+   "pinyin": "zha2shi2 shi2zuo4 ke4cheng2 , rang4 ni3 da4yi1 jiu4 lian4jiu4 yi4shen1 ji2zhan4li4 !"
+  },
+  {
+   "id": "P11",
+   "scene": "p60_pass",
+   "file": "tts/vo_60s/P11.wav",
+   "speed": 0.95,
+   "dur": 3.34,
+   "pinyin": "zhao1shi4 hui4bian4 , dan4 zhui1qiu2 zhen1shi2 yu3 ying3xiang3li4 de5 xin1 bu2bian4 ."
+  },
+  {
+   "id": "P12",
+   "scene": "p60_pass",
+   "file": "tts/vo_60s/P12.wav",
+   "speed": 0.95,
+   "dur": 3.0,
+   "pinyin": "shao4nian2 xia2ke4 , ni3 zhun3bei4hao3 zhang3wo4 zhe4juan4 mi4ji2 le5 ma5 ?"
+  },
+  {
+   "id": "P13",
+   "scene": "p60_end",
+   "file": "tts/vo_60s/P13.wav",
+   "speed": 0.95,
+   "dur": 3.04,
+   "pinyin": "lai2 shi4xin1xin1wen2 , yong4 ni3 de5 chuang4yi4 yu3 ei1ai4 gai3bian4shi4jie4 !"
+  },
+  {
+   "id": "P14",
+   "scene": "p60_end",
+   "file": "tts/vo_60s/P14.wav",
+   "speed": 0.95,
+   "dur": 2.89,
+   "pinyin": "shi4xin1 da4xue2 xin1wen2xue2xi4 , deng3 ni3 lai2 shi4jian4 jiang1hu2 !"
+  }
+ ]
+}

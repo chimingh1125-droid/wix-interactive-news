@@ -91,6 +91,51 @@ PHRASES = {
     "傳世新章": "chuán shì xīn zhāng",
     "新聞系": "xīn wén xì",
     "都": "dōu",
+    # 60-second promo cut (script_60s.json); 欸愛 spells "AI" (ēi ài)
+    "仙山": "xiān shān",
+    "藏秘笈": "cáng mì jí",
+    "絕學": "jué xué",
+    "誰說": "shéi shuō",
+    "江湖": "jiāng hú",
+    "墨守成規": "mò shǒu chéng guī",
+    "一式": "yí shì",
+    "降龍掌": "xiáng lóng zhǎng",
+    "掃盡": "sǎo jìn",
+    "舊思維": "jiù sī wéi",
+    "傳媒": "chuán méi",
+    "大浪滔天": "dà làng tāo tiān",
+    "立足": "lì zú",
+    "出鞘": "chū qiào",
+    "解鎖": "jiě suǒ",
+    "欸愛": "ēi ài",
+    "媒體產業": "méi tǐ chǎn yè",
+    "加持": "jiā chí",
+    "神兵利器": "shén bīng lì qì",
+    "無招勝有招": "wú zhāo shèng yǒu zhāo",
+    "玩轉": "wán zhuǎn",
+    "短影音": "duǎn yǐng yīn",
+    "無極限": "wú jí xiàn",
+    "爆發": "bào fā",
+    "融會貫通": "róng huì guàn tōng",
+    "全媒體": "quán méi tǐ",
+    "扎實": "zhá shí",
+    "實作": "shí zuò",
+    "大一": "dà yī",
+    "練就": "liàn jiù",
+    "一身": "yì shēn",
+    "即戰力": "jí zhàn lì",
+    "招式": "zhāo shì",
+    "影響力": "yǐng xiǎng lì",
+    "不變": "bú biàn",
+    "少年": "shào nián",
+    "俠客": "xiá kè",
+    "準備好": "zhǔn bèi hǎo",
+    "掌握": "zhǎng wò",
+    "這卷": "zhè juàn",
+    "世新新聞": "shì xīn xīn wén",
+    "改變世界": "gǎi biàn shì jiè",
+    "新聞學系": "xīn wén xué xì",
+    "試劍": "shì jiàn",
 }
 
 
@@ -183,12 +228,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--voice", default=None)
     ap.add_argument("--speed", type=float, default=0.80)
+    ap.add_argument("--script", default=os.path.join(ROOT, "script", "script.json"))
     ap.add_argument("--out", default=os.path.join(ROOT, "tts", "vo"))
     ap.add_argument("--only", default=None, help="comma list of line ids")
     ap.add_argument("--dry", action="store_true", help="print pinyin/phonemes only")
     args = ap.parse_args()
 
-    script = json.load(open(os.path.join(ROOT, "script", "script.json")))
+    script = json.load(open(args.script))
     voice_spec = args.voice or script.get("voice", "zm_yunyang")
     setup_dictionaries()
     os.makedirs(args.out, exist_ok=True)
@@ -205,7 +251,8 @@ def main():
             print(f"{ln['id']} {ln['tts']}\n   {py}\n   {ph}")
             if args.dry:
                 continue
-            audio = trim(tts.synth(ph, vstyle, args.speed))
+            speed = ln.get("speed", args.speed)
+            audio = trim(tts.synth(ph, vstyle, speed))
             peak = np.abs(audio).max()
             audio = audio / (peak + 1e-9) * 10 ** (-3 / 20)
             path = os.path.join(args.out, f"{ln['id']}.wav")
@@ -213,7 +260,7 @@ def main():
             dur = len(audio) / SR
             cps = len(re.sub(r"[^一-鿿]", "", ln["tts"])) / dur
             print(f"   -> {dur:.2f}s  ({cps:.2f} chars/s)")
-            manifest["lines"].append({"id": ln["id"], "scene": sc["id"], "file": path,
+            manifest["lines"].append({"id": ln["id"], "scene": sc["id"], "file": path, "speed": speed,
                                       "dur": round(dur, 4), "pinyin": py})
     if not args.dry and not only:
         with open(os.path.join(args.out, "manifest.json"), "w") as f:

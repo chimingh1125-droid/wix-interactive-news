@@ -9,6 +9,7 @@ subtitles and voice stay frame-accurate.
 
     python build_timeline.py full   -> build/timeline_full.json
     python build_timeline.py short  -> build/timeline_short.json (≈ 90 s)
+    python build_timeline.py 60s    -> build/timeline_60s.json (60-second promo)
 """
 import json
 import os
@@ -56,8 +57,60 @@ TRANSITION = {"mission": ("wipe", 1.0), "legacy": ("wipe", 1.0)}
 DEFAULT_TIN = 0.8
 
 
+# 60-second promo cut (script_60s.json): seven segments at fixed times. Brush
+# wipes are centred on each boundary; both lines of a segment play inside it.
+P60 = {"tin": 0.5, "lead": 0.45, "gap": 0.4, "first_lead": 0.28, "first_gap": 0.2, "total": 59.8}
+P60_TEXTS = ["世新新聞系武功秘笈", "武功秘笈", "舍我樓", "世新大學", "世新大學新聞學系", "AI與媒體產業", "解鎖", "採訪", "剪輯", "AI生成",
+             "社群營運", "個人申請", "志願填報", "熱烈招募中", "個人申請／志願填報熱烈招募中", "降龍十八掌", "玄鐵重劍", "獨孤九劍",
+             "乾坤大挪移", "喬峰", "楊過", "令狐沖", "張無忌", "新聞", "報", "舊聞", "日報", "短影音", "創意", "迷因", "爆", "讚", "哈",
+             "一二三四五六七八九十", "風華七十傳世新章"]
+
+
 def snap(x):
     return round(x * FPS) / FPS
+
+
+def build_60s():
+    script = json.load(open(os.path.join(ROOT, "script", "script_60s.json")))
+    vo = {l["id"]: l for l in json.load(open(os.path.join(ROOT, "tts", "vo_60s", "manifest.json")))["lines"]}
+    S = script["scenes"]
+    scenes, texts, warn = [], [], []
+    for i, sc in enumerate(S):
+        a, b = sc["seg"]
+        tin = 0.0 if i == 0 else P60["tin"]
+        start = 0.0 if i == 0 else snap(a - tin / 2)
+        end = snap(S[i + 1]["seg"][0] + P60["tin"] / 2) if i < len(S) - 1 else snap(P60["total"])
+        limit = (S[i + 1]["seg"][0] - P60["tin"] / 2 - 0.05) if i < len(S) - 1 else P60["total"] - 2.0
+        cur = a + (P60["first_lead"] if i == 0 else P60["lead"]) - start
+        gap = P60["first_gap"] if i == 0 else P60["gap"]
+        out_lines = []
+        for k, ln in enumerate(sc["lines"]):
+            d = vo[ln["id"]]["dur"]
+            out_lines.append({
+                "id": ln["id"], "zh": ln["zh"], "en": ln["en"], "file": os.path.relpath(vo[ln["id"]]["file"], ROOT),
+                "t0": round(cur, 4), "t1": round(cur + d, 4), "dur": d,
+                "abs0": round(start + cur, 4), "abs1": round(start + cur + d, 4),
+            })
+            texts.append(ln["zh"])
+            cur += d + gap
+        if out_lines[-1]["abs1"] > limit:
+            warn.append(f"{sc['id']}: narration ends {out_lines[-1]['abs1']:.2f}s, past {limit:.2f}s")
+        scenes.append({"id": sc["id"], "kind": sc["kind"], "palette": sc["palette"], "start": start, "dur": snap(end - start),
+                       "tin": tin, "transition": "wipe", "lines": out_lines, "variant": "60s", "seg": sc["seg"]})
+    duration = snap(P60["total"])
+    tl = {"variant": "60s", "fps": FPS, "width": 1920, "height": 1080, "duration": duration,
+          "frames": int(round(duration * FPS)), "scenes": scenes, "texts": texts + P60_TEXTS + [script["title_zh"]]}
+    out = os.path.join(ROOT, "build", "timeline_60s.json")
+    json.dump(tl, open(out, "w"), ensure_ascii=False, indent=1)
+    print(f"60s: {len(scenes)} scenes, {duration:.2f}s, {tl['frames']} frames -> {out}")
+    for s_ in scenes:
+        ls = ", ".join(f"{l['id']}@{l['abs0']:.2f}-{l['abs1']:.2f}" for l in s_["lines"])
+        print(f"  {s_['id']:11s} {s_['start']:6.2f} +{s_['dur']:5.2f} seg={s_['seg']}  {ls}")
+    for w in warn:
+        print("  WARNING", w)
+    if warn:
+        raise SystemExit(1)
+    return tl
 
 
 def build(variant):
@@ -119,4 +172,4 @@ def build(variant):
 
 if __name__ == "__main__":
     for v in (sys.argv[1:] or ["full", "short"]):
-        build(v)
+        build_60s() if v == "60s" else build(v)
