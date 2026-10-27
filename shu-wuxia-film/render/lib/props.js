@@ -14,7 +14,8 @@
   // It draws itself: the outlines are traced first, then the white shapes
   // flood in and the calligraphy is brushed on character by character.
   // c: centre of the logo, r: px per logo unit (1 unit = half the mark width;
-  // the whole logo is about 2r x 2r). o: {p, color, text, glow, seed}
+  // the whole logo is about 2r x 2r). o: {p, color, text, glow, seed,
+  // lineColor (outline colour), keepLine (keep the outline over the fill)}
   const logoLoop = (lp, o0, r) => lp.map((q) => [o0[0] + q[0] * r, o0[1] + q[1] * r]);
   function logoD(loops, o0, r) {
     // keep roughly one point per screen pixel
@@ -52,10 +53,12 @@
       body.forEach((lp, i) => {
         const pts = logoLoop(lp, o0, r);
         pts.push(pts[0]);
-        stroke(d, pts, { p: lineP, w: lw, color: col, brush: false, amp: Math.min(1.2, r * 0.006), step: 2.5, seed: seed + i, opacity: 1 - fillP });
+        stroke(d, pts, { p: lineP, w: lw, color: o.lineColor || col, brush: false, amp: Math.min(1.2, r * 0.006), step: 2.5, seed: seed + i, opacity: o.keepLine ? 1 : 1 - fillP });
       });
     }
     if (fillP > 0) d.add('<path d="' + logoD(body, o0, r) + '" fill="' + col + '" fill-rule="evenodd"' + (fillP < 1 ? ' fill-opacity="' + fillP.toFixed(3) + '"' : '') + '/>');
+    // optional outline kept on top of the fill (red-and-white logo at night)
+    if (o.keepLine && fillP >= 1) d.add('<path d="' + logoD(body, o0, r) + '" fill="none" stroke="' + (o.lineColor || col) + '" stroke-width="' + f1(Math.max(1.2, r * 0.012)) + '" stroke-linejoin="round"/>');
     // 2. calligraphy: 世 新 (right column), then 新 聞, each wiped in top-down
     if (o.text !== false) {
       L.text.forEach((ch, i) => {

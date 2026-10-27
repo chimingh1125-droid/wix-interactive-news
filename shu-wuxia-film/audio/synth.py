@@ -264,6 +264,89 @@ def bell(freq, dur=2.5, vel=1.0):
     return out * vel / (np.abs(out).max() + 1e-9)
 
 
+@cached
+def timpani(vel=1.0, pitch=73.4, dur=2.4):
+    """Kettle drum: the tuned membrane modes (preferred-mode ratios) with a
+    small pitch glide on the attack, plus the felt-mallet thump."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    for r, a, tau in ((1.0, 1.0, 0.85), (1.504, 0.5, 0.55), (1.742, 0.32, 0.45), (2.0, 0.26, 0.4), (2.245, 0.16, 0.3), (2.494, 0.1, 0.25)):
+        f = pitch * r * (1 + 0.025 * np.exp(-t / 0.06))
+        out += a * np.sin(2 * np.pi * np.cumsum(f) / SR + RNG.uniform(0, 6)) * np.exp(-t / tau)
+    out += lowpass(noise(n), 500) * np.exp(-t / 0.018) * 0.7
+    out *= 1 - np.exp(-t / 0.0015)
+    return out * vel / (np.abs(out).max() + 1e-9)
+
+
+@cached
+def kick(vel=1.0):
+    """Electronic kick: sine sweeping 160 -> 48 Hz plus a short click."""
+    n = int(0.45 * SR)
+    t = np.arange(n) / SR
+    f = 48 + 112 * np.exp(-t / 0.03)
+    out = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.2)
+    out += highpass(noise(n), 2500) * np.exp(-t / 0.002) * 0.35
+    return out * vel / (np.abs(out).max() + 1e-9)
+
+
+@cached
+def hat(vel=1.0, open_=False):
+    """Hi-hat: six square-wave partials at inharmonic ratios plus noise, high-passed."""
+    dur = 0.4 if open_ else 0.09
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = sum(np.sign(np.sin(2 * np.pi * f * t)) for f in (205.3, 304.4, 369.6, 522.7, 540.0, 800.0))
+    x = highpass(x * 0.4 + noise(n), 7000)
+    out = x * np.exp(-t / (0.1 if open_ else 0.016)) * (1 - np.exp(-t / 0.0005))
+    return out * vel / (np.abs(out).max() + 1e-9)
+
+
+@cached
+def synth_pluck(freq, dur=0.4, vel=1.0, bright=1.0, decay=0.22):
+    """Analogue-style saw pluck: a band-limited sawtooth whose upper harmonics
+    die away faster (a closing low-pass), for the electronic arpeggios."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    for k in range(1, int(min(40, (SR / 2 - 2000) / freq)) + 1):
+        out += np.sin(2 * np.pi * freq * k * t) / k * np.exp(-t * (1 + 0.22 * (k - 1) / bright) / decay)
+    a = min(n, int(0.003 * SR))
+    out[:a] *= np.linspace(0, 1, a)
+    out *= np.minimum(1, (n - np.arange(n)) / (0.02 * SR))
+    return out * vel / (np.abs(out).max() + 1e-9)
+
+
+def sub_bass(freq, dur, vel=1.0):
+    """Sine bass with a touch of second harmonic, soft attack and release."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    out = np.sin(2 * np.pi * freq * t) + 0.25 * np.sin(4 * np.pi * freq * t)
+    return out * env_adsr(n, 0.01, 0.15, 0.7, min(0.2, dur * 0.4)) * vel / 1.25
+
+
+def brass(midis, dur, vel=1.0, attack=0.6, release=0.7):
+    """Brass-section swell: sawtooth stacks whose brightness opens with the
+    swell (the harmonic roll-off follows the envelope)."""
+    n = int((dur + release) * SR)
+    t = np.arange(n) / SR
+    e = env_adsr(n, attack, 0.3, 0.85, release)
+    b = 0.25 + 0.6 * e
+    out = np.zeros(n)
+    for m in midis:
+        f0 = midi_hz(m)
+        for dt in (-0.05, 0.05):
+            ph = 2 * np.pi * f0 * 2 ** (dt / 12) * t + RNG.uniform(0, 6.28) + 0.2 * np.sin(2 * np.pi * 4.8 * t)
+            w = np.ones(n)
+            for k in range(1, 14):
+                if f0 * k > 8000:
+                    break
+                out += w / k * np.sin(k * ph)
+                w = w * b
+    out = lowpass(out, 4500) * e
+    return out * vel / (np.abs(out).max() + 1e-9)
+
+
 # --------------------------------------------------------------- reverb
 def make_ir(rt60=2.2, sr=SR, pre=0.018, seed=7):
     rng = np.random.default_rng(seed)

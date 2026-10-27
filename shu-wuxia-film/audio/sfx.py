@@ -363,6 +363,117 @@ def lib(name, dur=None):
         return scatter(lambda k: shaped(0.1, lambda u: 3000, lambda u: 1200, lambda u: ad(u, 0.3, 1.2)) * rng.uniform(0.3, 0.8), dd, int(dd * 5))
     if name == "swordPlace":
         return norm(metal([2100, 3350, 4900], 0.6, 0.001, 0.3) * 0.6 + np.pad(thud(130, 0.3, 0.5), (0, int(0.3 * SR))))
+    # ---- 60-second promo
+    if name == "inkSpread":
+        # a drop lands on wet paper and the ink blooms outwards
+        dd = 1.8
+        t = tvec(dd)
+        drop = np.sin(2 * np.pi * np.cumsum(700 + 1300 * np.clip(t / 0.03, 0, 1)) / SR) * np.exp(-t / 0.035)
+        bloom = shaped(dd, lambda u: 1900 - 1400 * u ** 0.7, lambda u: 650 - 300 * u, lambda u: ad(u, 0.22, 1.8))
+        swell = np.sin(2 * np.pi * 68 * t) * ad(t / dd, 0.3, 2.0)
+        return norm(0.45 * drop + bloom + 0.5 * swell)
+    if name == "digitalSparkle":
+        # data specks: tiny square-wave blips on pentatonic pitches, plus air
+        dd = d or 1.5
+        def blip(k):
+            f = rng.choice([1760, 2093, 2349.3, 2637, 3136, 3520, 4186])
+            n = int(rng.uniform(0.02, 0.05) * SR)
+            tt = np.arange(n) / SR
+            return np.sign(np.sin(2 * np.pi * f * tt)) * np.exp(-tt / (n / SR * 0.35)) * rng.uniform(0.25, 0.8)
+        x = scatter(blip, dd, int(dd * 26), lambda k: dd * (k / (dd * 26)) ** 1.3)
+        x = S.lowpass(x, 9000)
+        air = shaped(dd + 0.5, lambda u: 7000, lambda u: 2500, lambda u: ad(u, 0.15, 1.5))
+        return norm(x + 0.3 * air[: len(x)])
+    if name == "swordDraw":
+        # the blade slides out of the scabbard, then rings clear
+        dd = 1.9
+        out = np.zeros(int(dd * SR))
+        sl = 0.32
+        flutter = 0.6 + 0.4 * rng.random(int(sl * SR)) ** 2
+        scrape = shaped(sl, lambda u: 2500 + 4500 * u, lambda u: 1400, lambda u: np.clip(u / 0.2, 0, 1) ** 1.5) * flutter
+        out[: len(scrape)] += 0.7 * scrape
+        ring = metal([2637, 3951, 5274, 6645, 8372], 1.6, 0.0015, 0.25)
+        i = int(0.28 * SR)
+        out[i:i + len(ring)] += ring[: len(out) - i]
+        return norm(out)
+    if name == "unlock":
+        # two latch clicks, then a rising two-note chime
+        out = np.zeros(int(1.2 * SR))
+        for st, f in ((0.0, 2400), (0.07, 1800)):
+            c = tink(f, 0.03) * 0.5
+            c[: int(0.012 * SR)] += S.highpass(N(0.012), 1500) * np.exp(-tvec(0.012) / 0.002)
+            i = int(st * SR)
+            out[i:i + len(c)] += c
+        for st, f in ((0.16, 1318.5), (0.28, 1975.5)):
+            b = S.bell(f, 0.9, 1.0) * 0.7
+            b[: int(0.15 * SR)] += tink(f * 2, 0.15) * 0.2
+            i = int(st * SR)
+            out[i:i + len(b)] += b[: len(out) - i]
+        return norm(out)
+    if name == "techPulse":
+        # a saw chord through an opening filter, gated in sixteenths at the score's tempo
+        dd = 1.6
+        t = tvec(dd)
+        saw = sum(np.sin(2 * np.pi * f * k * t) / k for f in (110.0, 164.8, 220.0) for k in range(1, 30) if f * k < 9000)
+        f, tt, Z = signal.stft(saw, SR, nperseg=1024, noverlap=768)
+        cut = 300 + 5000 * np.clip(tt / 1.0, 0, 1) ** 2
+        _, y = signal.istft(Z * (1 / (1 + (f[:, None] / cut[None, :]) ** 4)), SR, nperseg=1024, noverlap=768)
+        y = y[: len(t)]
+        gate = (((t / 0.1125) % 1) < 0.55).astype(float)
+        gate = S.lowpass(gate, 120)
+        sub = np.sin(2 * np.pi * np.cumsum(55 * (1 + 0.5 * np.exp(-t / 0.05))) / SR) * np.exp(-t / 0.5)
+        return norm(norm(y) * gate * ad(t / dd, 0.35, 1.6) + 0.6 * sub)
+    if name == "uiBlip":
+        f = rng.choice([1567.98, 1760, 2093, 2349.3])
+        dd = 0.09
+        t = tvec(dd)
+        x = np.sin(2 * np.pi * np.cumsum(f * (1 + 0.25 * np.clip(t / 0.02, 0, 1))) / SR) * np.exp(-t / 0.03)
+        return norm(x * (1 - np.exp(-t / 0.001)) * np.clip((dd - t) / 0.015, 0, 1))
+    if name == "pop":
+        # a cartoon pop: a fast upward sine chirp with a small click
+        dd = 0.16
+        t = tvec(dd)
+        f0 = rng.uniform(320, 420)
+        x = np.sin(2 * np.pi * np.cumsum(f0 * (1 + 1.6 * np.clip(t / 0.045, 0, 1))) / SR) * np.exp(-t / 0.045)
+        x[: int(0.004 * SR)] += S.highpass(N(0.004), 2000) * 0.4
+        return norm(x)
+    if name == "confetti":
+        # party popper: a snap and a thump, then a shower of paper and glints
+        dd = 2.0
+        out = np.zeros(int(dd * SR))
+        snap = S.bandpass(N(0.03), 800, 7000) * np.exp(-tvec(0.03) / 0.006)
+        out[: len(snap)] += snap
+        th = thud(140, 0.25, 0.4)
+        out[: len(th)] += 0.5 * th
+        rustle = shaped(dd - 0.05, lambda u: 3500, lambda u: 2000, lambda u: ad(u, 0.08, 2.2)) * (0.5 + 0.5 * np.abs(np.sin(2 * np.pi * 23 * tvec(dd - 0.05))))
+        out[int(0.05 * SR):int(0.05 * SR) + len(rustle)] += 0.55 * rustle
+        gl = scatter(lambda k: tink(rng.choice([2637, 3136, 3520, 4186, 5274]), 0.12) * rng.uniform(0.2, 0.6), 1.4, 26, lambda k: 0.05 + abs(rng.normal(0, 0.45)))
+        out[: len(gl)] += 0.6 * gl[: len(out)]
+        return norm(out)
+    if name == "swirl":
+        # qi spinning round the body: a band of air circling (its pitch and level
+        # swing once a turn, the turns speeding up) over a low hum
+        dd = d or 3.0
+        t = tvec(dd)
+        turns = np.cumsum(1.2 + 2.8 * (t / dd)) / SR
+        fc = lambda u: 900 + 600 * np.sin(2 * np.pi * np.interp(u * dd, t, turns))
+        air = shaped(dd, fc, lambda u: 380, lambda u: np.clip(u / 0.15, 0, 1))
+        air *= 0.55 + 0.45 * np.sin(2 * np.pi * turns) ** 2
+        hum = sum(np.sin(2 * np.pi * f * t) for f in (110, 165, 220)) * (0.7 + 0.3 * np.sin(2 * np.pi * 6 * t))
+        return norm((air + 0.25 * hum * np.clip(t / 0.4, 0, 1)) * np.clip((dd - t) / 0.3, 0, 1))
+    if name == "templeBell":
+        # a big bronze temple bell struck with a wooden beam: low inharmonic
+        # partials in slightly detuned pairs (the slow beating), a long tail
+        dd = 7.0
+        t = tvec(dd)
+        x = np.zeros(len(t))
+        for r, a, tau in ((0.5, 0.5, 4.5), (1.0, 1.0, 3.8), (1.19, 0.45, 3.0), (1.56, 0.55, 2.4), (2.0, 0.35, 2.0), (2.66, 0.3, 1.5), (3.24, 0.18, 1.1), (4.15, 0.12, 0.8)):
+            for dt, w in ((-0.6, 0.5), (0.6, 0.5)):
+                x += a * w * np.sin(2 * np.pi * (220 * r + dt * r) * t + rng.uniform(0, 6)) * np.exp(-t / tau)
+        x *= 1 - np.exp(-t / 0.004)
+        strike = S.lowpass(N(0.08), 900) * np.exp(-tvec(0.08) / 0.015)
+        x[: len(strike)] += 0.6 * strike
+        return norm(x * np.clip((dd - t) / 0.8, 0, 1))
     raise KeyError(name)
 
 

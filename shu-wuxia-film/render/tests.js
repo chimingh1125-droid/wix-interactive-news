@@ -101,6 +101,43 @@
     F.dragon(d, K.spline([[1300, 1000], [800, 1000], [420, 880]], 10), 1, t, { len: 600, width: 100 });
   };
 
+  // 60-second promo components
+  T.promo1 = (d, t) => {
+    const P = G.PROMO, R = K.R;
+    N.mountains(d, { peaks: [{ x: 300, h: 260, w: 420 }, { x: 1200, h: 300, w: 480 }], base: 980, seed: 5, fill: R.pal.fillFar, w: 2.2 });
+    A.tunnel(d, 330, 980, 230, 260, { plaque: '世新大學' });
+    P.shewo(d, 560, 980, { lit: 0.2 });
+    P.titleCard(d, [960, 200], 1, {});
+    P.paperStack(d, [1150, 560], 220, {});
+    P.oldCamera(d, [1520, 520], 210, { base: 980 });
+    P.digitalWave(d, [1100, 1000], 700, 330, t, 1, 0, { dir: -1 });
+  };
+  T.promo2 = (d, t) => {
+    const P = G.PROMO;
+    P.monitor(d, [560, 330], 620, 400, t, { unlock: 1, title: 1, layers: 1, play: t * 0.3, glow: 0.3 });
+    P.layerCards(d, [560, 330], t, 1);
+    P.aiTrail(d, [1000, 90, 220], 1, t);
+    ['interview', 'edit', 'ai', 'social'].forEach((k, i) => P.skillBadge(d, [1080 + i * 200, 470], 66, k, ['採訪', '剪輯', 'AI 生成', '社群營運'][i], 1, t));
+    P.lightOrb(d, [1500, 220], 90, t, 1, { labels: ['採訪', '剪輯', 'AI', '社群'] });
+    P.recruitBanner(d, [960, 830], 1, t, {});
+  };
+  T.promo3 = (d, t) => {
+    const P = G.PROMO;
+    for (let k = 0; k < 9; k++) P.reelsFrame(d, [300 + (k % 5) * 330, 270 + Math.floor(k / 5) * 520], 200, 356, k, t, 1, { ai: k % 3 === 0, hot: k === 8 });
+  };
+  T.student = (d, t) => {
+    const g = 1000, R = K.R;
+    const looks = [
+      { hair: 'bun', ribbon: false, beard: 'full', build: 1.28, seed: 71, hand1: 'palm', hand2: 'palm', sashColor: R.pal.gold },
+      { hair: 'long', ribbon: false, oneArm: true, seed: 81, hem: 0.39 },
+      { hair: 'bun', ribbon: true, gourd: true, seed: 61 },
+      { hair: 'bun', ribbon: true, seed: 91, hand1: 'palm', hand2: 'palm', ribbonColor: R.pal.gold },
+    ];
+    looks.forEach((lk, i) => F.figure(d, { root: [220 + i * 230, g - 0.49 * 400], H: 400, dir: 1, p: 1 }, lk, t));
+    F.figure(d, { root: [1400, g - 0.49 * 380], H: 380, dir: -1, p: 1, sh1: 50, el1: 70, sh2: 40, el2: 80 }, { outfit: 'modern', hair: 'short', ribbon: false, sash: false, seed: 1501, hand1: 'open', hand2: 'open', eyeGlow: 0.8 }, t);
+    F.figure(d, { root: [1700, g - 0.49 * 380], H: 380, dir: 1, p: 1 }, { outfit: 'modern', hair: 'short', ribbon: false, sash: false, seed: 1502, backpack: false }, t);
+  };
+
   T.fx = (d, t) => {
     FX.slashArc(d, [500, 500], 300, -150, 20, 0.45, {});
     FX.burst(d, [1100, 400], 200, 0.4, {});

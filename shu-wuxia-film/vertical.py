@@ -7,8 +7,8 @@ across the middle of a red-paper page that carries the department logo and
 the title, and the bilingual subtitles are set larger in the band below it.
 Picture, narration, music and SFX are the same as the landscape cut.
 
-    python vertical.py full|short [crf]            -> output/<name>_9x16.mp4
-    python vertical.py full|short --target-mb 29   -> build/vertical_compact/
+    python vertical.py full|short|60s [crf]            -> output/<name>_9x16.mp4
+    python vertical.py full|short|60s --target-mb 29   -> build/vertical_compact/
         (two-pass copy that fits a size limit, e.g. for sending in chat apps)
 
 Needs build/render_<cut>/master.mkv, build/mix_<cut>.wav, build/subs_<cut>/
@@ -43,7 +43,7 @@ class Cut:
         self.cards = {c["id"]: np.asarray(Image.open(os.path.join(assets, c["id"] + ".png")).convert("RGBA"), np.float32) / 255.0 for c in self.cues}
         self.master = os.path.join(B, f"render_{variant}", "master.mkv")
         self.audio = os.path.join(B, f"mix_{variant}.wav")
-        self.name = "shu_journalism_wuxia" + ("" if variant == "full" else "_short90s") + "_subtitled_zh_en_9x16"
+        self.name = F.NAMES[variant] + "_subtitled_zh_en_9x16"
 
     def frames(self):
         """Yield every composited 9:16 frame as raw RGB bytes."""

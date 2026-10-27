@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Encode the deliverables for one cut (full / short).
+"""Encode the deliverables for one cut (full / short / 60s).
 
   <name>_clean.mp4        picture + narration + music + SFX, no subtitles
   <name>_clean_novo.mp4   picture + music + SFX (no narration, no subtitles)
@@ -9,7 +9,7 @@
 H.264 High / yuv420p / BT.709, 30 fps, AAC 48 kHz. After encoding, the
 loudness of every MP4 is re-measured with ffmpeg's EBU R128 meter.
 
-    python finalize.py full|short
+    python finalize.py full|short|60s [crf]
 """
 import json
 import os
@@ -22,6 +22,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+NAMES = {"full": "shu_journalism_wuxia", "short": "shu_journalism_wuxia_short90s", "60s": "shu_journalism_wuxia_promo60s"}
 B = os.path.join(ROOT, "build")
 OUT = os.path.join(ROOT, "output")
 W, H = 1920, 1080
@@ -104,7 +105,7 @@ def main():
     mix, novo = os.path.join(B, f"mix_{variant}.wav"), os.path.join(B, f"mix_{variant}_novo.wav")
     subs = os.path.join(B, f"subs_{variant}")
     os.makedirs(OUT, exist_ok=True)
-    name = "shu_journalism_wuxia" + ("" if variant == "full" else "_short90s")
+    name = NAMES[variant]
     outs = {
         "clean": os.path.join(OUT, f"{name}_clean.mp4"),
         "clean_novo": os.path.join(OUT, f"{name}_clean_no_narration.mp4"),

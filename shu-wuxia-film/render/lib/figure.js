@@ -276,7 +276,9 @@
     if (look.hair !== 'bald') {
       const cap = look.hair === 'messy'
         ? [[0.7, -0.6], [0.5, -1.12], [0.2, -1.05], [0, -1.28], [-0.25, -1.08], [-0.5, -1.22], [-0.7, -0.95], [-1.05, -0.9], [-1.02, -0.4], [-1.15, 0.05], [-0.86, 0.3], [-0.5, 0.1], [-0.3, -0.35], [0.2, -0.55], [0.55, -0.45]]
-        : [[0.74, -0.58], [0.55, -0.95], [0.1, -1.08], [-0.45, -1.02], [-0.88, -0.66], [-1.04, -0.1], [-0.9, 0.42], [-0.62, 0.3], [-0.45, -0.1], [-0.2, -0.42], [0.3, -0.56]];
+        : look.hair === 'short'
+          ? [[0.86, -0.42], [0.72, -0.86], [0.3, -1.12], [-0.3, -1.12], [-0.82, -0.82], [-1.06, -0.3], [-0.98, 0.24], [-0.74, 0.2], [-0.6, -0.12], [-0.2, -0.4], [0.28, -0.46], [0.6, -0.3]]
+          : [[0.74, -0.58], [0.55, -0.95], [0.1, -1.08], [-0.45, -1.02], [-0.88, -0.66], [-1.04, -0.1], [-0.9, 0.42], [-0.62, 0.3], [-0.45, -0.1], [-0.2, -0.42], [0.3, -0.56]];
       shape(d, spline(cap.map((q) => T(q[0], q[1])), 3, true), { p, w: lw * 0.9, seed: seed + 1, fill: hc });
       if (look.detail === 'high') {
         for (let k = 0; k < 3; k++) stroke(d, [T(0.4 - k * 0.3, -0.9 + k * 0.03), T(-0.3 - k * 0.25, -0.62 + k * 0.2)], { p: clamp((p - 0.5) / 0.5), w: lw * 0.5, color: R.pal.soft, seed: seed + 40 + k });
@@ -297,7 +299,13 @@
       const fp = clamp((p - 0.5) / 0.5);
       stroke(d, [T(0.3, -0.3), T(0.52, -0.36), T(0.74, -0.44)], { p: fp, w: lw * 1.35, seed: seed + 6, taperIn: 2, taperOut: 8 });
       stroke(d, [T(0.4, -0.12), T(0.56, -0.16), T(0.7, -0.1)], { p: fp, w: lw * 0.8, seed: seed + 7, brush: false });
-      if (fp > 0.5) { const e = T(0.58, -0.08); d.add('<circle cx="' + f1(e[0]) + '" cy="' + f1(e[1]) + '" r="' + f1(Math.max(1.2, lw * 0.75)) + '" fill="' + R.pal.line + '"/>'); }
+      const e = T(0.58, -0.08);
+      J.eye = e;
+      if (fp > 0.5) {
+        const glow = look.eyeGlow || 0;
+        if (glow > 0) halo(d, e, 0.09 * H * (0.7 + 0.3 * glow), 'gold', 0.9 * glow);
+        d.add('<circle cx="' + f1(e[0]) + '" cy="' + f1(e[1]) + '" r="' + f1(Math.max(1.2, lw * 0.75) * (1 + 0.6 * glow)) + '" fill="' + (glow > 0.3 ? R.pal.gold : R.pal.line) + '"/>');
+      }
       if (look.glasses) {
         shape(d, ellipse(T(0.56, -0.1), 0.2 * rx, 0.16 * ry, 0, 12), { p: fp, w: lw * 0.6, seed: seed + 8, fill: 'none', color: R.pal.gold });
       }
@@ -318,6 +326,81 @@
     }
   }
 
+  // ---------------------------------------------------- modern outfit
+  // A present-day high-school student: short-sleeved shirt (collar, buttons,
+  // pocket, school badge), belt and dark trousers, sneakers and a backpack.
+  function drawArmModern(d, J, A, o, t, p, seed, handType) {
+    const H = J.H, lw = o.lw;
+    const ua = norm(sub(A.E, A.S)), nu = perp(ua);
+    shape(d, limbTube(A.S, A.E, 0.05 * H, 0.042 * H), { p, w: lw * 0.9, seed: seed + 1, fill: o.fill });
+    shape(d, limbTube(A.E, A.W, 0.042 * H, 0.034 * H), { p, w: lw * 0.9, seed: seed + 2, fill: o.fill });
+    const end = add(A.S, mul(sub(A.E, A.S), 0.52));
+    const cap = [];
+    for (let a = 90; a <= 270; a += 22.5) cap.push(add(A.S, rot(mul(ua, 0.046 * H), a * DEG)));
+    shape(d, spline(cap.concat([add(end, mul(nu, -0.054 * H)), add(end, mul(nu, 0.054 * H))]), 3, true), { p, w: lw, seed: seed + 3, fill: o.fill });
+    stroke(d, [add(end, mul(nu, -0.05 * H)), add(end, mul(nu, 0.05 * H))], { p, w: lw * 0.7, seed: seed + 4 });
+    drawHand(d, J, A, norm(sub(A.W, A.E)), o, p, seed + 5, handType);
+  }
+
+  function drawLegModern(d, J, Lg, o, p, seed) {
+    const H = J.H, lw = o.lw;
+    shape(d, limbTube(Lg.H, Lg.K, 0.09 * H, 0.07 * H), { p, w: lw, seed, fill: o.trouserFill });
+    shape(d, limbTube(Lg.K, Lg.A, 0.07 * H, 0.058 * H), { p, w: lw, seed: seed + 1, fill: o.trouserFill });
+    const shinDir = norm(sub(Lg.A, Lg.K));
+    const tilt = (Lg.foot || 0) + clamp((Math.atan2(shinDir[0] * J.dir, shinDir[1]) / DEG) * -0.35, -35, 35);
+    const f = rot([J.dir, 0], tilt * DEG * J.dir), u = rot([0, -1], tilt * DEG * J.dir);
+    const at = (a, b2) => add(Lg.A, add(mul(f, a * H), mul(u, b2 * H)));
+    const shoe = [at(-0.032, 0.032), at(-0.036, -0.004), at(0.084, -0.006), at(0.096, 0.012), at(0.07, 0.034), at(0.02, 0.046)];
+    shape(d, spline(shoe, 3, true), { p, w: lw, seed: seed + 2, fill: R.pal.fill });
+    stroke(d, [at(-0.034, 0.004), at(0.092, 0.002)], { p, w: lw * 1.2, seed: seed + 3, color: R.pal.gold });
+    stroke(d, [at(0.02, 0.03), at(0.05, 0.02)], { p: clamp((p - 0.5) / 0.5), w: lw * 0.5, seed: seed + 4, brush: false, color: R.pal.soft });
+  }
+
+  function drawShirt(d, J, o, p, seed) {
+    const H = J.H, b = J.b;
+    const T = (a, u) => add(add(J.root, mul(J.fwd, a * H * b)), mul(J.up, u * H));
+    const tl = J.L.T / H;
+    // hips of the trousers under the tucked-in shirt
+    shape(d, [T(-0.074, 0.05), T(0.084, 0.05), T(0.08, -0.04), T(-0.07, -0.04)], { p, w: o.lw, seed: seed + 9, fill: o.trouserFill });
+    const pts = [T(-0.07, 0.04), T(-0.082, 0.13), T(-0.086, 0.22), T(-0.077, tl - 0.05), T(-0.055, tl - 0.012), T(-0.024, tl + 0.004), T(0.03, tl - 0.002), T(0.07, tl - 0.038), T(0.092, tl - 0.1), T(0.088, 0.16), T(0.08, 0.04)];
+    shape(d, spline(pts, 4, true), { p, w: o.lw, seed, fill: o.fill });
+    const cp = clamp((p - 0.3) / 0.7);
+    stroke(d, [T(-0.072, 0.046), T(0.082, 0.048)], { p: cp, w: o.lw * 1.5, seed: seed + 1, color: R.pal.dark });
+    // collar flaps and the button placket
+    shape(d, [T(-0.016, tl + 0.006), T(0.026, tl - 0.058), T(0.05, tl - 0.008)], { p: cp, w: o.lw * 0.8, seed: seed + 2, fill: o.fill });
+    shape(d, [T(0.05, tl - 0.008), T(0.064, tl - 0.062), T(0.082, tl - 0.024)], { p: cp, w: o.lw * 0.8, seed: seed + 3, fill: o.fill });
+    stroke(d, [T(0.058, tl - 0.06), T(0.064, 0.05)], { p: cp, w: o.lw * 0.6, seed: seed + 4, color: R.pal.soft });
+    for (let k = 0; k < 4; k++) {
+      const q = T(0.062, tl - 0.09 - k * 0.055);
+      if (cp > 0.5) d.add('<circle cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="' + f1(Math.max(1.2, H * 0.004)) + '" fill="' + R.pal.line + '"/>');
+    }
+    // pocket and a small gold school badge
+    shape(d, [T(-0.01, tl - 0.1), T(0.034, tl - 0.1), T(0.034, tl - 0.15), T(0.012, tl - 0.158), T(-0.01, tl - 0.15)], { p: cp, w: o.lw * 0.6, seed: seed + 5, fill: 'none', color: R.pal.soft });
+    shape(d, ellipse(T(0.012, tl - 0.072), 0.012 * H, 0.012 * H, 0, 10), { p: cp, w: o.lw * 0.6, seed: seed + 6, fill: R.pal.gold, color: R.pal.gold });
+  }
+
+  function drawBackpack(d, J, o, p, seed) {
+    const H = J.H, b = J.b;
+    const T = (a, u) => add(add(J.root, mul(J.fwd, a * H * b)), mul(J.up, u * H));
+    const tl = J.L.T / H;
+    shape(d, spline([T(-0.07, tl - 0.04), T(-0.15, tl - 0.05), T(-0.17, 0.12), T(-0.15, 0.06), T(-0.07, 0.07)], 3, true), { p, w: o.lw, seed, fill: o.bagFill || R.pal.fillNear });
+    stroke(d, [T(-0.155, 0.17), T(-0.1, 0.165)], { p, w: o.lw * 0.6, seed: seed + 1, color: R.pal.soft });
+    stroke(d, [T(-0.07, tl - 0.03), T(0.02, tl - 0.05), T(0.03, 0.12)], { p, w: o.lw * 1.1, seed: seed + 2, color: R.pal.dark });
+  }
+
+  function modernFigure(d, J, look, o, t, S, seed) {
+    o.trouserFill = look.trouserFill || R.pal.shade;
+    drawArmModern(d, J, J.A2, o, t, S(1, 6), seed + 60, look.hand2);
+    drawLegModern(d, J, J.L2, o, S(1, 6), seed + 100);
+    if (look.backpack !== false) drawBackpack(d, J, o, S(2, 6), seed + 180);
+    drawShirt(d, J, o, S(0, 6), seed + 200);
+    drawLegModern(d, J, J.L1, o, S(1, 6), seed + 140);
+    drawHead(d, J, look, o, t, S(4, 6), seed + 300);
+    if (look.backProp) look.backProp(d, J, t);
+    drawArmModern(d, J, J.A1, o, t, S(5, 6), seed + 400, look.hand1);
+    return J;
+  }
+
   // Main entry. pose: {root, H, dir, ...angles, p, wind}; look: costume.
   function figure(d, pose, look, t) {
     look = Object.assign({}, LOOK0, look || {});
@@ -332,6 +415,7 @@
     };
     const S = (i, n) => seqP(p, i, n, 0.55);
     const seed = look.seed || 1000;
+    if (look.outfit === 'modern') return modernFigure(d, J, look, o, t, S, seed);
     if (look.sash) sashTails(d, J, o, t, S(3, 6), seed + 700);
     // back arm or empty sleeve
     if (look.oneArm) {

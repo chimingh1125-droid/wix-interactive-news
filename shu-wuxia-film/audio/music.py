@@ -7,6 +7,10 @@ each scene gets its own arrangement (calm opening, title hit, heroic march,
 playful motto, rooftop chase, battles, solemn night, emotional finale,
 resolution) and big accents land exactly on the visual hits.
 
+The 60-second cut runs at 133⅓ BPM (a 0.45 s beat) with beat 0 on its first
+segment change, so each 9-second segment is exactly five bars and starts on a
+downbeat; it has its own seven arrangements (p60_*).
+
     python music.py <timeline.json> <cues.json> <out.wav>
 """
 import json
@@ -20,6 +24,7 @@ SR = S.SR
 BPM = 132.0
 BEAT = 60.0 / BPM
 BAR = 4 * BEAT
+GRID0 = 0.0   # time of beat 0
 rng = np.random.default_rng(70)
 
 # theme phrases: (midi, beats); None = rest
@@ -51,6 +56,21 @@ class Score:
         x = S.pan(mono * gain, p)
         m = min(len(x), self.n - i)
         self.bus[bus][i:i + m] += x[:m]
+
+
+def set_grid(beat, t0=0.0):
+    """Beat length in seconds and the time of beat 0."""
+    global BPM, BEAT, BAR, GRID0
+    BPM, BEAT, BAR, GRID0 = 60.0 / beat, beat, 4 * beat, t0
+
+
+def at(b):
+    """Time of grid beat b (fractions allowed)."""
+    return GRID0 + b * BEAT
+
+
+def beat_no(t):
+    return round((t - GRID0) / BEAT)
 
 
 def q(v):
@@ -92,10 +112,10 @@ def play_phrase(sc, phrase, t0, t_end, inst, octave=0, speed=1.0, vel=0.8, p=0.1
 
 def beats(a, b, step=1.0):
     """global beat times in [a, b)."""
-    k = int(np.ceil(a / (BEAT * step) - 1e-9))
+    k = int(np.ceil((a - GRID0) / (BEAT * step) - 1e-9))
     out = []
-    while k * BEAT * step < b - 1e-6:
-        out.append(k * BEAT * step)
+    while GRID0 + k * BEAT * step < b - 1e-6:
+        out.append(GRID0 + k * BEAT * step)
         k += 1
     return out
 
@@ -115,7 +135,7 @@ def drone(sc, a, b, midis, vel=0.3):
 
 def zheng_arp(sc, a, b, prog, pattern=(0, 7, 12, 16, 19, 16, 12, 7), step=0.5, vel=0.5, p=-0.3, octave=12):
     for i, t in enumerate(beats(a, b, step)):
-        bar = int(t / BAR)
+        bar = int(np.floor((t - GRID0) / BAR))
         root = prog[bar % len(prog)] + octave
         m = root + pattern[i % len(pattern)]
         sc.add("pluck", hum(t), S.pluck(S.midi_hz(m), 1.3, vel * (1.0 if i % 4 == 0 else 0.8)), p)
@@ -131,7 +151,7 @@ def gliss(sc, t, lo, hi, n=14, span=0.45, vel=0.45, up=True, p=-0.2):
 
 def drums_march(sc, a, b, vel=0.8):
     for t in beats(a, b, 1):
-        bt = round(t / BEAT) % 4
+        bt = beat_no(t) % 4
         if bt in (0, 2):
             sc.add("drum", hum(t, 0.004), S.big_drum(vel * (1 if bt == 0 else 0.8)), 0.0)
     for i, t in enumerate(beats(a, b, 0.5)):
@@ -146,7 +166,7 @@ def drums_run(sc, a, b, vel=0.8):
         acc = 1.0 if i % 4 == 0 else (0.7 if i % 2 == 0 else 0.45)
         sc.add("drum", hum(t, 0.005), S.tang_drum(vel * 0.42 * acc, pitch=200 - (i % 2) * 25, dur=0.3), 0.2 * (1 if i % 2 else -1))
     for t in beats(a, b, 1):
-        bt = round(t / BEAT) % 4
+        bt = beat_no(t) % 4
         if bt == 0 or bt == 2:
             sc.add("drum", hum(t, 0.003), S.big_drum(vel * 0.9, pitch=58), 0.0)
 
@@ -199,6 +219,36 @@ def roll(sc, t_end, dur=1.0, vel=0.5):
         sc.add("drum", t, S.tang_drum(vel * (0.3 + 0.7 * k / n), pitch=210, dur=0.25), 0.1)
 
 
+def timp_roll(sc, a, b, pitch=65.4, v0=0.15, v1=0.8, rate=12.0, p=-0.1):
+    """Timpani roll from a to b, crescendo v0 -> v1."""
+    n = max(1, int((b - a) * rate))
+    for k in range(n):
+        u = k / n
+        sc.add("drum", a + (k + rng.uniform(-0.15, 0.15)) / rate, S.timpani(round(v0 + (v1 - v0) * u ** 1.5, 2), pitch, 1.2), p + 0.08 * (-1) ** k)
+
+
+ARP = {45: (57, 60, 64, 67, 69, 67, 64, 60), 43: (55, 62, 64, 67, 69, 67, 64, 62),
+       48: (60, 64, 67, 69, 72, 69, 67, 64), 50: (62, 64, 69, 72, 74, 72, 69, 64)}
+
+
+def tech_arp(sc, a, b, roots, vel=(0.2, 0.45), bright=(0.3, 1.2), p=0.25):
+    """Sixteenth-note saw arpeggio; level and brightness ramp across [a, b)."""
+    for i, t in enumerate(beats(a, b, 0.25)):
+        u = (t - a) / max(1e-6, b - a)
+        root = roots[int(np.floor((t - a) / BAR + 1e-6)) % len(roots)]
+        m = ARP[root][i % 8]
+        v = (vel[0] + (vel[1] - vel[0]) * u) * (1.0 if i % 4 == 0 else 0.75)
+        sc.add("pluck", t, S.synth_pluck(S.midi_hz(m), 0.32, round(v, 2), round(bright[0] + (bright[1] - bright[0]) * u, 1), 0.16), p * (1 if i % 2 else -1))
+
+
+def spiccato(sc, a, b, roots, vel=0.4, pattern=(0, 0, 7, 0, 12, 0, 7, 0)):
+    """Short, driving string eighths (the orchestral ostinato)."""
+    for i, t in enumerate(beats(a, b, 0.5)):
+        root = roots[int(np.floor((t - a) / BAR + 1e-6)) % len(roots)]
+        acc = 1.0 if i % 4 == 0 else 0.7
+        sc.add("string", hum(t, 0.004), S.strings([root + pattern[i % 8], root + pattern[i % 8] + 12], BEAT * 0.4, vel * acc, attack=0.015, release=0.12, bright=0.8), -0.15)
+
+
 # ------------------------------------------------------------ sections
 def section(sc, kind, a, b, S_):
     """Arrange one scene section in [a, b)."""
@@ -227,7 +277,7 @@ def section(sc, kind, a, b, S_):
     elif kind == "motto":
         woodblocks(sc, a, b, 0.42)
         for t in beats(a, b, 2):
-            sc.add("pluck", hum(t), S.pluck(S.midi_hz(45 if round(t / BEAT) % 4 == 0 else 40), 1.0, 0.5, pos=0.3, bright=0.6), -0.1)
+            sc.add("pluck", hum(t), S.pluck(S.midi_hz(45 if beat_no(t) % 4 == 0 else 40), 1.0, 0.5, pos=0.3, bright=0.6), -0.1)
         motif = [69, 72, 74, 72, 76, 74, 72, 69, 67, 69, 72, 74, 76, 79, 76, 74]
         for i, t in enumerate(beats(a + BAR * 0.5, b - BEAT, 0.5)):
             if i % 16 in (7, 15):
@@ -270,7 +320,7 @@ def section(sc, kind, a, b, S_):
             gliss(sc, t, 57 + (k % 2) * 5, 86, n=10, span=BEAT * 1.6, vel=0.32, p=-0.3 + 0.6 * (k % 2))
         woodblocks(sc, a, b, 0.3)
         for t in beats(a, b, 1):
-            if round(t / BEAT) % 2 == 0:
+            if beat_no(t) % 2 == 0:
                 sc.add("drum", t, S.tang_drum(0.45, pitch=190), 0.1)
         pad_prog(sc, a, b, [45, 48, 43, 45], 0.28)
     elif kind == "mission":
@@ -297,15 +347,134 @@ def section(sc, kind, a, b, S_):
         sc.add("pluck", a + L * 0.55, S.pluck(S.midi_hz(60), 3.0, 0.45), -0.2)
         sc.add("pluck", a + L * 0.55 + 0.12, S.pluck(S.midi_hz(67), 3.0, 0.4), 0.0)
         sc.add("pluck", a + L * 0.55 + 0.24, S.pluck(S.midi_hz(72), 3.0, 0.4), 0.2)
+    # ---------------------------------------- 60-second cut (beat 0 = 5.0 s)
+    elif kind == "p60_open":
+        # ink-wash drone and a brisk pipa: a sweep on the first picture, a run up
+        # to the ink spreading, tremolos under the title, roll into segment one
+        drone(sc, a, b + 0.6, [45, 52, 57], 0.24)
+        for k, m in enumerate((45, 52, 57, 60, 64)):
+            sc.add("pluck", 0.06 + k * 0.016, S.pluck(S.midi_hz(m), 1.8, 0.55, pos=0.12, bright=1.3, decay=1.0, body=False), -0.2 + 0.1 * k)
+        line = [(-10.5, 69, .5), (-10, 72, .5), (-9.5, 74, .5), (-9, 76, .5), (-8.5, 79, .5), (-8, 81, 1, 1),
+                (-7, 79, .5), (-6.5, 76, .5), (-6, 79, .5), (-5.5, 81, .5), (-5, 84, 1, 1),
+                (-4, 81, .5), (-3.5, 79, .5), (-3, 76, .5), (-2.5, 74, .5), (-2, 76, 1.6, 1)]
+        for nt in line:
+            t, m, ln = at(nt[0]), nt[1], nt[2]
+            if len(nt) > 3:
+                sc.add("pluck", t, S.tremolo_pluck(S.midi_hz(m), ln * BEAT, 0.5, rate=16.0), 0.2)
+            else:
+                sc.add("pluck", hum(t, 0.004), S.pluck(S.midi_hz(m), 0.9, 0.5, pos=0.12, bright=1.2, decay=0.6, body=False), 0.2)
+        zheng_arp(sc, at(-8), b, [45], pattern=(0, 7, 12, 15, 19, 15, 12, 7), step=0.5, vel=0.28, p=-0.3)
+        for t in beats(at(-8), b - BEAT, 1):
+            sc.add("metal", hum(t, 0.004), S.woodblock(0.3 if beat_no(t) % 2 else 0.4, pitch=1050 if beat_no(t) % 2 else 880), 0.35)
+        roll(sc, b, BEAT * 2, 0.5)
+        swell(sc, b, 1.4, 0.35)
+    elif kind == "p60_qiao":
+        # 重低音鼓點: a heartbeat while 喬峰 gathers his qi, a roll into the palm
+        # strike, then a driving taiko groove over sub kicks and low power chords
+        drone(sc, a, a + BAR + 0.6, [33, 40, 45], 0.3)
+        for t in beats(a, a + BAR, 1):
+            sc.add("drum", t, S.big_drum(0.55, pitch=50, dur=1.2), 0.0)
+        roll(sc, at(3.5), BEAT * 1.5, 0.6)
+        drums_taiko(sc, a + BAR, b - BEAT, 1.0)
+        for t in beats(a + BAR, b - BEAT, 2):
+            sc.add("drum", t, S.kick(0.75), 0.0)
+        for i, t in enumerate(beats(a + BAR, b - BEAT, 0.5)):
+            if i % 2:
+                sc.add("drum", hum(t, 0.004), S.tang_drum(0.42 if i % 4 == 3 else 0.3, pitch=190), 0.25)
+        for i, t in enumerate(beats(a + BAR, b, 4)):
+            root = PROG_MINOR[i % 4] - 12
+            sc.add("string", t, S.strings([root, root + 7, root + 12, root + 19, root + 24], BAR + 0.05, 0.45, attack=0.04, release=0.5, bright=0.8), 0.0)
+            sc.add("drum", t, S.sub_bass(S.midi_hz(root), BAR * 0.95, 0.45), 0.0)
+        play_phrase(sc, [(76, .5), (81, 1.5), (79, .5), (76, .5), (74, .5), (76, 2.5)], at(15.5), b - BEAT * 0.5, "dizi", vel=0.6, p=0.15)
+        roll(sc, b, BEAT * 2, 0.55)
+        swell(sc, b, 1.2, 0.35)
+    elif kind == "p60_yang":
+        # Tech Pulse: strings hold while the sword is drawn, a saw arpeggio fades
+        # in and opens at the unlock, a four-on-the-floor kick and hats take over,
+        # the zheng plays over the top; one beat of air before segment four
+        bars = [45, 45, 48, 43, 45]
+        sc.add("string", a, S.strings([45, 52, 57, 64], BAR * 2 + 0.2, 0.3, attack=0.3, release=1.0), 0.0)
+        tech_arp(sc, a + BAR, a + BAR * 2, bars[1:2], vel=(0.12, 0.3), bright=(0.25, 0.6))
+        tech_arp(sc, a + BAR * 2, b - BEAT, bars[2:], vel=(0.4, 0.5), bright=(1.0, 1.4))
+        for t in beats(a + BAR * 2, b - BEAT, 1):
+            sc.add("drum", t, S.kick(0.85), 0.0)
+            sc.add("metal", hum(t + BEAT / 2, 0.003), S.hat(0.35, open_=beat_no(t) % 4 == 3), 0.3)
+        for i, t in enumerate(beats(a + BAR * 2, b - BEAT, 0.5)):
+            root = bars[2 + int((t - a - BAR * 2) // BAR) % 3]
+            sc.add("drum", t, S.sub_bass(S.midi_hz(root - 12), BEAT * 0.45, 0.45 if i % 2 == 0 else 0.3), 0.0)
+        pad_prog(sc, a + BAR * 2, b - BEAT, [48, 43, 45], 0.22)
+        play_phrase(sc, PHRASE_B[:8], at(48.0), b - BEAT, "zheng", vel=0.48, p=-0.25)
+        swell(sc, b, 1.0, 0.4)
+    elif kind == "p60_linghu":
+        # fast beat for the nine thrusts: running sixteenth drums, ticking hats,
+        # a plucked bass ostinato, the pipa takes the theme after the landing
+        drums_run(sc, a, b - BEAT, 0.8)
+        for i, t in enumerate(beats(a, b - BEAT, 0.25)):
+            sc.add("metal", hum(t, 0.003), S.hat(0.3 if i % 4 == 2 else 0.16), 0.35)
+        bass = [45, 45, 57, 45, 48, 45, 50, 52]
+        for i, t in enumerate(beats(a, b - BEAT, 0.5)):
+            sc.add("pluck", hum(t, 0.004), S.pluck(S.midi_hz(bass[i % 8] - 12), 0.4, 0.45, pos=0.15, bright=0.8, decay=0.3), -0.2)
+        pad_prog(sc, a, b, PROG_MINOR, 0.24)
+        play_phrase(sc, PHRASE_B, a + BAR * 2, b - BEAT, "pipa", vel=0.5, p=0.3)
+        roll(sc, b, BEAT * 2, 0.6)
+        swell(sc, b, 1.2, 0.4)
+    elif kind == "p60_zhang":
+        # symphonic build: spiccato strings, brass swells and timpani over
+        # Am-F-C-G, a timpani roll into the flare on the bar-five downbeat, then
+        # the full orchestra on A minor with the erhu
+        prog = [45, 41, 48, 43]
+        spiccato(sc, a, a + BAR * 4, [r - 12 for r in prog], 0.36)
+        for i, t in enumerate(beats(a, a + BAR * 4, 4)):
+            r = prog[i]
+            tri = [r, r + (3 if r == 45 else 4), r + 7]
+            sc.add("string", t, S.strings([x - 12 for x in tri] + [x for x in tri], BAR + 0.1, 0.38, attack=0.25, release=0.5), 0.0)
+            sc.add("drum", t, S.timpani(0.55 + 0.1 * i, S.midi_hz(r - 24), 1.8), -0.1)
+            if i:
+                sc.add("wind", t, S.brass([x for x in tri], BAR * 0.9, 0.3 + 0.1 * i, attack=BAR * 0.5, release=0.3), 0.1)
+        play_phrase(sc, PHRASE_A[:9], a + BEAT * 2, a + BAR * 4, "erhu", vel=0.5, p=0.2)
+        timp_roll(sc, a + BAR * 3, a + BAR * 4, pitch=S.midi_hz(33), v0=0.15, v1=0.85)
+        swell(sc, a + BAR * 4, 1.6, 0.5)
+        t = a + BAR * 4
+        sc.add("string", t, S.strings([33, 40, 45, 52, 57, 60, 64, 69], b - t + 0.6, 0.6, attack=0.02, release=1.2, bright=0.8), 0.0)
+        sc.add("wind", t, S.brass([45, 52, 57, 60, 64], b - t, 0.6, attack=0.05, release=0.8), 0.0)
+        play_phrase(sc, [(76, .5), (79, .5), (81, 3)], t + BEAT * 0.5, b, "erhu", vel=0.7, p=0.15)
+    elif kind == "p60_pass":
+        # warm, soaring strings in C major; the erhu sings PHRASE_C; soft timpani
+        # and a high string line lift into the night end card
+        pad_prog(sc, a, b + 0.3, PROG_MAJOR, 0.4, voicing=[0, 7, 12, 16, 19])
+        zheng_arp(sc, a, b, PROG_MAJOR, pattern=(0, 7, 12, 16, 19, 16, 12, 7), step=0.5, vel=0.28, p=-0.3)
+        play_phrase(sc, PHRASE_C, a + BEAT, b, "erhu", vel=0.6, p=0.15)
+        for i, t in enumerate(beats(a + BAR * 2, b, 4)):
+            r = PROG_MAJOR[(i + 2) % 4]
+            sc.add("string", t, S.strings([r + 24, r + 31], BAR + 0.2, 0.22 + 0.06 * i, attack=0.6, release=0.8, bright=0.7), 0.25)
+            sc.add("drum", t, S.timpani(0.3 + 0.12 * i, S.midi_hz(r - 24), 1.8), -0.1)
+        timp_roll(sc, b - BAR * 0.5, b, pitch=S.midi_hz(31), v0=0.1, v1=0.5)
+        swell(sc, b, 1.6, 0.4)
+    elif kind == "p60_end":
+        # night: the temple bell (SFX) over a soft timpani roll and a held C chord,
+        # the dizi under the narration, a timpani roll into the finale on bar five
+        sc.add("string", a, S.strings([36, 43, 48, 52, 55, 60, 64], b - a + 1.0, 0.42, attack=0.5, release=2.0), 0.0)
+        timp_roll(sc, a, a + BAR * 0.75, pitch=S.midi_hz(36), v0=0.45, v1=0.1)
+        play_phrase(sc, [(72, 1), (74, .5), (76, .5), (79, 2), (76, 1), (74, 1), (72, 2)], a + BAR, a + BAR * 3.5, "dizi", vel=0.45, p=0.2)
+        for t in (a + BAR, a + BAR * 2):
+            sc.add("drum", t, S.timpani(0.3, S.midi_hz(36), 1.8), -0.1)
+        timp_roll(sc, a + BAR * 3, a + BAR * 4, pitch=S.midi_hz(43), v0=0.15, v1=0.9)
+        fin = a + BAR * 4
+        sc.add("drum", fin, S.timpani(1.0, S.midi_hz(36), 2.4), 0.0)
+        sc.add("string", fin, S.strings([36, 43, 48, 55, 60, 64, 67, 72], b - fin + 0.8, 0.6, attack=0.02, release=1.5, bright=0.75), 0.0)
+        sc.add("wind", fin, S.brass([48, 55, 60, 64], b - fin, 0.5, attack=0.03, release=1.0), 0.0)
+        gliss(sc, fin + 0.05, 60, 91, n=16, span=0.7, vel=0.4)
 
 
 KIND = {"opening": "opening", "title": "title", "founding": "founding", "motto": "motto", "littleworld": "littleworld",
         "interview": "interview", "writing": "writing", "verify": "verify", "editing": "editing", "mission": "mission",
-        "legacy": "legacy", "endcard": "endcard"}
+        "legacy": "legacy", "endcard": "endcard",
+        "p60_open": "p60_open", "p60_qiao": "p60_qiao", "p60_yang": "p60_yang", "p60_linghu": "p60_linghu",
+        "p60_zhang": "p60_zhang", "p60_pass": "p60_pass", "p60_end": "p60_end"}
 
 
 def snap_beat(t):
-    return round(t / BEAT) * BEAT
+    return GRID0 + round((t - GRID0) / BEAT) * BEAT
 
 
 def main():
@@ -313,21 +482,35 @@ def main():
     cues = json.load(open(sys.argv[2]))
     out = sys.argv[3]
     dur = tl["duration"]
+    short60 = tl.get("variant") == "60s"
+    if short60:
+        set_grid(0.45, tl["scenes"][1]["seg"][0])
     sc = Score(dur)
     scenes = tl["scenes"]
     bounds = []
     for i, s in enumerate(scenes):
-        a = 0.0 if i == 0 else snap_beat(s["start"] + s["tin"] * 0.5)
+        if short60:
+            a = float(s["seg"][0])
+        else:
+            a = 0.0 if i == 0 else snap_beat(s["start"] + s["tin"] * 0.5)
         bounds.append(a)
     bounds.append(dur)
     for i, s in enumerate(scenes):
         a, b = bounds[i], bounds[i + 1]
         section(sc, KIND[s["id"]], a, b, s)
         print(f"  {s['id']:12s} {a:7.2f}-{b:7.2f}")
-    # accents on the big visual hits
+    # accents on the big visual hits (hits closer than 0.12 s merge into one)
+    hits = []
     for c in cues:
         if c["sfx"] in HIT_CUES:
-            hit(sc, c["t"], HIT_CUES[c["sfx"]], gong=c["sfx"] in ("palmStrike", "doorCrash", "burstBell"))
+            h = [c["t"], HIT_CUES[c["sfx"]], c["sfx"] in ("palmStrike", "doorCrash", "burstBell")]
+            near = [o for o in hits if abs(o[0] - h[0]) < 0.12]
+            if near:
+                near[0][1], near[0][2] = max(near[0][1], h[1]), near[0][2] or h[2]
+            else:
+                hits.append(h)
+    for t, strength, gong in hits:
+        hit(sc, t, strength, gong=gong)
     # mix the buses with reverb
     ir = S.make_ir(2.3)
     mix = np.zeros((sc.n, 2))
@@ -338,7 +521,7 @@ def main():
     n = int(dur * SR)
     mix = mix[:n]
     # fade the very end
-    f = int(2.0 * SR)
+    f = int((1.5 if short60 else 2.0) * SR)
     mix[-f:] *= np.linspace(1, 0, f)[:, None] ** 1.5
     mix /= np.abs(mix).max() + 1e-9
     mix *= 0.8

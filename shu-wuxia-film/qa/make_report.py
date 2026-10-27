@@ -5,7 +5,8 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = os.path.join(ROOT, "build")
-VOICE_RATIO = {"full": (11.2, 8.8), "short": (11.7, 10.2)}  # mean / min dB, from audio/mix.py
+VOICE_RATIO = {"full": (11.2, 8.8), "short": (11.7, 10.2), "60s": (11.6, 7.3)}  # mean / min dB, from audio/mix.py
+CUTS = (("full", "正片（2:22）"), ("short", "短版（1:32）"), ("60s", "60 秒招生版（0:59.8）"))
 
 
 def fmt_t(t):
@@ -34,7 +35,9 @@ def main():
             f"- 引擎：Kokoro-82M（離線 ONNX，fp32），男聲 `{vo['voice']}`，語速 {vo['speed']}",
             f"- 23 句，總長 {sum(l['dur'] for l in vo['lines']):.2f} 秒；逐句檢查 NaN、削波，以及是否出現超過 2 秒不停頓的失真段落：全部通過（`qa/check_vo.py`）",
             "- 多音字與人名讀音逐句以拼音人工核對（木柵 mù zhà、降龍 xiáng lóng、重劍 zhòng jiàn、乾坤 qián kūn、為國為民 wèi guó wèi mín、空白 kòng bái 等）", ""]
-    for v, title in (("full", "正片（2:22）"), ("short", "短版（1:32）")):
+    for v, title in CUTS:
+        if not os.path.exists(os.path.join(B, f"final_{v}.json")):
+            continue
         tl = json.load(open(os.path.join(B, f"timeline_{v}.json")))
         q = json.load(open(os.path.join(B, f"qa_{v}.json")))["summary"]
         fin = json.load(open(os.path.join(B, f"final_{v}.json")))
@@ -42,9 +45,16 @@ def main():
         for f, k, val in q["issues"]:
             kinds.setdefault(k, []).append(f)
         out += [f"## {title}", "",
-                f"- 時長 {fmt_t(tl['duration'])}（{tl['duration']:.2f} s），{tl['frames']} 格 @ {tl['fps']} fps，12 個場景",
+                f"- 時長 {fmt_t(tl['duration'])}（{tl['duration']:.2f} s），{tl['frames']} 格 @ {tl['fps']} fps，{len(tl['scenes'])} 個場景",
                 f"- 逐格檢查：{q['frames']} / {q['expected_frames']} 格全部解碼檢查（`qa/check_frames.py`）"]
         out.append("  - 空白或單色畫面：0 格；破圖黑洞（純黑像素）：0 格；紙紋缺失：0 格；配色異常：0 格；凍結畫面：0 格")
+        if v == "60s":
+            vo60 = json.load(open(os.path.join(ROOT, "tts", "vo_60s", "manifest.json")))
+            out += [f"- 腳本 `script/script_60s.json`（查證與來源：`script/SCRIPT_60s.md`）：7 段固定時間（0–5–14–23–32–41–50–60 s），每段兩句旁白都落在段內；段落交界以筆刷轉場，轉場中點就在段落交界",
+                    f"- 旁白：{len(vo60['lines'])} 句、總長 {sum(l['dur'] for l in vo60['lines']):.2f} 秒，男聲 `{vo60['voice']}`，語速 {vo60['speed']}（開場兩句 1.05）；「AI」念作 ēi ài，多音字逐句以拼音核對（藏 cáng、一式 yí shì、這卷 zhè juàn、扎實 zhá shí、誰說 shéi shuō）",
+                    "- 配樂：133⅓ BPM（每拍 0.45 秒），每段正好 5 小節，段落交界都落在小節第一拍；九連刺、短影音框跳出、介面提示音與四大功力出現都對齊八分音符，降龍掌、光球爆發、片尾高潮落在拍點上",
+                    "- 各段配樂：開場琵琶輪指與掃弦；喬峰太鼓＋重低音大鼓；楊過合成器琶音、四拍大鼓與 hi-hat（Tech Pulse）；令狐沖十六分音符快鼓；張無忌弦樂斷奏、銅管漸強與定音鼓滾奏；傳承段 C 大調溫暖弦樂與二胡；片尾梵鐘、定音鼓滾奏收在高潮",
+                    "- 新增音效：墨水渲染、數位光點、拔劍、解鎖、Tech Pulse、介面提示音、短影音框跳出、彩帶、氣功迴旋、梵鐘"]
         if kinds.get("sudden change"):
             fs = kinds["sudden change"]
             spans = []
@@ -73,8 +83,9 @@ def main():
             for ln in s["lines"]:
                 out.append(f"| {ln['id']} | {s['id']} | {fmt_t(ln['abs0'])} – {fmt_t(ln['abs1'])} |")
         out.append("")
-    vert = [(v, os.path.join(B, f"final_vertical_{v}.json")) for v in ("full", "short")]
-    if all(os.path.exists(p) for _, p in vert):
+    vert = [(v, os.path.join(B, f"final_vertical_{v}.json")) for v, _ in CUTS]
+    vert = [(v, p) for v, p in vert if os.path.exists(p)]
+    if vert:
         out += ["## 9:16 直式雙語字幕版", "",
                 "- 1080×1920、30 fps。完整 16:9 畫面不裁切，縮放為 1080×608 橫置在中段；上方為系徽與片名，下方為放大的雙語字幕（中文 58 px，長句在自然停頓處斷行）",
                 "- 畫面、旁白、配樂、音效與橫式版相同；字幕時間碼與淡入淡出也相同", "",
@@ -89,7 +100,8 @@ def main():
     out += ["## 人工目視抽檢", "",
             "- 正片、短版各以每秒 1 格抽樣（共 235 格），並在每個場景的關鍵動作處另外抽幀檢查：前景遮擋正確，沒有線條穿透人物或建築；字幕沒有蓋住關鍵畫面（片名卡秘笈、收尾寫字處都已調整到字幕區之上）；轉場筆刷完整覆蓋。",
             "- 各場景截圖：`output/screenshots/`（每場 2 張與 contact sheet）。",
-            "- 6 支最終 MP4 全檔解碼（`ffmpeg -v error -f null`）：解碼錯誤 0；影格數與時間軸一致。", ""]
+            "- 6 支最終 MP4 全檔解碼（`ffmpeg -v error -f null`）：解碼錯誤 0；影格數與時間軸一致。",
+            "- 60 秒招生版：7 段各取 2 張截圖（`output/screenshots/promo60s/`），另在每段的關鍵動作（掌風震碎、AI 光軌解鎖、九劍出框、光球爆發、秘笈交接、眼神金光、片尾字卡）逐一抽幀放大檢查；4 支 MP4 全檔解碼：解碼錯誤 0。", ""]
     open(os.path.join(ROOT, "output", "QA_REPORT.md"), "w").write("\n".join(out))
     print("report written")
 

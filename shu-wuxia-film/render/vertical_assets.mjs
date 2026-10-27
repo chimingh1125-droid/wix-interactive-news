@@ -5,8 +5,9 @@
 //                for a phone screen, shown below the picture band
 //   layout.json  band positions shared with vertical.py
 //
-//   node vertical_assets.mjs <subs_dir> <out_dir>
-// subs_dir is build/subs_<cut>; its cues.json holds the text and timing.
+//   node vertical_assets.mjs <subs_dir> <out_dir> [title_zh title_en]
+// subs_dir is build/subs_<cut>; its cues.json holds the text and timing. The
+// page title defaults to the film's; the 60-second cut passes its own.
 import { createRequire } from 'module';
 import fs from 'fs';
 import path from 'path';
@@ -15,7 +16,7 @@ import { fileURLToPath } from 'url';
 const require = createRequire('/opt/node22/lib/node_modules/');
 const { chromium } = require('playwright');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const [subsRel, outRel] = process.argv.slice(2);
+const [subsRel, outRel, titleArg, titleEnArg] = process.argv.slice(2);
 const subsDir = path.resolve(subsRel), outDir = path.resolve(outRel);
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -50,8 +51,8 @@ const page = await browser.newPage({ viewport: { width: W, height: H }, deviceSc
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 await page.goto('file://' + pagePath);
-const title = '世新大學新聞系的武功秘笈';
-const titleEn = 'The Secret Manual of Shih Hsin University’s Department of Journalism';
+const title = titleArg || '世新大學新聞系的武功秘笈';
+const titleEn = titleEnArg || 'The Secret Manual of Shih Hsin University’s Department of Journalism';
 const fontsOk = await page.evaluate(async ([title, titleEn, VY, VH]) => {
   await document.fonts.load('400 64px "Iansui"', title);
   await document.fonts.load('italic 500 28px "Cormorant Garamond"', titleEn);

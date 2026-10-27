@@ -18,16 +18,21 @@ PICK = {
     "opening": (0.35, 0.86), "title": (0.55, 0.85), "founding": (0.4, 0.8), "motto": (0.45, 0.8),
     "littleworld": (0.3, 0.72), "interview": (0.4, 0.62), "writing": (0.42, 0.78), "verify": (0.35, 0.72),
     "editing": (0.3, 0.86), "mission": (0.25, 0.8), "legacy": (0.4, 0.75), "endcard": (0.45, 0.8),
+    "p60_open": (0.3, 0.8), "p60_qiao": (0.33, 0.62), "p60_yang": (0.36, 0.62), "p60_linghu": (0.2, 0.65),
+    "p60_zhang": (0.3, 0.8), "p60_pass": (0.2, 0.65), "p60_end": (0.35, 0.84),
 }
 # shots tied to an event instead of a fraction: (scene, shot) -> (line id,
 # seconds after that line ends). The dragon dives at the doors 1.3 s after
 # L12; the lead type has formed the 小世界 masthead 1.5 s after L16.
-EVENT = {("writing", 0): ("L12", 1.32), ("editing", 0): ("L16", 1.5)}
+EVENT = {("writing", 0): ("L12", 1.32), ("editing", 0): ("L16", 1.5), ("p60_zhang", 1): ("P10", 0.15)}
 NAMES = {
     "opening": "開場：木柵・景美溪・山洞口", "title": "片名卡", "founding": "開山立派（1956）", "motto": "總訣：德智兼修 手腦並用",
     "littleworld": "《小世界》創刊（1957）", "interview": "第一式 採訪：獨孤九劍", "writing": "第二式 寫作：降龍十八掌",
     "verify": "第三式 查證：玄鐵重劍", "editing": "第四式 編輯：乾坤大挪移", "mission": "俠之大者（夜景）",
     "legacy": "感人收尾：最後一頁", "endcard": "片尾字卡",
+    "p60_open": "開場：世新山洞・舍我樓・片名", "p60_qiao": "喬峰：降龍十八掌震碎舊媒體", "p60_yang": "楊過：重劍寫出 AI 解鎖課程",
+    "p60_linghu": "令狐沖：九劍化為九格短影音", "p60_zhang": "張無忌：四大功力匯成光球", "p60_pass": "傳承：秘笈交給高中生",
+    "p60_end": "片尾：系徽與招生字卡（夜景）",
 }
 
 

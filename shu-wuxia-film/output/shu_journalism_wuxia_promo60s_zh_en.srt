@@ -1,0 +1,69 @@
+1
+00:00:00,230 --> 00:00:02,340
+仙山藏秘笈　世新傳絕學
+<i>The mountain hides a secret manual; Shih Hsin hands down its finest arts.</i>
+
+2
+00:00:02,370 --> 00:00:05,000
+誰說新聞江湖　只能墨守成規？
+<i>Who says the world of news must stick to the old rules?</i>
+
+3
+00:00:05,400 --> 00:00:08,670
+喬峰一式降龍掌　掃盡傳統舊思維
+<i>One Dragon-Subduing Palm from Qiao Feng sweeps away old thinking.</i>
+
+4
+00:00:08,700 --> 00:00:11,840
+傳媒大浪滔天　唯有創新才能立足！
+<i>When media waves rise sky-high, only innovation keeps you standing!</i>
+
+5
+00:00:14,400 --> 00:00:17,660
+楊過重劍出鞘　解鎖《AI 與媒體產業》
+<i>Yang Guo draws his heavy sword and unlocks “AI and the Media Industry.”</i>
+
+6
+00:00:17,690 --> 00:00:21,230
+用科技加持靈魂　AI 就是你的神兵利器！
+<i>Tech that powers the soul: AI is your legendary weapon!</i>
+
+7
+00:00:23,400 --> 00:00:26,130
+令狐沖獨孤九劍　無招勝有招
+<i>Linghu Chong's Nine Swords of Dugu: no set moves beat every move.</i>
+
+8
+00:00:26,160 --> 00:00:29,640
+玩轉 AI 短影音　讓你的創意無極限爆發！
+<i>Master AI short videos and let your creativity explode without limits!</i>
+
+9
+00:00:32,400 --> 00:00:35,720
+張無忌乾坤大挪移　融會貫通全媒體
+<i>Zhang Wuji's Great Shift blends every medium into one.</i>
+
+10
+00:00:35,750 --> 00:00:39,500
+扎實實作課程　讓你大一就練就一身即戰力！
+<i>Solid hands-on courses make you job-ready from your first year!</i>
+
+11
+00:00:41,400 --> 00:00:45,110
+招式會變　但追求真實與影響力的心不變
+<i>The moves may change, but the drive for truth and impact never does.</i>
+
+12
+00:00:45,140 --> 00:00:48,540
+少年俠客　你準備好掌握這卷秘笈了嗎？
+<i>Young hero, are you ready to master this manual?</i>
+
+13
+00:00:50,400 --> 00:00:53,810
+來世新新聞　用你的創意與 AI 改變世界！
+<i>Join SHU Journalism and change the world with your creativity and AI!</i>
+
+14
+00:00:53,840 --> 00:00:57,130
+世新大學新聞學系　等你來試劍江湖！
+<i>Shih Hsin University Journalism awaits. Come test your blade!</i>
